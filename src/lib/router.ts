@@ -1,0 +1,74 @@
+/** @format */
+
+import { Observable } from 'rxjs'
+import {
+    CallerRequestOptions,
+    CommandType,
+    HTTPError,
+    NativeRequestOptions,
+    send$,
+} from './utils'
+
+export class Router {
+    constructor(
+        public readonly headers: { [key: string]: string },
+        public readonly basePath: string,
+    ) {}
+
+    static defaultMethodMapping: Record<
+        CommandType,
+        'GET' | 'POST' | 'PUT' | 'DELETE'
+    > = {
+        upload: 'POST',
+        download: 'GET',
+        query: 'GET',
+        create: 'PUT',
+        update: 'POST',
+        delete: 'DELETE',
+    }
+
+    send$<TResponse>({
+        command,
+        path,
+        nativeRequestOptions,
+        callerOptions,
+    }: {
+        command: CommandType
+        path: string
+        nativeRequestOptions?: NativeRequestOptions
+        callerOptions?: CallerRequestOptions
+    }): Observable<TResponse | HTTPError> {
+        nativeRequestOptions = nativeRequestOptions || {}
+
+        if (!nativeRequestOptions.method) {
+            nativeRequestOptions.method = Router.defaultMethodMapping[command]
+        }
+
+        const headers = {
+            ...nativeRequestOptions.headers,
+            ...this.headers,
+            ...(callerOptions.headers || {}),
+        }
+        return send$(
+            command,
+            `${this.basePath}${path}`,
+            { ...nativeRequestOptions, headers },
+            callerOptions.monitoring,
+        )
+    }
+}
+
+export class RootRouter extends Router {
+    static Headers: { [key: string]: string } = {}
+    static HostName = '' // By default, relative resolution is used. Otherwise, protocol + hostname
+
+    constructor(params: {
+        basePath: string
+        headers?: { [key: string]: string }
+    }) {
+        super(
+            { ...RootRouter.Headers, ...(params.headers || {}) },
+            `${RootRouter.HostName}${params.basePath}`,
+        )
+    }
+}

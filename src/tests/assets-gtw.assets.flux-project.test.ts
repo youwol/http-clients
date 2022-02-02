@@ -67,7 +67,7 @@ test('assetsGtw.assets.fluxProject.create$', (done) => {
 
 test('assetsGtw.assets.fluxProject.queryProject$', (done) => {
     assetsGtw.raw.fluxProject
-        .queryProject$(rawId)
+        .getProject$(rawId)
         .pipe(muteHTTPErrors())
         .subscribe((resp: Project) => {
             expect(resp.name).toBe('test')
