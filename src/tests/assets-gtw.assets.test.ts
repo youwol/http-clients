@@ -19,12 +19,7 @@ import {
     expectAttributes,
     resetPyYouwolDbs$,
 } from './common'
-import {
-    muteHTTPErrors,
-    onHTTPErrors,
-    raiseHTTPErrors,
-    RequestEvent,
-} from '../lib/utils'
+import { onHTTPErrors, raiseHTTPErrors, RequestEvent } from '../lib/utils'
 import { readFileSync } from 'fs'
 import path from 'path'
 import { Subject } from 'rxjs'
@@ -44,7 +39,7 @@ let homeFolderId: string
 it('assetsGtw.getHealthz$', (done) => {
     assetsGtw
         .getHealthz$()
-        .pipe(muteHTTPErrors())
+        .pipe(raiseHTTPErrors())
         .subscribe((resp: HealthzResponse) => {
             expect(resp.status).toBe('assets-gateway ok')
             done()
@@ -54,7 +49,7 @@ it('assetsGtw.getHealthz$', (done) => {
 it('assetsGtw.getUserInfo$', (done) => {
     assetsGtw
         .getUserInfo$()
-        .pipe(muteHTTPErrors())
+        .pipe(raiseHTTPErrors())
         .subscribe((resp: UserInfoResponse) => {
             expectAttributes(resp, ['name', 'groups'])
             expect(true).toBeTruthy()
@@ -65,7 +60,7 @@ it('assetsGtw.getUserInfo$', (done) => {
 test('assetsGtw.queryGroups$', (done) => {
     assetsGtw
         .queryGroups()
-        .pipe(muteHTTPErrors())
+        .pipe(raiseHTTPErrors())
         .subscribe((resp: GroupsResponse) => {
             const privateGrp = resp.groups.find((g) => g.path == privateGrpPath)
             expect(privateGrp).toBeTruthy()
@@ -78,7 +73,7 @@ test('assetsGtw.queryGroups$', (done) => {
 test('assetsGtw.explorer.groups.getDefaultDrive$', (done) => {
     assetsGtw.explorer.groups
         .getDefaultDrive$(privateGrpId)
-        .pipe(muteHTTPErrors())
+        .pipe(raiseHTTPErrors())
         .subscribe((resp: DefaultDriveResponse) => {
             homeFolderId = resp.homeFolderId
             done()
@@ -91,7 +86,7 @@ test('assetsGtw.assets.fluxProject.create$', (done) => {
             name: 'test',
             description: 'platform-essentials integration test',
         })
-        .pipe(muteHTTPErrors())
+        .pipe(raiseHTTPErrors())
         .subscribe((resp: Asset) => {
             expect(resp.name).toBe('test')
             done()
@@ -105,7 +100,7 @@ test('assetsGtw.assets.story.create$', (done) => {
         .create$(homeFolderId, {
             title: 'test-story',
         })
-        .pipe(muteHTTPErrors())
+        .pipe(raiseHTTPErrors())
         .subscribe((resp: Asset) => {
             expectAssetAttributes(resp)
             storyAssetId = resp.assetId
@@ -117,7 +112,7 @@ test('assetsGtw.assets.story.create$', (done) => {
 test('assetsGtw.assets.get$', (done) => {
     assetsGtw.assets
         .get$(storyAssetId)
-        .pipe(muteHTTPErrors())
+        .pipe(raiseHTTPErrors())
         .subscribe((resp: Asset) => {
             expectAttributes(resp, [
                 'assetId',
@@ -139,7 +134,7 @@ test('assetsGtw.assets.get$', (done) => {
 test('assetsGtw.assets.getAccess$', (done) => {
     assetsGtw.assets
         .getAccess$(storyAssetId)
-        .pipe(muteHTTPErrors())
+        .pipe(raiseHTTPErrors())
         .subscribe((resp: AccessInfo) => {
             expectAttributes(resp, ['owningGroup', 'ownerInfo', 'consumerInfo'])
             expect(resp.consumerInfo.permissions).toEqual({
@@ -165,7 +160,7 @@ test('assetsGtw.assets.updateAccess$', (done) => {
             read: 'authorized',
             share: 'authorized',
         })
-        .pipe(muteHTTPErrors())
+        .pipe(raiseHTTPErrors())
         .subscribe((resp: ExposingGroup) => {
             expectAttributes(resp, ['name', 'groupId', 'access'])
             expect(resp.access).toEqual({
@@ -184,7 +179,7 @@ test('assetsGtw.assets.update$', (done) => {
             tags: ['story'],
             description: 'update asset',
         })
-        .pipe(muteHTTPErrors())
+        .pipe(raiseHTTPErrors())
         .subscribe((resp: Asset) => {
             expectAttributes(resp, ['assetId', 'rawId'])
             done()

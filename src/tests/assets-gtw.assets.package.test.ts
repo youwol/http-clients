@@ -13,7 +13,7 @@ import {
     expectAttributes,
     resetPyYouwolDbs$,
 } from './common'
-import { muteHTTPErrors, raiseHTTPErrors } from '../lib/utils'
+import { raiseHTTPErrors } from '../lib/utils'
 import { readFileSync } from 'fs'
 import path from 'path'
 
@@ -30,7 +30,7 @@ let homeFolderId: string
 test('assetsGtw.explorer.groups.getDefaultUserDrive$', (done) => {
     assetsGtw.explorer
         .getDefaultUserDrive$()
-        .pipe(muteHTTPErrors())
+        .pipe(raiseHTTPErrors())
         .subscribe((resp: DefaultDriveResponse) => {
             expect(resp.driveName).toBe('Default drive')
             homeFolderId = resp.homeFolderId

@@ -6,7 +6,7 @@
 import './mock-requests'
 import { AssetsGatewayClient } from '../lib/assets-gateway'
 import { expectAssetAttributes, resetPyYouwolDbs$ } from './common'
-import { muteHTTPErrors, raiseHTTPErrors, RequestEvent } from '../lib/utils'
+import { raiseHTTPErrors, RequestEvent } from '../lib/utils'
 import { Subject } from 'rxjs'
 import { mergeMap } from 'rxjs/operators'
 
@@ -18,7 +18,7 @@ beforeAll(async (done) => {
     resetPyYouwolDbs$()
         .pipe(
             mergeMap(() => assetsGtw.explorer.getDefaultUserDrive$()),
-            muteHTTPErrors(),
+            raiseHTTPErrors(),
         )
         .subscribe((resp) => {
             homeFolderId = resp.homeFolderId

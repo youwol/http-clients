@@ -8,6 +8,7 @@ import { resetPyYouwolDbs$ } from './common'
 import {
     dispatchHTTPErrors,
     HTTPError,
+    muteHTTPErrors,
     onHTTPErrors,
     raiseHTTPErrors,
 } from '../lib/utils'
@@ -63,4 +64,17 @@ test('assetsGtw.assets.get$, 404, on error', (done) => {
             expect(resp).toBe('an error occurred')
             done()
         })
+})
+
+test('assetsGtw.assets.get$, 404, muteHTTPErrors', (done) => {
+    assetsGtw.assets
+        .get$('tutu')
+        .pipe(muteHTTPErrors())
+        .subscribe(() => {
+            throw Error('Should not pass here')
+        })
+    setTimeout(() => {
+        expect(true).toBeTruthy()
+        done()
+    }, 50)
 })

@@ -5,7 +5,7 @@
 import './mock-requests'
 
 import { resetPyYouwolDbs$ } from './common'
-import { muteHTTPErrors } from '../lib/utils'
+import { raiseHTTPErrors } from '../lib/utils'
 import { PyYouwolClient } from '../lib/py-youwol'
 
 const pyYouwol = new PyYouwolClient()
@@ -19,7 +19,7 @@ beforeAll(async (done) => {
 test('query healthz', (done) => {
     pyYouwol
         .getHealthz$()
-        .pipe(muteHTTPErrors())
+        .pipe(raiseHTTPErrors())
         .subscribe((resp) => {
             expect(resp.status).toBe('py-youwol ok')
             done()

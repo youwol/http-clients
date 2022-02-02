@@ -18,7 +18,7 @@ import {
 } from '../lib/assets-gateway'
 import { mergeMap } from 'rxjs/operators'
 import { expectAttributes, resetPyYouwolDbs$ } from './common'
-import { muteHTTPErrors, RequestEvent } from '../lib/utils'
+import { raiseHTTPErrors, RequestEvent } from '../lib/utils'
 import { ReplaySubject } from 'rxjs'
 
 const assetsGtw = new AssetsGatewayClient()
@@ -48,7 +48,7 @@ test('assetsGtw.getHealthz()', (done) => {
     })
     assetsGtw
         .getHealthz$({ monitoring })
-        .pipe(muteHTTPErrors())
+        .pipe(raiseHTTPErrors())
         .subscribe((resp: HealthzResponse) => {
             expect(resp.status).toBe('assets-gateway ok')
             expect(events).toEqual([
@@ -74,7 +74,7 @@ test('assetsGtw.getHealthz()', (done) => {
 test('assetsGtw.queryGroups()', (done) => {
     assetsGtw
         .queryGroups()
-        .pipe(muteHTTPErrors())
+        .pipe(raiseHTTPErrors())
         .subscribe((resp: GroupsResponse) => {
             expect(resp.groups).toHaveLength(2)
             const ywUsersGrp = resp.groups.find((g) => g.path == ywUsersGrpPath)
@@ -89,7 +89,7 @@ test('assetsGtw.queryGroups()', (done) => {
 test('assetsGtw.explorer.groups.getDefaultUserDrive$', (done) => {
     assetsGtw.explorer
         .getDefaultUserDrive$()
-        .pipe(muteHTTPErrors())
+        .pipe(raiseHTTPErrors())
         .subscribe((resp: DefaultDriveResponse) => {
             expectAttributes(resp, [
                 'driveId',
@@ -116,7 +116,7 @@ test('assetsGtw.explorer.groups.getDefaultUserDrive$', (done) => {
 test('assetsGtw.explorer.groups.getDefaultDrive$', (done) => {
     assetsGtw.explorer.groups
         .getDefaultDrive$(privateGrpId)
-        .pipe(muteHTTPErrors())
+        .pipe(raiseHTTPErrors())
         .subscribe((resp: DefaultDriveResponse) => {
             expect(resp.driveName).toBe('Default drive')
             expect(resp.driveId).toBe(defaultDriveId)
@@ -127,7 +127,7 @@ test('assetsGtw.explorer.groups.getDefaultDrive$', (done) => {
 test('assetsGtw.explorer.groups.queryDrives$', (done) => {
     assetsGtw.explorer.groups
         .queryDrives$(privateGrpId)
-        .pipe(muteHTTPErrors())
+        .pipe(raiseHTTPErrors())
         .subscribe((resp: DrivesResponse) => {
             expect(resp.drives).toHaveLength(1)
             const defaultDrive = resp.drives[0]
@@ -140,6 +140,7 @@ test('assetsGtw.explorer.groups.queryDrives$', (done) => {
 test('assetsGtw.explorer.drives.get$', (done) => {
     assetsGtw.explorer.drives
         .get$(defaultDriveId)
+        .pipe(raiseHTTPErrors())
         .subscribe((resp: DriveResponse) => {
             expectAttributes(resp, ['name', 'driveId'])
             done()
@@ -150,6 +151,7 @@ test('assetsGtw.explorer.drives.rename$', (done) => {
     assetsGtw.explorer.drives
         .rename$(defaultDriveId, { name: 'new name' })
         .pipe(mergeMap(() => assetsGtw.explorer.drives.get$(defaultDriveId)))
+        .pipe(raiseHTTPErrors())
         .subscribe((resp: DriveResponse) => {
             expect(resp.name).toBe('new name')
             done()
@@ -159,7 +161,7 @@ test('assetsGtw.explorer.drives.rename$', (done) => {
 test('assetsGtw.explorer.folders.queryChildren$ => default folders in default drive', (done) => {
     assetsGtw.explorer.folders
         .queryChildren$(defaultDriveId)
-        .pipe(muteHTTPErrors())
+        .pipe(raiseHTTPErrors())
         .subscribe((resp: ChildrenFolderResponse) => {
             expect(resp.folders).toHaveLength(4)
             expect(resp.items).toHaveLength(0)
@@ -170,7 +172,7 @@ test('assetsGtw.explorer.folders.queryChildren$ => default folders in default dr
 test('assetsGtw.explorer.groups.createDrive$', (done) => {
     assetsGtw.explorer.groups
         .createDrive$(privateGrpId, { name: 'test drive' })
-        .pipe(muteHTTPErrors())
+        .pipe(raiseHTTPErrors())
         .subscribe((resp: DriveResponse) => {
             expectAttributes(resp, ['name', 'driveId', 'groupId'])
             expect(resp.name).toBe('test drive')
@@ -183,7 +185,7 @@ test('assetsGtw.explorer.folders.create$', (done) => {
     const folderName = 'test folder'
     assetsGtw.explorer.folders
         .create$(homeFolderId, { name: folderName })
-        .pipe(muteHTTPErrors())
+        .pipe(raiseHTTPErrors())
         .subscribe((resp: FolderResponse) => {
             expectAttributes(resp, [
                 'name',
@@ -205,7 +207,7 @@ test('assetsGtw.assets.story.create$', (done) => {
         .create$(homeFolderId, {
             title: 'test-story',
         })
-        .pipe(muteHTTPErrors())
+        .pipe(raiseHTTPErrors())
         .subscribe((resp: Asset) => {
             expectAttributes(resp, ['assetId', 'rawId', 'treeId'])
             storyTreeId = resp.treeId
@@ -218,7 +220,7 @@ test('assetsGtw.assets.story.create$', (done) => {
 test('assetsGtw.explorer.items.get$', (done) => {
     assetsGtw.explorer.items
         .get$(storyTreeId)
-        .pipe(muteHTTPErrors())
+        .pipe(raiseHTTPErrors())
         .subscribe((resp: ItemResponse) => {
             expectAttributes(resp, ['assetId', 'rawId', 'treeId'])
             expect(resp.name).toBe('test-story')
@@ -229,7 +231,7 @@ test('assetsGtw.explorer.items.get$', (done) => {
 test('assetsGtw.explorer.getPermissions$', (done) => {
     assetsGtw.explorer
         .getPermissions$(storyTreeId)
-        .pipe(muteHTTPErrors())
+        .pipe(raiseHTTPErrors())
         .subscribe((resp: PermissionsResponse) => {
             expect(resp.read).toBeTruthy()
             expect(resp.write).toBeTruthy()
@@ -242,7 +244,7 @@ test('assetsGtw.explorer.getPermissions$', (done) => {
 test('assetsGtw.explorer.items.borrowItem$', (done) => {
     assetsGtw.explorer
         .borrowItem$(storyTreeId, { destinationFolderId: workingFolderId })
-        .pipe(muteHTTPErrors())
+        .pipe(raiseHTTPErrors())
         .subscribe((resp: ItemResponse) => {
             expectAttributes(resp, ['assetId', 'rawId', 'treeId'])
             expect(resp.name).toBe('test-story')
@@ -254,7 +256,7 @@ test('assetsGtw.explorer.items.borrowItem$', (done) => {
 test('assetsGtw.explorer.move$', (done) => {
     assetsGtw.explorer
         .move$(storyTreeId, { destinationFolderId: workingFolderId })
-        .pipe(muteHTTPErrors())
+        .pipe(raiseHTTPErrors())
         .subscribe((resp: ChildrenFolderResponse) => {
             expect(resp.items[0].assetId).toBe(storyAssetId)
             expect(resp.items[1].assetId).toBe(storyAssetId)
@@ -269,7 +271,7 @@ test('assetsGtw.explorer.move$', (done) => {
 test('assetsGtw.explorer.items.delete$', (done) => {
     assetsGtw.explorer.items
         .delete$(storyTreeId)
-        .pipe(muteHTTPErrors())
+        .pipe(raiseHTTPErrors())
         .subscribe((resp) => {
             expect(resp).toEqual({})
             done()
@@ -280,7 +282,7 @@ test('assetsGtw.explorer.folders.rename$', (done) => {
     const folderName = 'test folder renamed'
     assetsGtw.explorer.folders
         .rename$(homeFolderId, { name: folderName })
-        .pipe(muteHTTPErrors())
+        .pipe(raiseHTTPErrors())
         .subscribe((resp: FolderResponse) => {
             expect(resp.folderId).toBe(homeFolderId)
             expect(resp.name).toEqual(folderName)
@@ -291,7 +293,7 @@ test('assetsGtw.explorer.folders.rename$', (done) => {
 test('assetsGtw.explorer.folders.queryChildren$', (done) => {
     assetsGtw.explorer.folders
         .queryChildren$(homeFolderId)
-        .pipe(muteHTTPErrors())
+        .pipe(raiseHTTPErrors())
         .subscribe((resp: ChildrenFolderResponse) => {
             expect(resp.folders).toHaveLength(1)
             expect(resp.items).toHaveLength(0)
@@ -304,7 +306,7 @@ test('assetsGtw.explorer.folders.delete$', (done) => {
     assetsGtw.explorer.folders
         .delete$(workingFolderId)
         .pipe(
-            muteHTTPErrors(),
+            raiseHTTPErrors(),
             mergeMap(() => {
                 return assetsGtw.explorer.folders.queryChildren$(homeFolderId)
             }),
@@ -319,7 +321,7 @@ test('assetsGtw.explorer.folders.delete$', (done) => {
 test('assetsGtw.explorer.drives.queryDeletedItems$', (done) => {
     assetsGtw.explorer.drives
         .queryDeletedItems$(defaultDriveId)
-        .pipe(muteHTTPErrors())
+        .pipe(raiseHTTPErrors())
         .subscribe((resp: ChildrenFolderResponse) => {
             expect(resp.items).toHaveLength(1)
             expect(resp.folders).toHaveLength(1)
@@ -330,7 +332,7 @@ test('assetsGtw.explorer.drives.queryDeletedItems$', (done) => {
 test('assetsGtw.explorer.drives.purge$', (done) => {
     assetsGtw.explorer.drives
         .purge$(defaultDriveId)
-        .pipe(muteHTTPErrors())
+        .pipe(raiseHTTPErrors())
         .subscribe((resp) => {
             expect(resp.foldersCount).toBe(1)
             done()
@@ -341,7 +343,7 @@ test('assetsGtw.explorer.drives.delete$', (done) => {
     assetsGtw.explorer.drives
         .delete$(newDriveId)
         .pipe(
-            muteHTTPErrors(),
+            raiseHTTPErrors(),
             mergeMap(() => {
                 return assetsGtw.explorer.groups.queryDrives$(privateGrpId)
             }),

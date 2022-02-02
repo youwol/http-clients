@@ -7,7 +7,7 @@ import './mock-requests'
 import { CdnSessionsStorageClient } from '../lib/cdn-sessions-storage'
 
 import { resetPyYouwolDbs$ } from './common'
-import { Json, muteHTTPErrors } from '../lib/utils'
+import { Json, raiseHTTPErrors } from '../lib/utils'
 
 const storage = new CdnSessionsStorageClient()
 
@@ -24,7 +24,7 @@ const testData = {
 test('query healthz', (done) => {
     storage
         .getHealthz$()
-        .pipe(muteHTTPErrors())
+        .pipe(raiseHTTPErrors())
         .subscribe((resp) => {
             expect(resp.status).toBe('cdn-sessions-storage ok')
             done()
@@ -34,7 +34,7 @@ test('query healthz', (done) => {
 test('get data from empty db', (done) => {
     storage.applications
         .getData$('@youwol/platform-essentials', 'integration-tests')
-        .pipe(muteHTTPErrors())
+        .pipe(raiseHTTPErrors())
         .subscribe((resp: Json) => {
             expect(resp).toEqual({})
             done()
@@ -44,7 +44,7 @@ test('get data from empty db', (done) => {
 test('post data', (done) => {
     storage.applications
         .postData$('@youwol/platform-essentials', 'integration-tests', testData)
-        .pipe(muteHTTPErrors())
+        .pipe(raiseHTTPErrors())
         .subscribe((resp: Record<string, never>) => {
             expect(resp).toEqual({})
             done()
@@ -54,7 +54,7 @@ test('post data', (done) => {
 test('get data', (done) => {
     storage.applications
         .getData$('@youwol/platform-essentials', 'integration-tests')
-        .pipe(muteHTTPErrors())
+        .pipe(raiseHTTPErrors())
         .subscribe((resp: Json) => {
             expect(resp).toEqual(testData)
             done()

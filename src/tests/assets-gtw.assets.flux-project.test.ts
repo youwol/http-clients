@@ -11,7 +11,7 @@ import {
     Project,
 } from '../lib/assets-gateway'
 import { expectAttributes, resetPyYouwolDbs$ } from './common'
-import { muteHTTPErrors, raiseHTTPErrors } from '../lib/utils'
+import { raiseHTTPErrors } from '../lib/utils'
 
 const assetsGtw = new AssetsGatewayClient()
 
@@ -27,7 +27,7 @@ let rawId: string
 test('assetsGtw.explorer.groups.getDefaultUserDrive$', (done) => {
     assetsGtw.explorer
         .getDefaultUserDrive$()
-        .pipe(muteHTTPErrors())
+        .pipe(raiseHTTPErrors())
         .subscribe((resp: DefaultDriveResponse) => {
             expect(resp.driveName).toBe('Default drive')
             homeFolderId = resp.homeFolderId
@@ -41,7 +41,7 @@ test('assetsGtw.assets.fluxProject.create$', (done) => {
             name: 'test',
             description: 'platform-essentials integration test',
         })
-        .pipe(muteHTTPErrors())
+        .pipe(raiseHTTPErrors())
         .subscribe((resp: Asset) => {
             expectAttributes(resp, [
                 'assetId',
@@ -68,7 +68,7 @@ test('assetsGtw.assets.fluxProject.create$', (done) => {
 test('assetsGtw.assets.fluxProject.queryProject$', (done) => {
     assetsGtw.raw.fluxProject
         .getProject$(rawId)
-        .pipe(muteHTTPErrors())
+        .pipe(raiseHTTPErrors())
         .subscribe((resp: Project) => {
             expect(resp.name).toBe('test')
             done()
