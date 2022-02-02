@@ -2,8 +2,13 @@
 
 import { Observable } from 'rxjs'
 import { Router } from '../../../router'
-import { CallerRequestOptions, HTTPError, uploadBlob } from '../../../utils'
-import { FluxProjectRouter } from './flux-project/flux-project.router'
+import {
+    CallerRequestOptions,
+    HTTPError,
+    HTTPResponse$,
+    uploadBlob,
+} from '../../../utils'
+
 import {
     AccessInfo,
     AccessPolicyBody,
@@ -11,22 +16,25 @@ import {
     ExposingGroup,
     UpdateAssetBody,
 } from './interfaces'
-import { StoryRouter } from './story/story.router'
-import { DataRouter } from './data/data.router'
-import { PackageRouter } from './package/package.router'
+import {
+    AssetDataRouter,
+    AssetFluxProjectRouter,
+    AssetPackageRouter,
+    AssetStoryRouter,
+} from '.'
 
 export class AssetsRouter extends Router {
-    public readonly fluxProject: FluxProjectRouter
-    public readonly story: StoryRouter
-    public readonly data: DataRouter
-    public readonly package: PackageRouter
+    public readonly fluxProject: AssetFluxProjectRouter
+    public readonly story: AssetStoryRouter
+    public readonly data: AssetDataRouter
+    public readonly package: AssetPackageRouter
 
     constructor(parent: Router) {
         super(parent.headers, `${parent.basePath}/assets`)
-        this.fluxProject = new FluxProjectRouter(this)
-        this.story = new StoryRouter(this)
-        this.data = new DataRouter(this)
-        this.package = new PackageRouter(this)
+        this.fluxProject = new AssetFluxProjectRouter(this)
+        this.story = new AssetStoryRouter(this)
+        this.data = new AssetDataRouter(this)
+        this.package = new AssetPackageRouter(this)
     }
 
     /**

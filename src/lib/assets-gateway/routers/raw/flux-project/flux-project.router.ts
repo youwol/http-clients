@@ -6,7 +6,7 @@ import { Router } from '../../../../router'
 import { CallerRequestOptions, HTTPError } from '../../../../utils'
 import { Project } from './interfaces'
 
-export class FluxProjectRouter extends Router {
+export class RawFluxProjectRouter extends Router {
     constructor(parent: Router) {
         super(parent.headers, `${parent.basePath}/flux-project`)
     }

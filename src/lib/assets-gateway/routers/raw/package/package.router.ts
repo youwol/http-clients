@@ -5,7 +5,7 @@ import { CallerRequestOptions, HTTPError } from '../../../../utils'
 import { Observable } from 'rxjs'
 import { MetadataResponse } from './interface'
 
-export class PackageRouter extends Router {
+export class RawPackageRouter extends Router {
     constructor(parent: Router) {
         super(parent.headers, `${parent.basePath}/package`)
     }

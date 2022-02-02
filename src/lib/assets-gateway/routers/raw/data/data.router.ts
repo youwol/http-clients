@@ -9,7 +9,7 @@ import {
     HTTPError,
 } from '../../../../utils'
 
-export class DataRouter extends Router {
+export class RawDataRouter extends Router {
     constructor(parent: Router) {
         super(parent.headers, `${parent.basePath}/data`)
     }

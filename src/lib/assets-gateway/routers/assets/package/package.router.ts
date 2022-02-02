@@ -5,7 +5,7 @@ import { Router } from '../../../../router'
 import { CallerRequestOptions, HTTPError, uploadBlob } from '../../../../utils'
 import { Asset } from '../interfaces'
 
-export class PackageRouter extends Router {
+export class AssetPackageRouter extends Router {
     constructor(parent: Router) {
         super(parent.headers, `${parent.basePath}/package`)
     }

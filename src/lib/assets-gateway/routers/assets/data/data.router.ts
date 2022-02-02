@@ -5,7 +5,7 @@ import { Router } from '../../../../router'
 import { CallerRequestOptions, HTTPError, uploadBlob } from '../../../../utils'
 import { Asset } from '../interfaces'
 
-export class DataRouter extends Router {
+export class AssetDataRouter extends Router {
     constructor(parent: Router) {
         super(parent.headers, `${parent.basePath}/data`)
     }

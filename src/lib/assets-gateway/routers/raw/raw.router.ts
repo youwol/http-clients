@@ -1,20 +1,18 @@
 /** @format */
 
 import { Router } from '../../../router'
-import { DataRouter } from './data'
-import { FluxProjectRouter } from './flux-project'
-import { PackageRouter } from './package'
+import { RawDataRouter, RawFluxProjectRouter, RawPackageRouter } from './'
 
 export class RawRouter extends Router {
-    public readonly fluxProject: FluxProjectRouter
-    public readonly package: PackageRouter
-    public readonly data: DataRouter
+    public readonly fluxProject: RawFluxProjectRouter
+    public readonly package: RawPackageRouter
+    public readonly data: RawDataRouter
 
     constructor(parent: Router) {
         super(parent.headers, `${parent.basePath}/raw`)
 
-        this.fluxProject = new FluxProjectRouter(this)
-        this.package = new PackageRouter(this)
-        this.data = new DataRouter(this)
+        this.fluxProject = new RawFluxProjectRouter(this)
+        this.package = new RawPackageRouter(this)
+        this.data = new RawDataRouter(this)
     }
 }

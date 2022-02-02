@@ -6,7 +6,7 @@ import { Router } from '../../../../router'
 import { CallerRequestOptions, HTTPError } from '../../../../utils'
 import { FolderId } from '../../explorer'
 
-export class StoryRouter extends Router {
+export class AssetStoryRouter extends Router {
     constructor(parent: Router) {
         super(parent.headers, `${parent.basePath}/story`)
     }
