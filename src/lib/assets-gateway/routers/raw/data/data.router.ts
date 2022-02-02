@@ -1,12 +1,11 @@
 /** @format */
 
-import { Observable } from 'rxjs'
 import { Router } from '../../../../router'
 
 import {
     CallerRequestOptions,
     downloadBlob,
-    HTTPError,
+    HTTPResponse$,
 } from '../../../../utils'
 
 export class RawDataRouter extends Router {
@@ -23,7 +22,7 @@ export class RawDataRouter extends Router {
     download$(
         itemId: string,
         callerOptions: CallerRequestOptions = {},
-    ): Observable<Blob | HTTPError> {
+    ): HTTPResponse$<Blob> {
         return downloadBlob(
             `${this.basePath}/${itemId}`,
             itemId,

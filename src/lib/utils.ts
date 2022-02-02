@@ -23,6 +23,8 @@ export type CommandType =
     | 'delete'
     | 'query'
 
+export type HTTPResponse$<T> = Observable<T | HTTPError>
+
 export class HTTPError {
     constructor(public readonly status: number, public readonly body: Json) {}
 }

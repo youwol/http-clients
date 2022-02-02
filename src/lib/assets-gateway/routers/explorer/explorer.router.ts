@@ -13,7 +13,7 @@ import {
     ItemResponse,
     PermissionsResponse,
 } from './interfaces'
-import { CallerRequestOptions, HTTPError } from '../../../utils'
+import { CallerRequestOptions, HTTPError, HTTPResponse$ } from '../../../utils'
 import { Router } from '../../../router'
 
 export class GroupsRouter extends Router {
@@ -94,7 +94,7 @@ export class DrivesRouter extends Router {
     get$(
         driveId: string,
         callerOptions: CallerRequestOptions = {},
-    ): Observable<DriveResponse | HTTPError> {
+    ): HTTPResponse$<DriveResponse> {
         return this.send$({
             command: 'query',
             path: `/${driveId}`,
@@ -111,7 +111,7 @@ export class DrivesRouter extends Router {
     delete$(
         driveId: string,
         callerOptions: CallerRequestOptions = {},
-    ): Observable<Record<string, never> | HTTPError> {
+    ): HTTPResponse$<Record<string, never>> {
         return this.send$({
             command: 'delete',
             path: `/${driveId}`,
@@ -129,7 +129,7 @@ export class DrivesRouter extends Router {
     purge$(
         driveId: string,
         callerOptions: CallerRequestOptions = {},
-    ): Observable<{ foldersCount: number } | HTTPError> {
+    ): HTTPResponse$<{ foldersCount: number }> {
         return this.send$({
             command: 'delete',
             path: `/${driveId}/purge`,
@@ -149,7 +149,7 @@ export class DrivesRouter extends Router {
         driveId: string,
         body: { name: string },
         callerOptions: CallerRequestOptions = {},
-    ): Observable<DriveResponse | HTTPError> {
+    ): HTTPResponse$<DriveResponse> {
         return this.send$({
             command: 'update',
             path: `/${driveId}`,
@@ -166,7 +166,7 @@ export class DrivesRouter extends Router {
     queryDeletedItems$(
         driveId: string,
         callerOptions: CallerRequestOptions = {},
-    ): Observable<ChildrenFolderResponse | HTTPError> {
+    ): HTTPResponse$<ChildrenFolderResponse> {
         return this.send$({
             command: 'query',
             path: `/${driveId}/deleted`,
@@ -189,7 +189,7 @@ export class FoldersRouter extends Router {
     queryChildren$(
         folderId: string,
         callerOptions: CallerRequestOptions = {},
-    ): Observable<ChildrenFolderResponse | HTTPError> {
+    ): HTTPResponse$<ChildrenFolderResponse> {
         return this.send$({
             command: 'query',
             path: `/${folderId}/children`,
@@ -210,7 +210,7 @@ export class FoldersRouter extends Router {
         parentFolderId: string,
         body: { name: string },
         callerOptions: CallerRequestOptions = {},
-    ): Observable<FolderResponse | HTTPError> {
+    ): HTTPResponse$<FolderResponse> {
         return this.send$({
             command: 'create',
             path: `/${parentFolderId}`,
@@ -228,7 +228,7 @@ export class FoldersRouter extends Router {
     delete$(
         folderId: string,
         callerOptions: CallerRequestOptions = {},
-    ): Observable<Record<string, never> | HTTPError> {
+    ): HTTPResponse$<Record<string, never>> {
         return this.send$({
             command: 'delete',
             path: `/${folderId}`,
@@ -249,7 +249,7 @@ export class FoldersRouter extends Router {
         folderId: FolderId,
         body: { name: string },
         callerOptions: CallerRequestOptions = {},
-    ): Observable<FolderResponse | HTTPError> {
+    ): HTTPResponse$<FolderResponse> {
         return this.send$({
             command: 'update',
             path: `/${folderId}`,
@@ -274,7 +274,7 @@ export class ItemsRouter extends Router {
     get$(
         itemId: string,
         callerOptions: CallerRequestOptions = {},
-    ): Observable<ItemResponse | HTTPError> {
+    ): HTTPResponse$<ItemResponse> {
         return this.send$({
             command: 'query',
             path: `/${itemId}`,
@@ -292,7 +292,7 @@ export class ItemsRouter extends Router {
     delete$(
         itemId: string,
         callerOptions: CallerRequestOptions = {},
-    ): Observable<Record<string, never> | HTTPError> {
+    ): HTTPResponse$<Record<string, never>> {
         return this.send$({
             command: 'delete',
             path: `/${itemId}`,
@@ -323,7 +323,7 @@ export class ExplorerRouter extends Router {
      */
     getDefaultUserDrive$(
         callerOptions: CallerRequestOptions = {},
-    ): Observable<DefaultDriveResponse | HTTPError> {
+    ): HTTPResponse$<DefaultDriveResponse> {
         return this.send$({
             command: 'query',
             path: `/default-drive`,
@@ -344,7 +344,7 @@ export class ExplorerRouter extends Router {
         targetId: ItemId | FolderId,
         body: { destinationFolderId: FolderId | DriveId },
         callerOptions: CallerRequestOptions = {},
-    ): Observable<ItemResponse | HTTPError> {
+    ): HTTPResponse$<ItemResponse> {
         return this.send$({
             command: 'create',
             path: `/${targetId}/borrow`,
@@ -362,7 +362,7 @@ export class ExplorerRouter extends Router {
     getPermissions$(
         treeId: string,
         callerOptions: CallerRequestOptions = {},
-    ): Observable<PermissionsResponse | HTTPError> {
+    ): HTTPResponse$<PermissionsResponse> {
         return this.send$({
             command: 'query',
             path: `/${treeId}/permissions`,
@@ -382,7 +382,7 @@ export class ExplorerRouter extends Router {
         targetId: ItemId | FolderId,
         body: { destinationFolderId: FolderId | DriveId },
         callerOptions: CallerRequestOptions = {},
-    ): Observable<ChildrenFolderResponse | HTTPError> {
+    ): HTTPResponse$<ChildrenFolderResponse> {
         return this.send$({
             command: 'update',
             path: `/${targetId}/move`,

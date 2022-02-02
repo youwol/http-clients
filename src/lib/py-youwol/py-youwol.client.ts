@@ -1,7 +1,6 @@
 /** @format */
 
-import { Observable } from 'rxjs'
-import { CallerRequestOptions, HTTPError } from '../utils'
+import { CallerRequestOptions, HTTPResponse$ } from '../utils'
 import { RootRouter } from '../router'
 import { HealthzResponse } from './interfaces'
 import { AdminRouter } from './routers/admin.router'
@@ -29,7 +28,7 @@ export class PyYouwolClient extends RootRouter {
      */
     getHealthz$(
         callerOptions: CallerRequestOptions = {},
-    ): Observable<HealthzResponse | HTTPError> {
+    ): HTTPResponse$<HealthzResponse> {
         return this.send$({
             command: 'query',
             path: `/healthz`,

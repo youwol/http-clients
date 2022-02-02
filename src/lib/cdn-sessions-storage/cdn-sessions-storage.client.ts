@@ -1,6 +1,6 @@
 /** @format */
 
-import { CallerRequestOptions } from '../utils'
+import { CallerRequestOptions, HTTPResponse$ } from '../utils'
 import { RootRouter } from '../router'
 import { HealthzResponse } from './interfaces'
 import { ApplicationsRouter } from './routers'
@@ -27,7 +27,9 @@ export class CdnSessionsStorageClient extends RootRouter {
      * @param callerOptions
      * @returns response
      */
-    getHealthz$(callerOptions: CallerRequestOptions = {}) {
+    getHealthz$(
+        callerOptions: CallerRequestOptions = {},
+    ): HTTPResponse$<HealthzResponse> {
         return this.send$<HealthzResponse>({
             command: 'query',
             path: `/healthz`,

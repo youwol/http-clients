@@ -46,7 +46,7 @@ export class AssetsRouter extends Router {
     get$(
         assetId: string,
         callerOptions: CallerRequestOptions = {},
-    ): Observable<Asset | HTTPError> {
+    ): HTTPResponse$<Asset> {
         return this.send$({
             command: 'query',
             path: `/${assetId}`,
@@ -63,7 +63,7 @@ export class AssetsRouter extends Router {
     getAccess$(
         assetId: string,
         callerOptions: CallerRequestOptions = {},
-    ): Observable<AccessInfo | HTTPError> {
+    ): HTTPResponse$<AccessInfo> {
         return this.send$({
             command: 'query',
             path: `/${assetId}/access`,
@@ -84,7 +84,7 @@ export class AssetsRouter extends Router {
         groupId: string,
         body: AccessPolicyBody,
         callerOptions: CallerRequestOptions = {},
-    ): Observable<ExposingGroup | HTTPError> {
+    ): HTTPResponse$<ExposingGroup> {
         return this.send$({
             command: 'update',
             path: `/${assetId}/access/${groupId}`,
@@ -104,7 +104,7 @@ export class AssetsRouter extends Router {
         assetId: string,
         body: UpdateAssetBody,
         callerOptions: CallerRequestOptions = {},
-    ): Observable<Asset | HTTPError> {
+    ): HTTPResponse$<Asset> {
         return this.send$({
             command: 'update',
             path: `/${assetId}`,
@@ -126,7 +126,7 @@ export class AssetsRouter extends Router {
         pictureId: string,
         blob: Blob,
         callerOptions: CallerRequestOptions = {},
-    ): Observable<Asset | HTTPError> {
+    ): HTTPResponse$<Asset> {
         return uploadBlob(
             `${this.basePath}/${assetId}/images/${pictureId}`,
             pictureId,
@@ -148,7 +148,7 @@ export class AssetsRouter extends Router {
         assetId: string,
         pictureId: string,
         callerOptions: CallerRequestOptions = {},
-    ): Observable<Asset | HTTPError> {
+    ): HTTPResponse$<Asset> {
         return this.send$({
             command: 'delete',
             path: `/${assetId}/images/${pictureId}`,

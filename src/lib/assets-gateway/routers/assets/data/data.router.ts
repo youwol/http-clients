@@ -2,7 +2,12 @@
 
 import { Observable } from 'rxjs'
 import { Router } from '../../../../router'
-import { CallerRequestOptions, HTTPError, uploadBlob } from '../../../../utils'
+import {
+    CallerRequestOptions,
+    HTTPError,
+    HTTPResponse$,
+    uploadBlob,
+} from '../../../../utils'
 import { Asset } from '../interfaces'
 
 export class AssetDataRouter extends Router {
@@ -23,7 +28,7 @@ export class AssetDataRouter extends Router {
         fileName: string,
         blob: Blob,
         callerOptions: CallerRequestOptions = {},
-    ): Observable<Asset | HTTPError> {
+    ): HTTPResponse$<Asset> {
         return uploadBlob(
             `${this.basePath}/location/${folderId}`,
             fileName,

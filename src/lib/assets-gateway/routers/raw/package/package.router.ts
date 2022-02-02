@@ -1,8 +1,7 @@
 /** @format */
 
 import { Router } from '../../../../router'
-import { CallerRequestOptions, HTTPError } from '../../../../utils'
-import { Observable } from 'rxjs'
+import { CallerRequestOptions, HTTPResponse$ } from '../../../../utils'
 import { MetadataResponse } from './interface'
 
 export class RawPackageRouter extends Router {
@@ -19,7 +18,7 @@ export class RawPackageRouter extends Router {
     getMetadata$(
         rawId: string,
         callerOptions: CallerRequestOptions = {},
-    ): Observable<MetadataResponse | HTTPError> {
+    ): HTTPResponse$<MetadataResponse> {
         return this.send$({
             command: 'query',
             path: `/metadata/${rawId}`,
@@ -38,7 +37,7 @@ export class RawPackageRouter extends Router {
         rawId: string,
         restOfPath: string,
         callerOptions: CallerRequestOptions = {},
-    ): Observable<unknown | HTTPError> {
+    ): HTTPResponse$<Blob> {
         return this.send$({
             command: 'query',
             path: `/${rawId}/${restOfPath}`,

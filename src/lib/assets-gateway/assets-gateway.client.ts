@@ -6,6 +6,8 @@ import { CallerRequestOptions, HTTPError } from '../utils'
 import { AssetsRouter, ExplorerRouter, RawRouter } from './routers'
 import { RootRouter } from '../router'
 
+type HTTPResponse$<T> = Observable<T | HTTPError>
+
 export class AssetsGatewayClient extends RootRouter {
     public readonly explorer: ExplorerRouter
     public readonly assets: AssetsRouter
@@ -33,7 +35,7 @@ export class AssetsGatewayClient extends RootRouter {
      */
     getHealthz$(
         callerOptions: CallerRequestOptions = {},
-    ): Observable<HealthzResponse | HTTPError> {
+    ): HTTPResponse$<HealthzResponse> {
         return this.send$({
             command: 'query',
             path: `/healthz`,
@@ -49,7 +51,7 @@ export class AssetsGatewayClient extends RootRouter {
      */
     getUserInfo$(
         callerOptions: CallerRequestOptions = {},
-    ): Observable<UserInfoResponse | HTTPError> {
+    ): HTTPResponse$<UserInfoResponse> {
         return this.send$({
             command: 'query',
             path: `/user-info`,
@@ -64,7 +66,7 @@ export class AssetsGatewayClient extends RootRouter {
      */
     queryGroups(
         callerOptions: CallerRequestOptions = {},
-    ): Observable<GroupsResponse | HTTPError> {
+    ): HTTPResponse$<GroupsResponse> {
         return this.send$({
             command: 'query',
             path: `/groups`,

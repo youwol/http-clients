@@ -1,8 +1,7 @@
 /** @format */
 
-import { Observable } from 'rxjs'
 import { Router } from '../../../router'
-import { CallerRequestOptions, HTTPError, Json } from '../../../utils'
+import { CallerRequestOptions, HTTPResponse$, Json } from '../../../utils'
 
 export class ApplicationsRouter extends Router {
     constructor(parent: Router) {
@@ -23,7 +22,7 @@ export class ApplicationsRouter extends Router {
         dataName: string,
         body: Json,
         callerOptions: CallerRequestOptions = {},
-    ): Observable<Record<string, never> | HTTPError> {
+    ): HTTPResponse$<Record<string, never>> {
         return this.send$({
             command: 'upload',
             path: `/${packageName}/${dataName}`,
@@ -46,7 +45,7 @@ export class ApplicationsRouter extends Router {
         packageName: string,
         dataName: string,
         callerOptions: CallerRequestOptions = {},
-    ): Observable<Json | HTTPError> {
+    ): HTTPResponse$<Json> {
         return this.send$({
             command: 'download',
             path: `/${packageName}/${dataName}`,

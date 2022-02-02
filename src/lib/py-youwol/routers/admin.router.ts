@@ -1,8 +1,7 @@
 /** @format */
 
 import { Router } from '../../router'
-import { CallerRequestOptions } from '../../utils'
-import { Observable } from 'rxjs'
+import { CallerRequestOptions, HTTPResponse$ } from '../../utils'
 
 export class AdminRouter extends Router {
     public readonly customCommands: CustomCommandsRouter
@@ -26,7 +25,7 @@ export class CustomCommandsRouter extends Router {
     doGet$(
         name: string,
         callerOptions: CallerRequestOptions = {},
-    ): Observable<unknown> {
+    ): HTTPResponse$<unknown> {
         return this.send$({
             command: 'query',
             path: `/${name}`,

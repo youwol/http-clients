@@ -1,9 +1,8 @@
 /** @format */
 
-import { Observable } from 'rxjs'
 import { Asset } from '../../..'
 import { Router } from '../../../../router'
-import { CallerRequestOptions, HTTPError } from '../../../../utils'
+import { CallerRequestOptions, HTTPResponse$ } from '../../../../utils'
 import { FolderId } from '../../explorer'
 
 export class AssetStoryRouter extends Router {
@@ -24,7 +23,7 @@ export class AssetStoryRouter extends Router {
         folderId: FolderId,
         body: { storyId?: string; title: string },
         callerOptions: CallerRequestOptions = {},
-    ): Observable<Asset | HTTPError> {
+    ): HTTPResponse$<Asset> {
         return this.send$({
             command: 'create',
             path: `/location/${folderId}`,
