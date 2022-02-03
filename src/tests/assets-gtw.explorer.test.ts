@@ -8,6 +8,7 @@ import {
     AssetsGatewayClient,
     ChildrenFolderResponse,
     DefaultDriveResponse,
+    DeletedResponse,
     DriveResponse,
     DrivesResponse,
     FolderResponse,
@@ -18,7 +19,7 @@ import {
 } from '../lib/assets-gateway'
 import { mergeMap } from 'rxjs/operators'
 import { expectAttributes, resetPyYouwolDbs$ } from './common'
-import { raiseHTTPErrors, RequestEvent } from '../lib/utils'
+import { raiseHTTPErrors, RequestEvent } from '../lib'
 import { ReplaySubject } from 'rxjs'
 
 const assetsGtw = new AssetsGatewayClient()
@@ -322,7 +323,7 @@ test('assetsGtw.explorer.drives.queryDeletedItems$', (done) => {
     assetsGtw.explorer.drives
         .queryDeletedItems$(defaultDriveId)
         .pipe(raiseHTTPErrors())
-        .subscribe((resp: ChildrenFolderResponse) => {
+        .subscribe((resp: DeletedResponse) => {
             expect(resp.items).toHaveLength(1)
             expect(resp.folders).toHaveLength(1)
             done()

@@ -4,6 +4,7 @@ import { Observable } from 'rxjs'
 import {
     ChildrenFolderResponse,
     DefaultDriveResponse,
+    DeletedResponse,
     DriveId,
     DriveResponse,
     DrivesResponse,
@@ -166,7 +167,7 @@ export class DrivesRouter extends Router {
     queryDeletedItems$(
         driveId: string,
         callerOptions: CallerRequestOptions = {},
-    ): HTTPResponse$<ChildrenFolderResponse> {
+    ): HTTPResponse$<DeletedResponse> {
         return this.send$({
             command: 'query',
             path: `/${driveId}/deleted`,

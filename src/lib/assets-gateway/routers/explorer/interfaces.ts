@@ -44,6 +44,19 @@ export interface ChildrenFolderResponse {
     items: ItemResponse[]
 }
 
+export interface DeletedResponse {
+    folders: FolderResponse[]
+    items: DeletedItemResponse[]
+}
+
+export interface DeletedItemResponse {
+    itemId: string
+    name: string
+    folderId: string
+    type: string
+    metadata: string
+}
+
 export interface ItemResponse {
     name: string
     treeId: string
