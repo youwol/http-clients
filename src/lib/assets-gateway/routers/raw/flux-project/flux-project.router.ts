@@ -39,7 +39,7 @@ export class RawFluxProjectRouter extends Router {
         body: {
             name?: string
             description?: string
-            libraries?: Record<string, string>
+            libraries?: { [_k: string]: string }
         },
         callerOptions: CallerRequestOptions = {},
     ): HTTPResponse$<Record<string, never>> {
