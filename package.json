@@ -13,8 +13,8 @@
   "scripts": {
     "doc": "typedoc src/ --exclude src/index.ts --exclude src/tests --out dist/docs --theme default",
     "build": "yarn build:dev",
-    "build:dev": "webpack --mode development",
-    "build:prod": "webpack --mode production",
+    "build:dev": "del-cli dist && del-cli dist &&webpack --mode development",
+    "build:prod": "del-cli dist && webpack --mode production",
     "create-test-env": ". ./src/tests/yw_config/create-env.sh",
     "start-test-env": "( . ./src/tests/yw_config/.yw_test_env/bin/activate && cd ./src/tests/yw_config/ && youwol --conf=yw_config.py)",
     "test": "jest -c ./jest.config.js --rootDir . -i",
