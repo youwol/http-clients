@@ -8,7 +8,7 @@
     "flux"
   ],
   "license": "MIT",
-  "main": "dist/@youwol/platform-essentials.js",
+  "main": "dist/@youwol/http-clients.js",
   "types": "src/index.ts",
   "scripts": {
     "doc": "typedoc src/ --exclude src/index.ts --exclude src/tests --out dist/docs --theme default",
