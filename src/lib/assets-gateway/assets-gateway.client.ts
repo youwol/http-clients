@@ -1,12 +1,9 @@
 /** @format */
 
-import { Observable } from 'rxjs'
 import { GroupsResponse, HealthzResponse, UserInfoResponse } from './interfaces'
-import { CallerRequestOptions, HTTPError } from '../utils'
+import { CallerRequestOptions, HTTPResponse$ } from '../utils'
 import { AssetsRouter, ExplorerRouter, RawRouter } from './routers'
 import { RootRouter } from '../router'
-
-type HTTPResponse$<T> = Observable<T | HTTPError>
 
 export class AssetsGatewayClient extends RootRouter {
     public readonly explorer: ExplorerRouter
