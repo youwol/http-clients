@@ -4,6 +4,10 @@
     <exclude-output />
     <content url="file://$MODULE_DIR$">
       <excludeFolder url="file://$MODULE_DIR$/src/tests/yw_config/.yw_test_env" />
+      <excludeFolder url="file://$MODULE_DIR$/src/tests/yw_config/databases/docdb" />
+      <excludeFolder url="file://$MODULE_DIR$/src/tests/yw_config/databases/storage" />
+      <excludeFolder url="file://$MODULE_DIR$/src/tests/yw_config/youwol_system/node_modules" />
+      <excludeFolder url="file://$MODULE_DIR$/coverage" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
