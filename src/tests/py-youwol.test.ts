@@ -4,8 +4,8 @@
 /* eslint-disable jest/no-done-callback -- eslint-comment Find a good way to work with rxjs in jest */
 import './mock-requests'
 
-import { resetPyYouwolDbs$ } from './common'
-import { raiseHTTPErrors } from '../lib/utils'
+import { expectAttributes, resetPyYouwolDbs$ } from './common'
+import { raiseHTTPErrors } from '../lib'
 import { PyYouwolClient } from '../lib/py-youwol'
 
 const pyYouwol = new PyYouwolClient()
@@ -22,6 +22,17 @@ test('query healthz', (done) => {
         .pipe(raiseHTTPErrors())
         .subscribe((resp) => {
             expect(resp.status).toBe('py-youwol ok')
+            done()
+        })
+})
+
+test('login', (done) => {
+    pyYouwol.admin.environment
+        .login$({ email: 'int_tests_yw-users_bis@test-user' })
+        .pipe(raiseHTTPErrors())
+        .subscribe((resp) => {
+            expectAttributes(resp, ['id', 'name', 'email', 'memberOf'])
+            expect(resp.name).toBe('int_tests_yw-users_bis@test-user')
             done()
         })
 })
