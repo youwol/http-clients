@@ -1,6 +1,6 @@
 /** @format */
 
-import './mock-requests'
+import '../mock-requests'
 // eslint-disable-next-line eslint-comments/disable-enable-pair -- to not have problem
 /* eslint-disable jest/no-done-callback -- eslint-comment Find a good way to work with rxjs in jest */
 import {
@@ -16,10 +16,10 @@ import {
     HealthzResponse,
     ItemResponse,
     PermissionsResponse,
-} from '../lib/assets-gateway'
+} from '../../lib/assets-gateway'
 import { mergeMap } from 'rxjs/operators'
-import { expectAttributes, resetPyYouwolDbs$ } from './common'
-import { raiseHTTPErrors, RequestEvent } from '../lib'
+import { expectAttributes, resetPyYouwolDbs$ } from '../common'
+import { raiseHTTPErrors, RequestEvent } from '../../lib'
 import { ReplaySubject } from 'rxjs'
 
 const assetsGtw = new AssetsGatewayClient()
