@@ -3,11 +3,11 @@
 // eslint-disable-next-line eslint-comments/disable-enable-pair -- to not have problem
 /* eslint-disable jest/no-done-callback -- eslint-comment Find a good way to work with rxjs in jest */
 
-import './mock-requests'
-import { CdnSessionsStorageClient } from '../lib/cdn-sessions-storage'
+import '../mock-requests'
+import { CdnSessionsStorageClient } from '../../lib/cdn-sessions-storage'
 
-import { resetPyYouwolDbs$ } from './common'
-import { Json, raiseHTTPErrors } from '../lib/utils'
+import { resetPyYouwolDbs$ } from '../common'
+import { Json, raiseHTTPErrors } from '../../lib'
 
 const storage = new CdnSessionsStorageClient()
 
