@@ -947,6 +947,11 @@
   resolved "https://registry.yarnpkg.com/@xtuc/long/-/long-4.2.2.tgz#d291c6a4e97989b5c61d9acf396ae4fe133a718d"
   integrity sha512-NuHqBY1PB/D8xU6s/thBgOAiAP7HOYDQ32+BFZILJ8ivkUkAHQnWfn6WhL79Owj1qmUnoN/YPhktdIoucipkAQ==
 
+"@youwol/cdn-client@^0.0.11":
+  version "0.0.11"
+  resolved "https://registry.yarnpkg.com/@youwol/cdn-client/-/cdn-client-0.0.11.tgz#f8cb2e84a84c048e3162f9ee1f57f85cd352e55e"
+  integrity sha512-wKYCtpBtbPg8QqYSP6XFUdbnx+M55ZIG8H+psRRNYY4ECaSeG8alVaZk+ue6OZFBQShM1tGZm2d88QQ7nOyeOA==
+
 abab@^2.0.3, abab@^2.0.5:
   version "2.0.5"
   resolved "https://registry.yarnpkg.com/abab/-/abab-2.0.5.tgz#c0b678fb32d60fc1219c784d6a826fe385aeb79a"
