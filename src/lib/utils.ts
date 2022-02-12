@@ -1,6 +1,6 @@
 /** @format */
 
-import { Observable, of, ReplaySubject, Subject } from 'rxjs'
+import { Observable, of, OperatorFunction, ReplaySubject, Subject } from 'rxjs'
 import { filter, map, mergeMap, tap } from 'rxjs/operators'
 
 export interface JsonMap {
@@ -29,9 +29,7 @@ export class HTTPError {
     constructor(public readonly status: number, public readonly body: Json) {}
 }
 
-export function muteHTTPErrors<T>(): (
-    src: Observable<T | HTTPError>,
-) => Observable<T> {
+export function muteHTTPErrors<T>(): OperatorFunction<T | HTTPError, T> {
     return (source$: Observable<T | HTTPError>) => {
         return source$.pipe(
             filter((resp: T | HTTPError) => !(resp instanceof HTTPError)),
@@ -40,9 +38,7 @@ export function muteHTTPErrors<T>(): (
     }
 }
 
-export function raiseHTTPErrors<T>(): (
-    src: Observable<T | HTTPError>,
-) => Observable<T> {
+export function raiseHTTPErrors<T>(): OperatorFunction<T | HTTPError, T> {
     return (source$: Observable<T | HTTPError>) => {
         return source$.pipe(
             tap((resp: T | HTTPError) => {
@@ -57,7 +53,7 @@ export function raiseHTTPErrors<T>(): (
 
 export function dispatchHTTPErrors<T>(
     error$: Subject<HTTPError>,
-): (src: Observable<T | HTTPError>) => Observable<T> {
+): OperatorFunction<T | HTTPError, T> {
     return (source$: Observable<T | HTTPError>) => {
         return source$.pipe(
             tap((resp: T | HTTPError) => {
@@ -73,7 +69,7 @@ export function dispatchHTTPErrors<T>(
 
 export function onHTTPErrors<T, V>(
     fct: (error: HTTPError) => V,
-): (src: Observable<T | HTTPError>) => Observable<T | V> {
+): OperatorFunction<T | HTTPError, T | V> {
     return (source$: Observable<T | HTTPError>) => {
         return source$.pipe(
             map((resp: T | HTTPError) => {
