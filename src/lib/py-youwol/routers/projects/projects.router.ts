@@ -4,9 +4,11 @@ import { Router } from '../../../router'
 import { CallerRequestOptions, HTTPResponse$ } from '../../../utils'
 import { ContextMessage$, filterCtxMessage } from '../../../ws-utils'
 import {
+    ArtifactsResponse,
     PipelineStatusResponse,
     PipelineStepStatusResponse,
     ProjectsLoadingResults,
+    ProjectStatusResponse,
 } from './interfaces'
 
 class WebSocketAPI {
@@ -84,6 +86,29 @@ export class ProjectsRouter extends Router {
         return this.send$({
             command: 'query',
             path: `/status`,
+            callerOptions,
+        })
+    }
+
+    getProjectStatus$(
+        projectId: string,
+        callerOptions: CallerRequestOptions = {},
+    ): HTTPResponse$<ProjectStatusResponse> {
+        return this.send$({
+            command: 'query',
+            path: `/${projectId}`,
+            callerOptions,
+        })
+    }
+
+    getArtifacts$(
+        projectId: string,
+        flowId: string,
+        callerOptions: CallerRequestOptions = {},
+    ): HTTPResponse$<ArtifactsResponse> {
+        return this.send$({
+            command: 'query',
+            path: `/${projectId}/flows/${flowId}/artifacts`,
             callerOptions,
         })
     }

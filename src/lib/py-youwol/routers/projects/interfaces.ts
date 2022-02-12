@@ -56,6 +56,24 @@ export interface ProjectsLoadingResults {
     results: (Project | Failure)[]
 }
 
+export interface ChildToParentConnections {
+    id: string
+    parentIds: string[]
+}
+
+export interface DependenciesResponse {
+    above: string[]
+    below: string[]
+    dag: ChildToParentConnections[]
+    simpleDag: ChildToParentConnections[]
+}
+
+export interface ProjectStatusResponse {
+    projectId: string
+    projectName: string
+    workspaceDependencies: DependenciesResponse[]
+}
+
 export interface ArtifactResponse {
     id: string
     path: string
@@ -89,4 +107,8 @@ export interface PipelineStepStatusResponse {
 export interface PipelineStatusResponse {
     projectId: string
     steps: PipelineStepStatusResponse[]
+}
+
+export interface ArtifactsResponse {
+    artifacts: ArtifactResponse[]
 }
