@@ -8,10 +8,13 @@ import { ContextMessage$, filterCtxMessage } from '../../../ws-utils'
 class WebSocketAPI {
     constructor(public readonly ws$: () => ContextMessage$<unknown>) {}
 
-    status$(): ContextMessage$<EnvironmentStatusResponse> {
+    status$(
+        filters: { profile?: string } = {},
+    ): ContextMessage$<EnvironmentStatusResponse> {
         return this.ws$().pipe(
             filterCtxMessage<EnvironmentStatusResponse>({
                 withLabels: ['EnvironmentStatusResponse'],
+                withAttributes: filters,
             }),
         )
     }
