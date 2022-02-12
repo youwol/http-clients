@@ -175,20 +175,34 @@ export interface NativeRequestOptions extends RequestInit {
     json?: unknown
 }
 
-export function requestToJson$<T = unknown>(request: Request) {
+export function request$<T = unknown>(request: Request) {
     return new Observable<T>((observer) => {
         fetch(request)
             .then((response) => {
-                return response
-                    .json()
-                    .then((data) =>
-                        response.ok
+                const contentType = response.headers.get('content-type')
+
+                if (contentType == 'application/json') {
+                    return response.json().then((data) => {
+                        return response.ok
                             ? data
-                            : new HTTPError(response.status, data),
-                    )
+                            : new HTTPError(response.status, data as Json)
+                    })
+                }
+                if (contentType.startsWith('text/')) {
+                    return response.text().then((data) => {
+                        return response.ok
+                            ? data
+                            : new HTTPError(response.status, { text: data })
+                    })
+                }
+                return response.blob().then((data) => {
+                    return response.ok
+                        ? data
+                        : new HTTPError(response.status, {})
+                })
             }) // or text() or blob() etc.
             .then((data) => {
-                observer.next(data)
+                observer.next(data as T)
                 observer.complete()
             })
             .catch((err) => observer.error(err))
@@ -215,7 +229,7 @@ export function send$<T>(
     const request = new Request(path, nativeOptions)
 
     if (!channels$) {
-        return requestToJson$(request)
+        return request$(request)
     }
 
     const follower = new RequestFollower({
@@ -226,7 +240,7 @@ export function send$<T>(
 
     return of({}).pipe(
         tap(() => follower.start(1)),
-        mergeMap(() => requestToJson$(request)),
+        mergeMap(() => request$(request)),
         tap(() => follower.end()),
     ) as Observable<T | HTTPError>
 }
