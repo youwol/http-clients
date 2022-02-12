@@ -49,10 +49,10 @@ export interface K8sInstance {
 }
 
 export interface YouwolEnvironment {
-    available_profiles: string[]
-    http_port: number
-    openid_host: string
-    active_profile?: string
+    availableProfiles: string[]
+    httpPort: number
+    openidHost: string
+    activeProfile?: string
 
     commands: { [key: string]: Command }
 
