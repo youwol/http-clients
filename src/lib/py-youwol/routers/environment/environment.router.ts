@@ -63,4 +63,30 @@ export class EnvironmentRouter extends Router {
             callerOptions,
         })
     }
+
+    switchProfile$(
+        body: { active: string },
+        callerOptions: CallerRequestOptions = {},
+    ): HTTPResponse$<EnvironmentStatusResponse> {
+        return this.send$({
+            command: 'update',
+            path: `/configuration/profiles/active`,
+            nativeRequestOptions: {
+                method: 'PUT',
+                json: body,
+            },
+            callerOptions,
+        })
+    }
+
+    reloadConfig$(callerOptions: CallerRequestOptions = {}) {
+        return this.send$({
+            command: 'update',
+            path: `/configuration`,
+            nativeRequestOptions: {
+                method: 'POST',
+            },
+            callerOptions,
+        })
+    }
 }
