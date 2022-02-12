@@ -20,18 +20,46 @@ class WebSocketAPI {
         )
     }
 
-    pipelineStatus$(): ContextMessage$<PipelineStatusResponse> {
+    projectStatus$(
+        filters: { projectId?: string } = {},
+    ): ContextMessage$<ProjectStatusResponse> {
         return this.ws$().pipe(
-            filterCtxMessage<PipelineStatusResponse>({
-                withLabels: ['PipelineStatusResponse'],
+            filterCtxMessage<ProjectStatusResponse>({
+                withLabels: ['ProjectStatusResponse'],
+                withAttributes: filters,
             }),
         )
     }
 
-    stepStatus$(): ContextMessage$<PipelineStepStatusResponse> {
+    pipelineStatus$(
+        filters: { projectId?: string; flowId?: string } = {},
+    ): ContextMessage$<PipelineStatusResponse> {
+        return this.ws$().pipe(
+            filterCtxMessage<PipelineStatusResponse>({
+                withLabels: ['PipelineStatusResponse'],
+                withAttributes: filters,
+            }),
+        )
+    }
+
+    stepStatus$(
+        filters: { projectId?: string; flowId?: string; stepId?: string } = {},
+    ): ContextMessage$<PipelineStepStatusResponse> {
         return this.ws$().pipe(
             filterCtxMessage<PipelineStepStatusResponse>({
                 withLabels: ['PipelineStepStatusResponse'],
+                withAttributes: filters,
+            }),
+        )
+    }
+
+    artifacts$(
+        filters: { projectId?: string; flowId?: string } = {},
+    ): ContextMessage$<ArtifactsResponse> {
+        return this.ws$().pipe(
+            filterCtxMessage<PipelineStepStatusResponse>({
+                withLabels: ['ArtifactsResponse'],
+                withAttributes: filters,
             }),
         )
     }
