@@ -5,10 +5,11 @@
 import '../mock-requests'
 
 import { expectAttributes, resetPyYouwolDbs$ } from '../common'
-import { raiseHTTPErrors } from '../../lib'
+import { onHTTPErrors, raiseHTTPErrors } from '../../lib'
 import { PyYouwolClient } from '../../lib/py-youwol'
-import { take } from 'rxjs/operators'
+import { mergeMap, take } from 'rxjs/operators'
 import { combineLatest } from 'rxjs'
+import { expectEnvironment } from './utils'
 
 const pyYouwol = new PyYouwolClient()
 
@@ -36,24 +37,45 @@ test('pyYouwol.admin.environment.status', (done) => {
     ])
         .pipe(take(1))
         .subscribe(([respHttp, respWs]) => {
-            expectAttributes(respHttp, [
-                'configuration',
-                'users',
-                'userInfo',
-                'remoteGatewayInfo',
-                'remotesInfo',
-            ])
-            expectAttributes(respHttp.configuration, [
-                'availableProfiles',
-                'httpPort',
-                'openidHost',
-                'commands',
-                'userEmail',
-                'selectedRemote',
-                'pathsBook',
-            ])
+            expectEnvironment(respHttp)
 
             expect(respHttp).toEqual(respWs.data)
+            done()
+        })
+})
+
+test('pyYouwol.admin.environment.switchProfile', (done) => {
+    combineLatest([
+        pyYouwol.admin.environment.switchProfile$({ active: 'default' }).pipe(
+            onHTTPErrors(() => ({})),
+            mergeMap(() =>
+                pyYouwol.admin.environment.switchProfile$({
+                    active: 'profile-1',
+                }),
+            ),
+            raiseHTTPErrors(),
+        ),
+        pyYouwol.admin.environment.webSocket.status$({ profile: 'profile-1' }),
+    ])
+        .pipe(take(1))
+        .subscribe(([respHttp, respWs]) => {
+            expect(respHttp.configuration.activeProfile).toBe('profile-1')
+            expect(respWs.data.configuration.activeProfile).toBe('profile-1')
+            expectEnvironment(respHttp)
+            expectEnvironment(respWs.data)
+            done()
+        })
+})
+
+test('pyYouwol.admin.environment.reloadConfig', (done) => {
+    combineLatest([
+        pyYouwol.admin.environment.reloadConfig$().pipe(raiseHTTPErrors()),
+        pyYouwol.admin.environment.webSocket.status$(),
+    ])
+        .pipe(take(1))
+        .subscribe(([respHttp, respWs]) => {
+            expectEnvironment(respHttp)
+            expectEnvironment(respWs.data)
             done()
         })
 })
