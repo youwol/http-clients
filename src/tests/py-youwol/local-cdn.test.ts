@@ -14,7 +14,7 @@ import { PyYouwolClient } from '../../lib/py-youwol'
 import { mergeMap, reduce, take, tap } from 'rxjs/operators'
 import { combineLatest, from } from 'rxjs'
 import { Client, install } from '@youwol/cdn-client'
-import { expectUpdateStatus } from './utils'
+import { expectDownloadEvents$, expectUpdateStatus } from './utils'
 
 const pyYouwol = new PyYouwolClient()
 
@@ -91,10 +91,9 @@ test('install & pyYouwol.admin.local-cdn.collectUpdates', (done) => {
 
 test('download', (done) => {
     Client.HostName = getPyYouwolBasePath()
-    const events = []
-    pyYouwol.admin.localCdn.webSocket.packageEvent$().subscribe((event) => {
-        events.push(event)
-    })
+
+    expectDownloadEvents$(pyYouwol).subscribe(() => done())
+
     pyYouwol.admin.localCdn
         .download$({
             packages: [
@@ -114,6 +113,5 @@ test('download', (done) => {
         .subscribe((respWs) => {
             expect(respWs).toBeTruthy()
             expectUpdateStatus(respWs.data)
-            done()
         })
 })
