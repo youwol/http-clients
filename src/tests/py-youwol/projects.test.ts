@@ -11,9 +11,11 @@ import { expand, map, mapTo, mergeMap, reduce, take, tap } from 'rxjs/operators'
 import { combineLatest, Observable, of } from 'rxjs'
 import { btoa } from 'buffer'
 import {
+    expectArtifacts$,
     expectBuildStep,
     expectFlowStatus,
     expectInitStep,
+    expectPipelineStepEvents$,
     expectProjectsStatus,
     expectProjectStatus,
     expectPublishLocal,
@@ -117,20 +119,9 @@ test('pyYouwol.admin.projects.runStep', (done) => {
         { step: 'publish-remote', expectTests: expectPublishRemote },
     ]
 
-    const ensureArtifacts$ = combineLatest([
-        pyYouwol.admin.projects
-            .getArtifacts$(projectId, 'prod')
-            .pipe(raiseHTTPErrors()),
-        pyYouwol.admin.projects.webSocket.artifacts$({ projectId }),
-    ]).pipe(
-        tap(([respHttp, respWs]) => {
-            expectAttributes(respHttp, ['artifacts'])
-            expect(respHttp.artifacts).toHaveLength(1)
-            expect(respHttp.artifacts[0].id).toBe('dist')
-            expectAttributes(respWs.attributes, ['projectId', 'flowId'])
-            expect(respWs.data).toEqual(respHttp)
-        }),
-    )
+    expectPipelineStepEvents$(pyYouwol).subscribe(() => {
+        done()
+    })
 
     of(0)
         .pipe(
@@ -144,10 +135,10 @@ test('pyYouwol.admin.projects.runStep', (done) => {
             take(4),
             reduce((acc, e) => [acc, e], []),
             mergeMap(() => {
-                return ensureArtifacts$
+                return expectArtifacts$(pyYouwol, projectId)
             }),
         )
         .subscribe(() => {
-            done()
+            /* no op */
         })
 })

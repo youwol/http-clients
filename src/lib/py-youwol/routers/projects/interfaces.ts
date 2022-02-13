@@ -112,3 +112,10 @@ export interface PipelineStatusResponse {
 export interface ArtifactsResponse {
     artifacts: ArtifactResponse[]
 }
+
+export interface PipelineStepEvent {
+    projectId: string
+    flowId: string
+    stepId: string
+    event: 'runStarted' | 'runDone' | 'statusCheckStarted' | 'statusCheckDone'
+}

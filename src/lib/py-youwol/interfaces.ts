@@ -15,6 +15,7 @@ export type Label =
     | 'EnvironmentStatusResponse'
     | 'PipelineStatusResponse'
     | 'PipelineStepStatusResponse'
+    | 'PipelineStepEvent'
     | 'ProjectStatusResponse'
     | 'PackageDownloading'
     | 'ArtifactsResponse'

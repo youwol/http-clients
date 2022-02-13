@@ -1,6 +1,10 @@
 /** @format */
 
 import { expectAttributes } from '../common'
+import { map, reduce, take, tap } from 'rxjs/operators'
+import { PyYouwolClient } from '../../lib/py-youwol'
+import { combineLatest } from 'rxjs'
+import { raiseHTTPErrors } from '../../lib'
 
 /** @format */
 
@@ -110,4 +114,60 @@ export function expectUpdateStatus(resp) {
     ])
     expectAttributes(resp.localVersionInfo, ['version', 'fingerprint'])
     expectAttributes(resp.remoteVersionInfo, ['version', 'fingerprint'])
+}
+
+export function expectPipelineStepEvents$(pyYouwol: PyYouwolClient) {
+    return pyYouwol.admin.projects.webSocket.stepEvent$().pipe(
+        map((ev) => ev.data),
+        take(8),
+        reduce((acc, e) => [...acc, e], []),
+        tap((events) => {
+            expect(events).toHaveLength(8)
+            expect(events.filter((ev) => ev.stepId == 'init')).toHaveLength(2)
+            expect(events.filter((ev) => ev.stepId == 'build')).toHaveLength(2)
+            expect(
+                events.filter((ev) => ev.stepId == 'publish-local'),
+            ).toHaveLength(2)
+            expect(
+                events.filter((ev) => ev.stepId == 'publish-remote'),
+            ).toHaveLength(2)
+            expect(
+                events.filter((ev) => ev.event == 'runStarted'),
+            ).toHaveLength(4)
+            expect(events.filter((ev) => ev.event == 'runDone')).toHaveLength(4)
+        }),
+    )
+}
+
+export function expectArtifacts$(pyYouwol: PyYouwolClient, projectId: string) {
+    return combineLatest([
+        pyYouwol.admin.projects
+            .getArtifacts$(projectId, 'prod')
+            .pipe(raiseHTTPErrors()),
+        pyYouwol.admin.projects.webSocket.artifacts$({ projectId }),
+    ]).pipe(
+        tap(([respHttp, respWs]) => {
+            expectAttributes(respHttp, ['artifacts'])
+            expect(respHttp.artifacts).toHaveLength(1)
+            expect(respHttp.artifacts[0].id).toBe('dist')
+            expectAttributes(respWs.attributes, ['projectId', 'flowId'])
+            expect(respWs.data).toEqual(respHttp)
+        }),
+    )
+}
+
+export function expectDownloadEvents$(pyYouwol: PyYouwolClient) {
+    return pyYouwol.admin.localCdn.webSocket.packageEvent$().pipe(
+        take(4),
+        map((ev) => ev.data.event),
+        reduce((acc, e) => [...acc, e], []),
+        tap((events) => {
+            expect(events).toEqual([
+                'downloadStarted',
+                'downloadDone',
+                'updateCheckStarted',
+                'updateCheckDone',
+            ])
+        }),
+    )
 }

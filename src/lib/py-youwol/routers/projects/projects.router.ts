@@ -6,6 +6,7 @@ import { ContextMessage$, filterCtxMessage } from '../../../ws-utils'
 import {
     ArtifactsResponse,
     PipelineStatusResponse,
+    PipelineStepEvent,
     PipelineStepStatusResponse,
     ProjectsLoadingResults,
     ProjectStatusResponse,
@@ -61,6 +62,17 @@ class WebSocketAPI {
         return this.ws$().pipe(
             filterCtxMessage<PipelineStepStatusResponse>({
                 withLabels: ['ArtifactsResponse'],
+                withAttributes: filters,
+            }),
+        )
+    }
+
+    stepEvent$(
+        filters: { packageName?: string; packageVersion?: string } = {},
+    ): ContextMessage$<PipelineStepEvent> {
+        return this.ws$().pipe(
+            filterCtxMessage<PipelineStepEvent>({
+                withLabels: ['PipelineStepEvent'],
                 withAttributes: filters,
             }),
         )
