@@ -10,6 +10,14 @@
         "/youwol-users"
       ],
       "email": "int_tests_yw-users@test-user"
+    },
+    "int_tests_yw-users_bis@test-user": {
+      "id": "eea5c7c0-040c-45f2-8688-d9b90f4196ef",
+      "name": "int_tests_yw-users_bis@test-user",
+      "memberOf": [
+        "/youwol-users"
+      ],
+      "email": "int_tests_yw-users_bis@test-user"
     }
   }
 }
