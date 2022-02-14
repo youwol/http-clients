@@ -97,14 +97,17 @@ test('pyYouwol.admin.projects.flowStatus', (done) => {
         })
 })
 
-function run$(stepId: string): Observable<PipelineStepStatusResponse> {
+function run$(
+    stepId: string,
+    expectedCount: number,
+): Observable<PipelineStepStatusResponse> {
     return combineLatest([
         pyYouwol.admin.projects
             .runStep$(btoa(projectName), 'prod', stepId)
             .pipe(raiseHTTPErrors()),
         pyYouwol.admin.projects.webSocket.stepStatus$().pipe(
             map((d) => d.data),
-            take(4),
+            take(expectedCount),
             reduce((acc, e) => [...acc, e], []),
         ),
     ]).pipe(map(([_, respWs]) => respWs.find((step) => step.stepId == stepId)))
@@ -113,10 +116,22 @@ function run$(stepId: string): Observable<PipelineStepStatusResponse> {
 test('pyYouwol.admin.projects.runStep', (done) => {
     const projectId = btoa(projectName)
     const data = [
-        { step: 'init', expectTests: expectInitStep },
-        { step: 'build', expectTests: expectBuildStep },
-        { step: 'publish-local', expectTests: expectPublishLocal },
-        { step: 'publish-remote', expectTests: expectPublishRemote },
+        { step: 'init', expectTests: expectInitStep, expectedRefreshCount: 4 },
+        {
+            step: 'build',
+            expectTests: expectBuildStep,
+            expectedRefreshCount: 3,
+        },
+        {
+            step: 'publish-local',
+            expectTests: expectPublishLocal,
+            expectedRefreshCount: 2,
+        },
+        {
+            step: 'publish-remote',
+            expectTests: expectPublishRemote,
+            expectedRefreshCount: 1,
+        },
     ]
 
     expectPipelineStepEvents$(pyYouwol).subscribe(() => {
@@ -126,8 +141,8 @@ test('pyYouwol.admin.projects.runStep', (done) => {
     of(0)
         .pipe(
             expand((i) => {
-                const { step, expectTests } = data[i]
-                return run$(step).pipe(
+                const { step, expectTests, expectedRefreshCount } = data[i]
+                return run$(step, expectedRefreshCount).pipe(
                     tap((stepResp) => expectTests(stepResp)),
                     mapTo(i + 1),
                 )
