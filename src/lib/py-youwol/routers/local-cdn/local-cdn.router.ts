@@ -9,14 +9,14 @@ import {
 } from './interfaces'
 import { Router } from '../../../router'
 import { CallerRequestOptions, HTTPResponse$ } from '../../../utils'
-import { ContextMessage$, filterCtxMessage } from '../../../ws-utils'
+import { filterCtxMessage, WebSocketResponse$ } from '../../../ws-utils'
 
 class WebSocketAPI {
-    constructor(public readonly ws$: () => ContextMessage$<unknown>) {}
+    constructor(public readonly ws$: () => WebSocketResponse$<unknown>) {}
 
     updateStatus$(
         filters: { packageName?: string; packageVersion?: string } = {},
-    ): ContextMessage$<CheckUpdateResponse> {
+    ): WebSocketResponse$<CheckUpdateResponse> {
         return this.ws$().pipe(
             filterCtxMessage<CheckUpdateResponse>({
                 withLabels: ['CheckUpdateResponse'],
@@ -25,7 +25,7 @@ class WebSocketAPI {
         )
     }
 
-    updatesStatus$(): ContextMessage$<CheckUpdatesResponse> {
+    updatesStatus$(): WebSocketResponse$<CheckUpdatesResponse> {
         return this.ws$().pipe(
             filterCtxMessage<CheckUpdatesResponse>({
                 withLabels: ['CheckUpdatesResponse'],
@@ -35,7 +35,7 @@ class WebSocketAPI {
 
     downloadedPackage$(
         filters: { packageName?: string; packageVersion?: string } = {},
-    ): ContextMessage$<DownloadedPackageResponse> {
+    ): WebSocketResponse$<DownloadedPackageResponse> {
         return this.ws$().pipe(
             filterCtxMessage<DownloadedPackageResponse>({
                 withLabels: ['DownloadedPackageResponse'],
@@ -46,7 +46,7 @@ class WebSocketAPI {
 
     packageEvent$(
         filters: { packageName?: string; packageVersion?: string } = {},
-    ): ContextMessage$<PackageEvent> {
+    ): WebSocketResponse$<PackageEvent> {
         return this.ws$().pipe(
             filterCtxMessage<PackageEvent>({
                 withLabels: ['PackageEvent'],
@@ -59,7 +59,7 @@ class WebSocketAPI {
 export class LocalCdnRouter extends Router {
     webSocket: WebSocketAPI
 
-    constructor(parent: Router, ws$: () => ContextMessage$<unknown>) {
+    constructor(parent: Router, ws$: () => WebSocketResponse$<unknown>) {
         super(parent.headers, `${parent.basePath}/local-cdn`)
         this.webSocket = new WebSocketAPI(ws$)
     }

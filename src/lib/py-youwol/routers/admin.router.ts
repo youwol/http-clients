@@ -4,7 +4,7 @@ import { Router } from '../../router'
 import { EnvironmentRouter } from './environment/environment.router'
 import { CustomCommandsRouter } from './custom-commands/custom-commands.router'
 import { ProjectsRouter } from './projects/projects.router'
-import { ContextMessage$ } from '../../ws-utils'
+import { WebSocketResponse$ } from '../../ws-utils'
 import { SystemRouter } from './system/system.router'
 import { LocalCdnRouter } from './local-cdn/local-cdn.router'
 
@@ -15,7 +15,7 @@ export class AdminRouter extends Router {
     public readonly system: SystemRouter
     public readonly localCdn: LocalCdnRouter
 
-    constructor(parent: Router, ws$: () => ContextMessage$<unknown>) {
+    constructor(parent: Router, ws$: () => WebSocketResponse$<unknown>) {
         super(parent.headers, `${parent.basePath}/admin`)
         this.customCommands = new CustomCommandsRouter(this)
         this.environment = new EnvironmentRouter(this, ws$)

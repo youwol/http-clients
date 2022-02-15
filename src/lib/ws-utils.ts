@@ -4,7 +4,7 @@ import { ContextMessage, Label } from './py-youwol'
 import { Observable } from 'rxjs'
 import { filter } from 'rxjs/operators'
 
-export type ContextMessage$<T> = Observable<ContextMessage<T>>
+export type WebSocketResponse$<T> = Observable<ContextMessage<T>>
 
 export function filterCtxMessage<T = unknown>({
     withAttributes,
@@ -14,7 +14,7 @@ export function filterCtxMessage<T = unknown>({
         [_key: string]: string | ((string) => boolean)
     }
     withLabels?: Label[]
-}): (source$: ContextMessage$<unknown>) => ContextMessage$<T> {
+}): (source$: WebSocketResponse$<unknown>) => WebSocketResponse$<T> {
     withAttributes = withAttributes || {}
     withLabels = withLabels || []
     return (source$: Observable<ContextMessage>) =>
@@ -42,5 +42,5 @@ export function filterCtxMessage<T = unknown>({
 
                 return attrsOk && labelsOk
             }),
-        ) as ContextMessage$<T>
+        ) as WebSocketResponse$<T>
 }

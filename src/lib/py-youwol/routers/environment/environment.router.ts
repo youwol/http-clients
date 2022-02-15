@@ -3,14 +3,14 @@
 import { Router } from '../../../router'
 import { CallerRequestOptions, HTTPResponse$ } from '../../../utils'
 import { EnvironmentStatusResponse, LoginResponse } from './interfaces'
-import { ContextMessage$, filterCtxMessage } from '../../../ws-utils'
+import { filterCtxMessage, WebSocketResponse$ } from '../../../ws-utils'
 
 class WebSocketAPI {
-    constructor(public readonly ws$: () => ContextMessage$<unknown>) {}
+    constructor(public readonly ws$: () => WebSocketResponse$<unknown>) {}
 
     status$(
         filters: { profile?: string } = {},
-    ): ContextMessage$<EnvironmentStatusResponse> {
+    ): WebSocketResponse$<EnvironmentStatusResponse> {
         return this.ws$().pipe(
             filterCtxMessage<EnvironmentStatusResponse>({
                 withLabels: ['EnvironmentStatusResponse'],
@@ -23,7 +23,7 @@ class WebSocketAPI {
 export class EnvironmentRouter extends Router {
     webSocket: WebSocketAPI
 
-    constructor(parent: Router, ws$: () => ContextMessage$<unknown>) {
+    constructor(parent: Router, ws$: () => WebSocketResponse$<unknown>) {
         super(parent.headers, `${parent.basePath}/environment`)
         this.webSocket = new WebSocketAPI(ws$)
     }
