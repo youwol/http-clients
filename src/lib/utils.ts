@@ -29,9 +29,16 @@ export class HTTPError {
     constructor(public readonly status: number, public readonly body: Json) {}
 }
 
-export function muteHTTPErrors<T>(): OperatorFunction<T | HTTPError, T> {
+export function muteHTTPErrors<T>(
+    onError?: (HTTPError) => void,
+): OperatorFunction<T | HTTPError, T> {
     return (source$: Observable<T | HTTPError>) => {
         return source$.pipe(
+            tap((resp) => {
+                if (onError && resp instanceof HTTPError) {
+                    onError(resp)
+                }
+            }),
             filter((resp: T | HTTPError) => !(resp instanceof HTTPError)),
             map((d) => d as T),
         )
