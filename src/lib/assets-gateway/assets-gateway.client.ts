@@ -4,11 +4,13 @@ import { GroupsResponse, HealthzResponse, UserInfoResponse } from './interfaces'
 import { CallerRequestOptions, HTTPResponse$ } from '../utils'
 import { AssetsRouter, ExplorerRouter, RawRouter } from './routers'
 import { RootRouter } from '../router'
+import { MiscRouter } from './routers/misc/misc.router'
 
 export class AssetsGatewayClient extends RootRouter {
     public readonly explorer: ExplorerRouter
     public readonly assets: AssetsRouter
     public readonly raw: RawRouter
+    public readonly misc: MiscRouter
 
     constructor({
         headers,
@@ -22,6 +24,7 @@ export class AssetsGatewayClient extends RootRouter {
         this.explorer = new ExplorerRouter(this)
         this.assets = new AssetsRouter(this)
         this.raw = new RawRouter(this)
+        this.misc = new MiscRouter(this)
     }
 
     /**
