@@ -2,7 +2,14 @@
 
 import { Router } from '../../../../router'
 import { CallerRequestOptions, HTTPResponse$ } from '../../../../utils'
-import { Document, DocumentsResponse, Story } from './interfaces'
+import {
+    DocumentContentBody,
+    DocumentContentResp,
+    DocumentResponse,
+    DocumentsResponse,
+    PostPluginResponse,
+    StoryResponse,
+} from './interfaces'
 
 export class RawStoryRouter extends Router {
     constructor(parent: Router) {
@@ -18,10 +25,29 @@ export class RawStoryRouter extends Router {
     getStory$(
         storyId: string,
         callerOptions: CallerRequestOptions = {},
-    ): HTTPResponse$<Story> {
+    ): HTTPResponse$<StoryResponse> {
         return this.send$({
             command: 'query',
             path: `/${storyId}`,
+            callerOptions,
+        })
+    }
+
+    /**
+     * Get a specific document.
+     *
+     * @param storyId
+     * @param documentId
+     * @param callerOptions
+     */
+    getDocument$(
+        storyId: string,
+        documentId: string,
+        callerOptions: CallerRequestOptions = {},
+    ): HTTPResponse$<DocumentResponse> {
+        return this.send$({
+            command: 'query',
+            path: `/${storyId}/documents/${documentId}`,
             callerOptions,
         })
     }
@@ -38,8 +64,8 @@ export class RawStoryRouter extends Router {
     queryDocuments$(
         storyId: string,
         parentDocumentId: string,
-        fromIndex: number,
-        count: number,
+        fromIndex = 0,
+        count = 1000,
         callerOptions: CallerRequestOptions = {},
     ): HTTPResponse$<DocumentsResponse> {
         return this.send$({
@@ -61,9 +87,13 @@ export class RawStoryRouter extends Router {
      */
     createDocument$(
         storyId: string,
-        body: { parentDocumentId: string; title: string; content: string },
+        body: {
+            parentDocumentId: string
+            title: string
+            content: DocumentContentBody
+        },
         callerOptions: CallerRequestOptions = {},
-    ): HTTPResponse$<Document> {
+    ): HTTPResponse$<DocumentResponse> {
         return this.send$({
             command: 'create',
             path: `/${storyId}/documents`,
@@ -89,7 +119,7 @@ export class RawStoryRouter extends Router {
         documentId: string,
         body: { title: string },
         callerOptions: CallerRequestOptions = {},
-    ): HTTPResponse$<Document> {
+    ): HTTPResponse$<DocumentResponse> {
         return this.send$({
             command: 'update',
             path: `/${storyId}/documents/${documentId}`,
@@ -111,7 +141,7 @@ export class RawStoryRouter extends Router {
         storyId: string,
         documentId: string,
         callerOptions: CallerRequestOptions = {},
-    ): HTTPResponse$<Document> {
+    ): HTTPResponse$<DocumentResponse> {
         return this.send$({
             command: 'update',
             path: `/${storyId}/documents/${documentId}/delete`,
@@ -133,7 +163,7 @@ export class RawStoryRouter extends Router {
         storyId: string,
         documentId: string,
         callerOptions: CallerRequestOptions = {},
-    ): HTTPResponse$<string> {
+    ): HTTPResponse$<DocumentContentResp> {
         return this.send$({
             command: 'query',
             path: `/${storyId}/contents/${documentId}`,
@@ -153,12 +183,27 @@ export class RawStoryRouter extends Router {
     updateContent$(
         storyId: string,
         documentId: string,
-        body: { content: string },
+        body: DocumentContentBody,
         callerOptions: CallerRequestOptions = {},
     ): HTTPResponse$<boolean> {
         return this.send$({
             command: 'update',
             path: `/${storyId}/contents/${documentId}`,
+            nativeRequestOptions: {
+                json: body,
+            },
+            callerOptions,
+        })
+    }
+
+    addPlugin$(
+        storyId: string,
+        body: { packageName: string },
+        callerOptions: CallerRequestOptions = {},
+    ): HTTPResponse$<PostPluginResponse> {
+        return this.send$({
+            command: 'update',
+            path: `/${storyId}/plugins`,
             nativeRequestOptions: {
                 json: body,
             },

@@ -8,6 +8,10 @@ import {
     Asset,
     AssetsGatewayClient,
     DefaultDriveResponse,
+    DocumentResponse,
+    DocumentsResponse,
+    PostPluginResponse,
+    StoryResponse,
 } from '../../lib/assets-gateway'
 import {
     expectAssetAttributes,
@@ -16,11 +20,6 @@ import {
 } from '../common'
 import { raiseHTTPErrors } from '../../lib'
 import { mergeMap, tap } from 'rxjs/operators'
-import {
-    Document,
-    DocumentsResponse,
-    Story,
-} from '../../lib/assets-gateway/routers/raw/story'
 
 const assetsGtw = new AssetsGatewayClient()
 
@@ -41,7 +40,7 @@ beforeAll(async (done) => {
 
 test('create story, play with content', (done) => {
     const title = 'test story: play with content'
-    const initialContent = 'You can start writing your story :)'
+    const initialContent = { html: '', css: '' }
     const storyId = 'test-story-play-with-content'
 
     assetsGtw.assets.story
@@ -59,7 +58,7 @@ test('create story, play with content', (done) => {
                 assetsGtw.raw.story.getStory$(resp.rawId),
             ),
             raiseHTTPErrors(),
-            tap((story: Story) => {
+            tap((story: StoryResponse) => {
                 expectAttributes(story, [
                     'storyId',
                     'rootDocumentId',
@@ -71,19 +70,20 @@ test('create story, play with content', (done) => {
                 expect(story.rootDocumentId).toBe(`root_${story.storyId}`)
                 expect(story.authors).toHaveLength(1)
             }),
-            mergeMap((resp: Story) =>
+            mergeMap((resp: StoryResponse) =>
                 assetsGtw.raw.story.getContent$(
                     resp.storyId,
                     resp.rootDocumentId,
                 ),
             ),
             raiseHTTPErrors(),
-            tap((content: string) => {
-                expect(content).toBe(initialContent)
+            tap((content) => {
+                expect(content).toEqual(initialContent)
             }),
             mergeMap(() =>
                 assetsGtw.raw.story.updateContent$(storyId, `root_${storyId}`, {
-                    content: 'updated content',
+                    html: '<div> Hello world </div>',
+                    css: '',
                 }),
             ),
             raiseHTTPErrors(),
@@ -91,8 +91,8 @@ test('create story, play with content', (done) => {
                 assetsGtw.raw.story.getContent$(storyId, `root_${storyId}`),
             ),
             raiseHTTPErrors(),
-            tap((content: string) => {
-                expect(content).toBe('updated content')
+            tap((content) => {
+                expect(content.html).toBe('<div> Hello world </div>')
             }),
         )
         .subscribe(() => {
@@ -119,10 +119,20 @@ test('create story, play with documents', (done) => {
                 assetsGtw.raw.story.getStory$(resp.rawId),
             ),
             raiseHTTPErrors(),
-            mergeMap((resp: Story) =>
-                assetsGtw.raw.story.queryDocuments$(
+            /*mergeMap((resp: Story) =>
+                assetsGtw.raw.story.getDocument$(
                     resp.storyId,
                     resp.rootDocumentId,
+                ),
+            ),
+            raiseHTTPErrors(),
+            tap((resp: Document) => {
+                expect(resp).toBeTruthy()
+            }),*/
+            mergeMap(() =>
+                assetsGtw.raw.story.queryDocuments$(
+                    storyId,
+                    `root_${storyId}`,
                     0,
                     100,
                 ),
@@ -135,11 +145,11 @@ test('create story, play with documents', (done) => {
                 assetsGtw.raw.story.createDocument$(storyId, {
                     parentDocumentId: `root_${storyId}`,
                     title: 'page0',
-                    content: 'content of page0',
+                    content: { html: '<div>content of page0</div>', css: '' },
                 }),
             ),
             raiseHTTPErrors(),
-            tap((resp: Document) => {
+            tap((resp: DocumentResponse) => {
                 expectAttributes(resp, [
                     'storyId',
                     'documentId',
@@ -152,7 +162,7 @@ test('create story, play with documents', (done) => {
                 expect(resp.parentDocumentId).toBe(`root_${storyId}`)
                 expect(resp.title).toBe(`page0`)
             }),
-            mergeMap((resp: Document) =>
+            mergeMap((resp: DocumentResponse) =>
                 assetsGtw.raw.story.queryDocuments$(
                     resp.storyId,
                     resp.parentDocumentId,
@@ -177,7 +187,7 @@ test('create story, play with documents', (done) => {
             tap((resp: Document) => {
                 expect(resp.title).toBe(`page0 - updated`)
             }),
-            mergeMap((resp: Document) =>
+            mergeMap((resp: DocumentResponse) =>
                 assetsGtw.raw.story.deleteDocument$(
                     resp.storyId,
                     resp.documentId,
@@ -195,6 +205,45 @@ test('create story, play with documents', (done) => {
             raiseHTTPErrors(),
             tap((resp: DocumentsResponse) => {
                 expect(resp.documents).toHaveLength(0)
+            }),
+        )
+        .subscribe(() => {
+            done()
+        })
+})
+
+test('create story, play with plugins', (done) => {
+    const title = 'test story: play with plugins'
+    const storyId = 'test-story-play-with-plugins'
+
+    assetsGtw.assets.story
+        .create$(homeFolderId, {
+            title,
+            storyId,
+        })
+        .pipe(
+            raiseHTTPErrors(),
+            mergeMap(() => {
+                return assetsGtw.raw.story.addPlugin$(
+                    storyId,
+                    {
+                        packageName: '@youwol/http-clients',
+                    },
+                    { headers: { 'py-youwol-local-only': 'false' } },
+                )
+            }),
+            raiseHTTPErrors(),
+            tap((resp: PostPluginResponse) => {
+                expect(resp.packageName).toBe('@youwol/http-clients')
+            }),
+            mergeMap(() => {
+                return assetsGtw.raw.story.getStory$(storyId)
+            }),
+            raiseHTTPErrors(),
+            tap((resp) => {
+                expect(resp.requirements.plugins).toEqual([
+                    '@youwol/http-clients',
+                ])
             }),
         )
         .subscribe(() => {

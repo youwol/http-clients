@@ -3,19 +3,21 @@
  *
  * @format
  */
+import { LoadingGraph } from '../flux-project'
 
-export interface Author {
+export interface AuthorResponse {
     authorId: string
 }
 
 /**
  * Document describes a tree structure parent-children
  */
-export interface Document {
+export interface DocumentResponse {
     documentId: string
     title: string
     position: number
     storyId: string
+    contentId: string
     parentDocumentId: string
 }
 
@@ -23,15 +25,40 @@ export interface Document {
  * Children documents of a document
  */
 export interface DocumentsResponse {
-    documents: Document[]
+    documents: DocumentResponse[]
 }
 
 /**
  * Story is a wrapper of root document with metadata.
  */
-export interface Story {
+export interface StoryResponse {
     storyId: string
     rootDocumentId: string
     title: string
-    authors: Author[]
+    authors: AuthorResponse[]
+    requirements: StoryRequirements
+}
+
+/**
+ * Content of a document
+ */
+export interface DocumentContentBody {
+    html: string
+    css: string
+}
+
+/**
+ * Content of a document
+ */
+export type DocumentContentResp = DocumentContentBody
+
+export interface StoryRequirements {
+    plugins: string[]
+    loadingGraph: LoadingGraph
+}
+
+export interface PostPluginResponse {
+    packageName: string
+    version: string
+    requirement: StoryRequirements
 }
