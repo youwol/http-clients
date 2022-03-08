@@ -1,5 +1,3 @@
-/** @format */
-
 import { RawId } from '../../..'
 import { Router } from '../../../../router'
 import { CallerRequestOptions, HTTPResponse$ } from '../../../../utils'

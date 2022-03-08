@@ -1,15 +1,13 @@
-/** @format */
-
 // eslint-disable-next-line eslint-comments/disable-enable-pair -- to not have problem
 /* eslint-disable jest/no-done-callback -- eslint-comment It is required because */
 
-import '../mock-requests'
-import { AssetsGatewayClient } from '../../lib/assets-gateway'
-import { raiseHTTPErrors } from '../../lib'
 import { mergeMap, tap } from 'rxjs/operators'
+import { raiseHTTPErrors } from '../../lib'
+import { AssetsGatewayClient } from '../../lib/assets-gateway'
 
 import { EmojisResponse } from '../../lib/assets-gateway/routers/misc/interfaces'
 import { expectAttributes, resetPyYouwolDbs$ } from '../common'
+import '../mock-requests'
 
 const assetsGtw = new AssetsGatewayClient()
 

@@ -1,5 +1,3 @@
-/** @format */
-
 import { Observable, of, OperatorFunction, ReplaySubject, Subject } from 'rxjs'
 import { filter, map, mergeMap, tap } from 'rxjs/operators'
 

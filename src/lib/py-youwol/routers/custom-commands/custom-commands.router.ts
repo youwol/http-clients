@@ -1,5 +1,3 @@
-/** @format */
-
 import { Router } from '../../../router'
 import { CallerRequestOptions, HTTPResponse$, Json } from '../../../utils'
 

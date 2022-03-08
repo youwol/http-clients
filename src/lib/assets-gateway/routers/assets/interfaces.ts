@@ -1,5 +1,3 @@
-/** @format */
-
 export interface Asset {
     readonly assetId: string
     readonly rawId: string

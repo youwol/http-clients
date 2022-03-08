@@ -1,5 +1,3 @@
-/** @format */
-
 interface Failure {
     path: string
     failure: string

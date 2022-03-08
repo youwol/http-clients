@@ -1,5 +1,3 @@
-/** @format */
-
 import { Observable } from 'rxjs'
 import {
     CallerRequestOptions,

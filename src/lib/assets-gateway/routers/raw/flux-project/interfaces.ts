@@ -1,5 +1,3 @@
-/** @format */
-
 import { Json } from '../../..'
 
 type Url = string

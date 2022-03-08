@@ -1,7 +1,6 @@
 /**
  * Authors are associated to stories
  *
- * @format
  */
 import { LoadingGraph } from '../flux-project'
 

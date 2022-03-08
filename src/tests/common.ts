@@ -1,6 +1,4 @@
-/** @format */
-
-import { RootRouter } from '../lib/router'
+import { RootRouter } from '../lib'
 import { PyYouwolClient } from '../lib/py-youwol'
 
 RootRouter.HostName = getPyYouwolBasePath()

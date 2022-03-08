@@ -1,5 +1,3 @@
-/** @format */
-
 import { Router } from '../../../router'
 import { RawDataRouter, RawFluxProjectRouter, RawPackageRouter } from './'
 import { RawStoryRouter } from './story'

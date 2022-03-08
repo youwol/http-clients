@@ -1,12 +1,8 @@
-/** @format */
-
-import { expectAttributes } from '../common'
-import { map, reduce, take, tap } from 'rxjs/operators'
-import { PyYouwolClient } from '../../lib/py-youwol'
 import { combineLatest } from 'rxjs'
+import { map, reduce, take, tap } from 'rxjs/operators'
 import { raiseHTTPErrors } from '../../lib'
-
-/** @format */
+import { PyYouwolClient } from '../../lib/py-youwol'
+import { expectAttributes } from '../common'
 
 export function uniqueProjectName(prefix: string) {
     const now = new Date()

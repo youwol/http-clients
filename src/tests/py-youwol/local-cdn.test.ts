@@ -1,19 +1,16 @@
-/** @format */
-
-// eslint-disable-next-line eslint-comments/disable-enable-pair -- to not have problem
-/* eslint-disable jest/no-done-callback -- eslint-comment Find a good way to work with rxjs in jest */
-import '../mock-requests'
+import { Client, install } from '@youwol/cdn-client'
+import { combineLatest, from } from 'rxjs'
+import { mergeMap, reduce, take, tap } from 'rxjs/operators'
+import { raiseHTTPErrors } from '../../lib'
+import { PyYouwolClient } from '../../lib/py-youwol'
 
 import {
     expectAttributes,
     getPyYouwolBasePath,
     resetPyYouwolDbs$,
 } from '../common'
-import { raiseHTTPErrors } from '../../lib'
-import { PyYouwolClient } from '../../lib/py-youwol'
-import { mergeMap, reduce, take, tap } from 'rxjs/operators'
-import { combineLatest, from } from 'rxjs'
-import { Client, install } from '@youwol/cdn-client'
+/* eslint-disable jest/no-done-callback -- eslint-comment Find a good way to work with rxjs in jest */
+import '../mock-requests'
 import { expectDownloadEvents$, expectUpdateStatus } from './utils'
 
 const pyYouwol = new PyYouwolClient()
@@ -115,3 +112,4 @@ test('download', (done) => {
             expectUpdateStatus(respWs.data)
         })
 })
+/* eslint-enable jest/no-done-callback -- re-enable */

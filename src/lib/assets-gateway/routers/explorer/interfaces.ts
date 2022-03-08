@@ -1,5 +1,3 @@
-/** @format */
-
 export type ItemId = string
 export type FolderId = string
 export type DriveId = string

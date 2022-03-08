@@ -1,5 +1,3 @@
-/** @format */
-
 export * from './assets.router'
 export * from './interfaces'
 export * from './data'

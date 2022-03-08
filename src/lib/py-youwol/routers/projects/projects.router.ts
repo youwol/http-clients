@@ -1,5 +1,3 @@
-/** @format */
-
 import { Router } from '../../../router'
 import { CallerRequestOptions, HTTPResponse$ } from '../../../utils'
 import { filterCtxMessage, WebSocketResponse$ } from '../../../ws-utils'

@@ -1,12 +1,9 @@
-/** @format */
-
-// eslint-disable-next-line eslint-comments/disable-enable-pair -- to not have problem
-/* eslint-disable jest/no-done-callback -- eslint-comment Find a good way to work with rxjs in jest */
-import '../mock-requests'
+import { raiseHTTPErrors } from '../../lib'
+import { PyYouwolClient } from '../../lib/py-youwol'
 
 import { resetPyYouwolDbs$ } from '../common'
-import { PyYouwolClient } from '../../lib/py-youwol'
-import { raiseHTTPErrors } from '../../lib'
+/* eslint-disable jest/no-done-callback -- eslint-comment Find a good way to work with rxjs in jest */
+import '../mock-requests'
 
 const pyYouwol = new PyYouwolClient()
 
@@ -49,3 +46,4 @@ test('pyYouwol.admin.customCommands.doDelete$', (done) => {
             done()
         })
 })
+/* eslint-enable jest/no-done-callback -- re-enable */
