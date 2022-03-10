@@ -1,7 +1,5 @@
-/** @format */
-
-import { CallerRequestOptions, HTTPResponse$ } from '../utils'
 import { RootRouter } from '../router'
+import { CallerRequestOptions, HTTPResponse$ } from '../utils'
 import { HealthzResponse } from './interfaces'
 import { ApplicationsRouter } from './routers'
 

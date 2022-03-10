@@ -1,6 +1,10 @@
-/** @format */
-
 import { Observable } from 'rxjs'
+import {
+    AssetDataRouter,
+    AssetFluxProjectRouter,
+    AssetPackageRouter,
+    AssetStoryRouter,
+} from '.'
 import { Router } from '../../../router'
 import {
     CallerRequestOptions,
@@ -16,12 +20,6 @@ import {
     ExposingGroup,
     UpdateAssetBody,
 } from './interfaces'
-import {
-    AssetDataRouter,
-    AssetFluxProjectRouter,
-    AssetPackageRouter,
-    AssetStoryRouter,
-} from '.'
 
 export class AssetsRouter extends Router {
     public readonly fluxProject: AssetFluxProjectRouter

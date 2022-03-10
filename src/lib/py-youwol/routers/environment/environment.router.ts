@@ -1,9 +1,7 @@
-/** @format */
-
 import { Router } from '../../../router'
 import { CallerRequestOptions, HTTPResponse$ } from '../../../utils'
-import { EnvironmentStatusResponse, LoginResponse } from './interfaces'
 import { filterCtxMessage, WebSocketResponse$ } from '../../../ws-utils'
+import { EnvironmentStatusResponse, LoginResponse } from './interfaces'
 
 class WebSocketAPI {
     constructor(public readonly ws$: () => WebSocketResponse$<unknown>) {}

@@ -1,5 +1,6 @@
-/** @format */
-
+import { Router } from '../../../router'
+import { CallerRequestOptions, HTTPResponse$ } from '../../../utils'
+import { filterCtxMessage, WebSocketResponse$ } from '../../../ws-utils'
 import {
     CheckUpdateResponse,
     CheckUpdatesResponse,
@@ -7,9 +8,6 @@ import {
     DownloadPackagesBody,
     PackageEvent,
 } from './interfaces'
-import { Router } from '../../../router'
-import { CallerRequestOptions, HTTPResponse$ } from '../../../utils'
-import { filterCtxMessage, WebSocketResponse$ } from '../../../ws-utils'
 
 class WebSocketAPI {
     constructor(public readonly ws$: () => WebSocketResponse$<unknown>) {}

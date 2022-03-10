@@ -1,8 +1,6 @@
-/** @format */
-
-import { ContextMessage, Label } from './py-youwol'
 import { Observable } from 'rxjs'
 import { filter } from 'rxjs/operators'
+import { ContextMessage, Label } from './py-youwol'
 
 export type WebSocketResponse$<T> = Observable<ContextMessage<T>>
 

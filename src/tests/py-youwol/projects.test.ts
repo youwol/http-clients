@@ -1,15 +1,13 @@
-/** @format */
-
-// eslint-disable-next-line eslint-comments/disable-enable-pair -- to not have problem
-/* eslint-disable jest/no-done-callback -- eslint-comment Find a good way to work with rxjs in jest */
-import '../mock-requests'
-
-import { expectAttributes, resetPyYouwolDbs$ } from '../common'
+import { btoa } from 'buffer'
+import { combineLatest, Observable, of } from 'rxjs'
+import { expand, map, mapTo, mergeMap, reduce, take, tap } from 'rxjs/operators'
 import { raiseHTTPErrors } from '../../lib'
 import { PyYouwolClient } from '../../lib/py-youwol'
-import { expand, map, mapTo, mergeMap, reduce, take, tap } from 'rxjs/operators'
-import { combineLatest, Observable, of } from 'rxjs'
-import { btoa } from 'buffer'
+import { PipelineStepStatusResponse } from '../../lib/py-youwol/routers/projects/interfaces'
+
+import { expectAttributes, resetPyYouwolDbs$ } from '../common'
+/* eslint-disable jest/no-done-callback -- eslint-comment Find a good way to work with rxjs in jest */
+import '../mock-requests'
 import {
     expectArtifacts$,
     expectBuildStep,
@@ -22,7 +20,6 @@ import {
     expectPublishRemote,
     uniqueProjectName,
 } from './utils'
-import { PipelineStepStatusResponse } from '../../lib/py-youwol/routers/projects/interfaces'
 
 const pyYouwol = new PyYouwolClient()
 
@@ -157,3 +154,4 @@ test('pyYouwol.admin.projects.runStep', (done) => {
             /* no op */
         })
 })
+/* eslint-enable jest/no-done-callback -- re-enable */

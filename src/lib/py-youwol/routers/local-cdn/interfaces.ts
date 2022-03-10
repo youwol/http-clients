@@ -1,5 +1,3 @@
-/** @format */
-
 export interface PackageVersionInfo {
     version: string
     fingerprint: string
