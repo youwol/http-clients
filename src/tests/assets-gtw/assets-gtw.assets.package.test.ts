@@ -71,12 +71,12 @@ test('assetsGtw.raw.package.queryMetadata$', (done) => {
 
 test('assetsGtw.raw.package.getResource$', (done) => {
     assetsGtw.raw.package
-        .getResource$(rawId, '0.0.0-next/package.json')
+        .getResource$(rawId, '0.0.1-wip/package.json')
         .pipe(raiseHTTPErrors())
         .subscribe((resp) => {
             expectAttributes(resp, ['name', 'version', 'main', 'scripts'])
             expect(resp['name']).toBe('@youwol/todo-app-js')
-            expect(resp['version']).toBe('0.0.0-next')
+            expect(resp['version']).toBe('0.0.1-wip')
             done()
         })
 })
