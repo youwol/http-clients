@@ -1178,10 +1178,10 @@
   resolved "https://registry.yarnpkg.com/@xtuc/long/-/long-4.2.2.tgz#d291c6a4e97989b5c61d9acf396ae4fe133a718d"
   integrity sha512-NuHqBY1PB/D8xU6s/thBgOAiAP7HOYDQ32+BFZILJ8ivkUkAHQnWfn6WhL79Owj1qmUnoN/YPhktdIoucipkAQ==
 
-"@youwol/cdn-client@^0.0.12":
-  version "0.0.12"
-  resolved "https://registry.yarnpkg.com/@youwol/cdn-client/-/cdn-client-0.0.12.tgz#95994a09330bfb8ce0b2cda1d6817a429295e61d"
-  integrity sha512-r1EnL6AUcbsJbUfYUKFOrk/IbBDyTzDt2SXHlCvn6ZTdwL4zv6CtlMJS+zO/sc8ofxopPaR7aiks1JVze6qEKg==
+"@youwol/cdn-client@^0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@youwol/cdn-client/-/cdn-client-0.1.0.tgz#c754b889ee045159c1b6408d424b569d82f33da9"
+  integrity sha512-FAEklULf4PkDay6XXRhJKWcBeTV5yfwKmcaJrOiUcumd1bHsimBjhnAClRaUqSmflO2GnxXs/aIXSpax7hgn6Q==
 
 abab@^2.0.3, abab@^2.0.5:
   version "2.0.5"
