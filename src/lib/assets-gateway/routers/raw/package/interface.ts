@@ -1,5 +1,3 @@
-/** @format */
-
 export interface ReleaseResponse {
     version: string
     version_number: number

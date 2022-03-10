@@ -1,10 +1,4 @@
-/** @format */
-
-// eslint-disable-next-line eslint-comments/disable-enable-pair -- to not have problem
-/* eslint-disable jest/no-done-callback -- eslint-comment Find a good way to work with rxjs in jest */
-import '../mock-requests'
-import { Asset, AssetsGatewayClient } from '../../lib/assets-gateway'
-import { resetPyYouwolDbs$ } from '../common'
+import { ReplaySubject } from 'rxjs'
 import {
     dispatchHTTPErrors,
     HTTPError,
@@ -12,7 +6,10 @@ import {
     onHTTPErrors,
     raiseHTTPErrors,
 } from '../../lib'
-import { ReplaySubject } from 'rxjs'
+import { Asset, AssetsGatewayClient } from '../../lib/assets-gateway'
+import { resetPyYouwolDbs$ } from '../common'
+/* eslint-disable jest/no-done-callback -- eslint-comment Find a good way to work with rxjs in jest */
+import '../mock-requests'
 
 const assetsGtw = new AssetsGatewayClient()
 
@@ -78,3 +75,4 @@ test('assetsGtw.assets.get$, 404, muteHTTPErrors', (done) => {
         done()
     }, 50)
 })
+/* eslint-enable jest/no-done-callback -- re-enable */

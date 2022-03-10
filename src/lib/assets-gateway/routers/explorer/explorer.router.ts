@@ -1,6 +1,6 @@
-/** @format */
-
 import { Observable } from 'rxjs'
+import { Router } from '../../../router'
+import { CallerRequestOptions, HTTPError, HTTPResponse$ } from '../../../utils'
 import {
     ChildrenFolderResponse,
     DefaultDriveResponse,
@@ -14,8 +14,6 @@ import {
     ItemResponse,
     PermissionsResponse,
 } from './interfaces'
-import { CallerRequestOptions, HTTPError, HTTPResponse$ } from '../../../utils'
-import { Router } from '../../../router'
 
 export class GroupsRouter extends Router {
     constructor(parent: Router) {

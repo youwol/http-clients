@@ -1,10 +1,8 @@
-/** @format */
-
-import { CallerRequestOptions, HTTPResponse$ } from '../utils'
+import { Subject } from 'rxjs'
 import { RootRouter } from '../router'
+import { CallerRequestOptions, HTTPResponse$ } from '../utils'
 import { ContextMessage, HealthzResponse } from './interfaces'
 import { AdminRouter } from './routers/admin.router'
-import { Subject } from 'rxjs'
 
 export class PyYouwolClient extends RootRouter {
     public readonly admin: AdminRouter

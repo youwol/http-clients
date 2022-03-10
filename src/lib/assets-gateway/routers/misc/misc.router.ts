@@ -1,7 +1,5 @@
-/** @format */
-
-import { CallerRequestOptions, HTTPResponse$ } from '../../../utils'
 import { Router } from '../../../router'
+import { CallerRequestOptions, HTTPResponse$ } from '../../../utils'
 import { EmojisResponse } from './interfaces'
 
 /**

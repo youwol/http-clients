@@ -1,9 +1,7 @@
-/** @format */
-
-import { GroupsResponse, HealthzResponse, UserInfoResponse } from './interfaces'
-import { CallerRequestOptions, HTTPResponse$ } from '../utils'
-import { AssetsRouter, ExplorerRouter, RawRouter } from './routers'
 import { RootRouter } from '../router'
+import { CallerRequestOptions, HTTPResponse$ } from '../utils'
+import { GroupsResponse, HealthzResponse, UserInfoResponse } from './interfaces'
+import { AssetsRouter, ExplorerRouter, RawRouter } from './routers'
 import { MiscRouter } from './routers/misc/misc.router'
 
 export class AssetsGatewayClient extends RootRouter {

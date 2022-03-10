@@ -1,9 +1,9 @@
-/** @format */
-
 // eslint-disable-next-line eslint-comments/disable-enable-pair -- to not have problem
 /* eslint-disable jest/no-done-callback -- eslint-comment It is required because */
 
-import '../mock-requests'
+import { readFileSync } from 'fs'
+import path from 'path'
+import { raiseHTTPErrors } from '../../lib'
 import {
     AssetsGatewayClient,
     DefaultDriveResponse,
@@ -13,9 +13,7 @@ import {
     expectAttributes,
     resetPyYouwolDbs$,
 } from '../common'
-import { raiseHTTPErrors } from '../../lib'
-import { readFileSync } from 'fs'
-import path from 'path'
+import '../mock-requests'
 
 const assetsGtw = new AssetsGatewayClient()
 

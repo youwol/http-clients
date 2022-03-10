@@ -1,5 +1,3 @@
-/** @format */
-
 export type Json = Record<string, never>
 export type RawId = string
 
