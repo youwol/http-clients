@@ -18,6 +18,8 @@ import {
     resetPyYouwolDbs$,
 } from '../common'
 import '../mock-requests'
+import { readFileSync } from 'fs'
+import path from 'path'
 
 const assetsGtw = new AssetsGatewayClient()
 
@@ -242,6 +244,28 @@ test('create story, play with plugins', (done) => {
                 expect(resp.requirements.plugins).toEqual([
                     '@youwol/http-clients',
                 ])
+            }),
+        )
+        .subscribe(() => {
+            done()
+        })
+})
+
+test('publish story', (done) => {
+    const buffer = readFileSync(path.resolve(__dirname, './story.zip'))
+    const arraybuffer = Uint8Array.from(buffer).buffer
+    const storyId = 'ce0ee416-048a-486c-ab08-23ad8c05b25c'
+    assetsGtw.assets.story
+        .publish$(homeFolderId, 'story.zip', new Blob([arraybuffer]))
+        .pipe(
+            raiseHTTPErrors(),
+            mergeMap(() => {
+                return assetsGtw.raw.story.getStory$(storyId)
+            }),
+            raiseHTTPErrors(),
+            tap((resp: StoryResponse) => {
+                expect(resp.storyId).toBe(storyId)
+                expect(resp.requirements.plugins.length).toEqual(1)
             }),
         )
         .subscribe(() => {

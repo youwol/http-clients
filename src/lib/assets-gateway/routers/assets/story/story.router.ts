@@ -1,7 +1,13 @@
 import { Asset } from '../../..'
 import { Router } from '../../../../router'
-import { CallerRequestOptions, HTTPResponse$ } from '../../../../utils'
+import {
+    CallerRequestOptions,
+    HTTPError,
+    HTTPResponse$,
+    uploadBlob,
+} from '../../../../utils'
 import { FolderId } from '../../explorer'
+import { Observable } from 'rxjs'
 
 export class AssetStoryRouter extends Router {
     constructor(parent: Router) {
@@ -28,5 +34,29 @@ export class AssetStoryRouter extends Router {
             nativeRequestOptions: { json: body },
             callerOptions,
         })
+    }
+
+    /**
+     * Publish a story from a .zip file
+     *
+     * @param folderId destination folder id
+     * @param fileName string
+     * @param blob Blob content of the zip file
+     * @param callerOptions
+     */
+    publish$(
+        folderId: FolderId,
+        fileName: string,
+        blob: Blob,
+        callerOptions: CallerRequestOptions = {},
+    ): HTTPResponse$<Asset> {
+        return uploadBlob(
+            `${this.basePath}/location/${folderId}/publish`,
+            fileName,
+            'PUT',
+            blob,
+            {},
+            callerOptions,
+        ) as Observable<Asset | HTTPError>
     }
 }
