@@ -1,5 +1,9 @@
 import { Router } from '../../../../router'
-import { CallerRequestOptions, HTTPResponse$ } from '../../../../utils'
+import {
+    CallerRequestOptions,
+    downloadBlob,
+    HTTPResponse$,
+} from '../../../../utils'
 import {
     DocumentContentBody,
     DocumentContentResp,
@@ -207,5 +211,17 @@ export class RawStoryRouter extends Router {
             },
             callerOptions,
         })
+    }
+
+    downloadZip$(
+        storyId: string,
+        callerOptions: CallerRequestOptions = {},
+    ): HTTPResponse$<Blob> {
+        return downloadBlob(
+            `${this.basePath}/${storyId}/download-zip`,
+            storyId,
+            {},
+            callerOptions,
+        )
     }
 }
