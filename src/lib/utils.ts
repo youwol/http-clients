@@ -257,7 +257,7 @@ export function downloadBlob(
     callerOptions: CallerRequestOptions,
     total?: number,
 ): Observable<Blob | HTTPError> {
-    const { requestId, channels$ } = callerOptions.monitoring
+    const { requestId, channels$ } = callerOptions.monitoring || {}
 
     const follower =
         channels$ &&

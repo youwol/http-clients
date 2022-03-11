@@ -2,7 +2,7 @@
 /* eslint-disable jest/no-done-callback -- eslint-comment It is required because */
 
 import { mergeMap, tap } from 'rxjs/operators'
-import { raiseHTTPErrors } from '../../lib'
+import { onHTTPErrors, raiseHTTPErrors } from '../../lib'
 import {
     Asset,
     AssetsGatewayClient,
@@ -18,10 +18,13 @@ import {
     resetPyYouwolDbs$,
 } from '../common'
 import '../mock-requests'
+import { readFileSync } from 'fs'
+import path from 'path'
 
 const assetsGtw = new AssetsGatewayClient()
 
 let homeFolderId: string
+let driveId: string
 
 beforeAll(async (done) => {
     jest.setTimeout(90 * 1000)
@@ -32,6 +35,7 @@ beforeAll(async (done) => {
         )
         .subscribe((resp: DefaultDriveResponse) => {
             homeFolderId = resp.homeFolderId
+            driveId = resp.driveId
             done()
         })
 })
@@ -242,6 +246,70 @@ test('create story, play with plugins', (done) => {
                 expect(resp.requirements.plugins).toEqual([
                     '@youwol/http-clients',
                 ])
+            }),
+        )
+        .subscribe(() => {
+            done()
+        })
+})
+
+test('publish story', (done) => {
+    const buffer = readFileSync(path.resolve(__dirname, './story.zip'))
+    const arraybuffer = Uint8Array.from(buffer).buffer
+    const storyId = 'ce0ee416-048a-486c-ab08-23ad8c05b25c'
+    let downloadedBlob
+    assetsGtw.assets.story
+        .publish$(homeFolderId, 'story.zip', new Blob([arraybuffer]))
+        .pipe(
+            raiseHTTPErrors(),
+            mergeMap(() => {
+                return assetsGtw.raw.story.getStory$(storyId)
+            }),
+            raiseHTTPErrors(),
+            tap((resp: StoryResponse) => {
+                expect(resp.storyId).toBe(storyId)
+                expect(resp.requirements.plugins.length).toEqual(1)
+            }),
+            mergeMap(() => {
+                return assetsGtw.raw.story.downloadZip$(storyId)
+            }),
+            raiseHTTPErrors(),
+            tap((resp: Blob) => {
+                expect(resp).toBeInstanceOf(Blob)
+                downloadedBlob = resp
+            }),
+            mergeMap(() => {
+                return assetsGtw.explorer.items.delete$(btoa(storyId))
+            }),
+            raiseHTTPErrors(),
+            mergeMap(() => {
+                return assetsGtw.explorer.drives.purge$(driveId)
+            }),
+            raiseHTTPErrors(),
+            mergeMap((resp) => {
+                expect(resp.itemsCount).toBe(1)
+                expect(resp.items[0].itemId).toBe(btoa(storyId))
+                return assetsGtw.raw.story.getStory$(storyId)
+            }),
+            onHTTPErrors((resp) => {
+                expect(resp.status).toBe(404)
+                return undefined
+            }),
+            mergeMap(() => {
+                return assetsGtw.assets.story.publish$(
+                    homeFolderId,
+                    'story.zip',
+                    downloadedBlob,
+                )
+            }),
+            raiseHTTPErrors(),
+            mergeMap(() => {
+                return assetsGtw.raw.story.getStory$(storyId)
+            }),
+            raiseHTTPErrors(),
+            tap((resp: StoryResponse) => {
+                expect(resp.storyId).toBe(storyId)
+                expect(resp.requirements.plugins.length).toEqual(1)
             }),
         )
         .subscribe(() => {

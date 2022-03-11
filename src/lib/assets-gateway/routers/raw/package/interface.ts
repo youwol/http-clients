@@ -6,7 +6,7 @@ export interface ReleaseResponse {
 
 export interface MetadataResponse {
     name: string
-    version: string[]
+    versions: string[]
     namespace: string
     id: string
     release: ReleaseResponse[]
