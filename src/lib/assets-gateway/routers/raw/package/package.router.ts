@@ -1,6 +1,6 @@
 import { Router } from '../../../../router'
 import { CallerRequestOptions, HTTPResponse$ } from '../../../../utils'
-import { MetadataResponse } from './interface'
+import { MetadataResponse } from './interfaces'
 
 export class RawPackageRouter extends Router {
     constructor(parent: Router) {
