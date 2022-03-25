@@ -1,14 +1,15 @@
 import { RootRouter } from '../router'
 import { CallerRequestOptions, HTTPResponse$ } from '../utils'
 import { GroupsResponse, HealthzResponse, UserInfoResponse } from './interfaces'
-import { AssetsRouter, ExplorerRouter, RawRouter } from './routers'
-import { MiscRouter } from './routers/misc/misc.router'
+import { AssetsRouter, ExplorerRouter, RawRouter, MiscRouter } from './routers'
+import { CdnClient } from '../cdn-backend'
 
 export class AssetsGatewayClient extends RootRouter {
     public readonly explorer: ExplorerRouter
     public readonly assets: AssetsRouter
     public readonly raw: RawRouter
     public readonly misc: MiscRouter
+    public readonly cdn: CdnClient
 
     constructor({
         headers,
@@ -23,6 +24,10 @@ export class AssetsGatewayClient extends RootRouter {
         this.assets = new AssetsRouter(this)
         this.raw = new RawRouter(this)
         this.misc = new MiscRouter(this)
+        this.cdn = new CdnClient({
+            headers,
+            basePath: `/api/assets-gateway/cdn-backend`,
+        })
     }
 
     /**

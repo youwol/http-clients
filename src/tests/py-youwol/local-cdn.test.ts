@@ -15,7 +15,7 @@ import { expectDownloadEvents$, expectUpdateStatus } from './utils'
 
 const pyYouwol = new PyYouwolClient()
 
-beforeAll(async (done) => {
+beforeEach(async (done) => {
     jest.setTimeout(90 * 1000)
     resetPyYouwolDbs$().subscribe(() => {
         done()
