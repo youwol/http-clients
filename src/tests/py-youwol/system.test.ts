@@ -30,11 +30,11 @@ test('pyYouwol.admin.system.queryRootLogs', (done) => {
                 'timestamp',
             ])
             // This has to be the last log
-            expect(resp.logs[0].attributes).toEqual({
-                service: 'admin/logs',
-                router: 'system',
-                method: 'GET',
-            })
+            expectAttributes(resp.logs[0].attributes, [
+                ['service', 'admin/logs'],
+                ['router', 'system'],
+                ['method', 'GET'],
+            ])
             done()
         })
 })
