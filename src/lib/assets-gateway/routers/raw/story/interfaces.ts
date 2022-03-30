@@ -44,6 +44,8 @@ export interface StoryResponse {
 export interface DocumentContentBody {
     html: string
     css: string
+    components: string
+    styles: string
 }
 
 /**
