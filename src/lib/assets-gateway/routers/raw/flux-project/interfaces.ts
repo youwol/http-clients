@@ -5,7 +5,7 @@ type Url = string
 export interface LoadingGraph {
     graphType: string
     lock: { id: string; name: string; version: string }[]
-    definition: Url[][] | [string, Url][][]
+    definition: [string, Url][][]
 }
 
 export interface Requirements {
