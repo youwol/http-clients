@@ -61,5 +61,5 @@ export interface StoryRequirements {
 export interface PostPluginResponse {
     packageName: string
     version: string
-    requirement: StoryRequirements
+    requirements: StoryRequirements
 }
