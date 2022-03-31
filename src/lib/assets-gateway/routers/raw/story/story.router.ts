@@ -92,7 +92,7 @@ export class RawStoryRouter extends Router {
         body: {
             parentDocumentId: string
             title: string
-            content: DocumentContentBody
+            content?: DocumentContentBody
         },
         callerOptions: CallerRequestOptions = {},
     ): HTTPResponse$<DocumentResponse> {
