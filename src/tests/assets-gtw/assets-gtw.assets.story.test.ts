@@ -42,7 +42,12 @@ beforeAll(async (done) => {
 
 test('create story, play with content', (done) => {
     const title = 'test story: play with content'
-    const initialContent = { html: '', css: '', components: '', styles: '' }
+    const initialContent = {
+        html: '<div data-gjs-type="root" class="root" style="height:100%; width:100%; overflow:auto"></div>',
+        css: '',
+        components: '',
+        styles: '',
+    }
     const storyId = 'test-story-play-with-content'
 
     assetsGtw.assets.story
