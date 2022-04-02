@@ -1,3 +1,4 @@
+import '../mock-requests'
 import { raiseHTTPErrors } from '../../lib'
 import {
     AssetsGatewayClient,

@@ -3,6 +3,7 @@ import { CallerRequestOptions, HTTPResponse$ } from '../utils'
 import { GroupsResponse, HealthzResponse, UserInfoResponse } from './interfaces'
 import { AssetsRouter, ExplorerRouter, RawRouter, MiscRouter } from './routers'
 import { CdnClient } from '../cdn-backend'
+import { StoriesClient } from '../stories-backend'
 
 export class AssetsGatewayClient extends RootRouter {
     public readonly explorer: ExplorerRouter
@@ -10,6 +11,7 @@ export class AssetsGatewayClient extends RootRouter {
     public readonly raw: RawRouter
     public readonly misc: MiscRouter
     public readonly cdn: CdnClient
+    public readonly stories: StoriesClient
 
     constructor({
         headers,
@@ -27,6 +29,10 @@ export class AssetsGatewayClient extends RootRouter {
         this.cdn = new CdnClient({
             headers,
             basePath: `/api/assets-gateway/cdn-backend`,
+        })
+        this.stories = new StoriesClient({
+            headers,
+            basePath: `/api/assets-gateway/stories-backend`,
         })
     }
 

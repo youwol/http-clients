@@ -3,10 +3,7 @@
  *
  */
 import { LoadingGraph } from '../flux-project'
-
-export interface AuthorResponse {
-    authorId: string
-}
+import { AuthorResponse } from '../../../../stories-backend'
 
 /**
  * Document describes a tree structure parent-children

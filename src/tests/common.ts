@@ -1,5 +1,10 @@
-import { RootRouter } from '../lib'
+import { raiseHTTPErrors, RootRouter } from '../lib'
 import { PyYouwolClient } from '../lib/py-youwol'
+import {
+    AssetsGatewayClient,
+    DefaultDriveResponse,
+} from '../lib/assets-gateway'
+import { map } from 'rxjs/operators'
 
 RootRouter.HostName = getPyYouwolBasePath()
 RootRouter.Headers = { 'py-youwol-local-only': 'true' }
@@ -45,4 +50,28 @@ export function expectAssetAttributes(resp: unknown) {
         'tags',
         //'permissions'
     ])
+}
+
+export class Shell<T> {
+    homeFolderId: string
+    assetsGtw: AssetsGatewayClient
+    data: T
+    constructor(params: {
+        homeFolderId: string
+        assetsGtw: AssetsGatewayClient
+        data?: T
+    }) {
+        Object.assign(this, params)
+    }
+}
+
+export function shell$<T>() {
+    const assetsGtw = new AssetsGatewayClient()
+    return assetsGtw.explorer.getDefaultUserDrive$().pipe(
+        raiseHTTPErrors(),
+        map((resp: DefaultDriveResponse) => {
+            expect(resp.driveName).toBe('Default drive')
+            return new Shell<T>({ homeFolderId: resp.homeFolderId, assetsGtw })
+        }),
+    )
 }
