@@ -42,7 +42,12 @@ beforeAll(async (done) => {
 
 test('create story, play with content', (done) => {
     const title = 'test story: play with content'
-    const initialContent = { html: '', css: '' }
+    const initialContent = {
+        html: '<div id="root_test-story-play-with-content" data-gjs-type="root" class="root" style="height:100%; width:100%; overflow:auto"></div>',
+        css: '',
+        components: '',
+        styles: '',
+    }
     const storyId = 'test-story-play-with-content'
 
     assetsGtw.assets.story
@@ -86,6 +91,8 @@ test('create story, play with content', (done) => {
                 assetsGtw.raw.story.updateContent$(storyId, `root_${storyId}`, {
                     html: '<div> Hello world </div>',
                     css: '',
+                    components: '',
+                    styles: '',
                 }),
             ),
             raiseHTTPErrors(),
@@ -147,7 +154,12 @@ test('create story, play with documents', (done) => {
                 assetsGtw.raw.story.createDocument$(storyId, {
                     parentDocumentId: `root_${storyId}`,
                     title: 'page0',
-                    content: { html: '<div>content of page0</div>', css: '' },
+                    content: {
+                        html: '<div>content of page0</div>',
+                        css: '',
+                        components: '',
+                        styles: '',
+                    },
                 }),
             ),
             raiseHTTPErrors(),
