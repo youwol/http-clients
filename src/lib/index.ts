@@ -1,5 +1,6 @@
 export * as AssetsGateway from './assets-gateway'
 export * as CdnBackend from './cdn-backend'
+export * as StoriesBackend from './stories-backend'
 export * as CdnSessionsStorage from './cdn-sessions-storage'
 export * as PyYouwol from './py-youwol'
 export * from './router'

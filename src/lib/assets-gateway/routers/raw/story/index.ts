@@ -1,2 +1,2 @@
 export * from './story.router'
-export * from './interfaces'
+export * from '../../../../stories-backend/interfaces'

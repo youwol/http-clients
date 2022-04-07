@@ -174,6 +174,7 @@ export interface RequestMonitoring {
 export interface CallerRequestOptions {
     monitoring?: RequestMonitoring
     headers?: Record<string, string>
+    extraUrlParameters?: { [k: string]: string }
 }
 
 export interface NativeRequestOptions extends RequestInit {

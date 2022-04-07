@@ -5,13 +5,13 @@ import {
     HTTPResponse$,
 } from '../../../../utils'
 import {
-    DocumentContentBody,
     DocumentContentResp,
     DocumentResponse,
     DocumentsResponse,
     PostPluginResponse,
     StoryResponse,
-} from './interfaces'
+    DocumentContentBody,
+} from '../../../../stories-backend'
 
 export class RawStoryRouter extends Router {
     constructor(parent: Router) {
