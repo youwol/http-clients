@@ -1,2 +1,7 @@
 export * from './story.router'
-export * from '../../../../stories-backend/interfaces'
+export {
+    DocumentResponse,
+    DocumentsResponse,
+    PostPluginResponse,
+    StoryResponse,
+} from '../../../../stories-backend/interfaces'
