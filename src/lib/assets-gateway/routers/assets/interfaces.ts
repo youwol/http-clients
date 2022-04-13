@@ -12,6 +12,10 @@ export interface Asset {
     readonly permissions: PermissionsResp
 }
 
+export interface NewAssetResponse<T> extends Asset {
+    readonly rawResponse: T
+}
+
 export interface GroupAccess {
     read: 'forbidden' | 'authorized' | 'owning' | 'expiration-date'
     share: 'forbidden' | 'authorized'
