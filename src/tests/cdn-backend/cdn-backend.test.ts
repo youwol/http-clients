@@ -3,20 +3,22 @@
 
 import path from 'path'
 import { Asset, MetadataResponse } from '../../lib/assets-gateway'
-import {
-    expectAssetAttributes,
-    expectAttributes,
-    resetPyYouwolDbs$,
-} from '../common'
+import { expectAttributes, resetPyYouwolDbs$ } from '../common'
 import '../mock-requests'
 import {
     getPackageFolderContent,
-    getRawMetadata,
+    getInfo,
     getResource,
     shell$,
     uploadPackage,
+    downloadPackage,
+    deleteLibrary,
+    getVersionInfo,
+    getEntryPoint,
 } from './shell'
 import { tap } from 'rxjs/operators'
+import { readFileSync } from 'fs'
+import { onHTTPErrors } from '../../lib'
 
 jest.setTimeout(90 * 1000)
 
@@ -29,8 +31,13 @@ beforeAll(async (done) => {
 class TestData {
     public readonly asset?: Asset
     public readonly metadata?: MetadataResponse
+    public readonly downloaded?: Blob
 
-    constructor(params: { asset?: Asset; metadata?: MetadataResponse }) {
+    constructor(params: {
+        asset?: Asset
+        metadata?: MetadataResponse
+        downloaded?: Blob
+    }) {
         Object.assign(this, params)
     }
 }
@@ -42,13 +49,21 @@ test('get resource', (done) => {
                 path.resolve(__dirname, './cdn.zip'),
                 (shell, resp) => new TestData({ ...shell.data, asset: resp }),
             ),
-            tap((shell) => {
-                expectAssetAttributes(shell.data.asset)
-            }),
+            getEntryPoint(
+                (shell) => ({
+                    libraryId: shell.data.asset.rawId,
+                    version: '0.0.1-wip',
+                }),
+                (shell, resp) => {
+                    expect(resp.includes('<!doctype html>')).toBeTruthy()
+                    return shell.data
+                },
+            ),
             getResource(
                 (shell) => ({
-                    rawId: shell.data.asset.rawId,
-                    path: '0.0.1-wip/package.json',
+                    libraryId: shell.data.asset.rawId,
+                    version: '0.0.1-wip',
+                    path: 'package.json',
                 }),
                 (shell, resp) => {
                     expectAttributes(resp, [
@@ -68,30 +83,30 @@ test('get resource', (done) => {
         })
 })
 
-test('get metadata', (done) => {
+test('get info', (done) => {
     shell$<TestData>()
         .pipe(
             uploadPackage(
                 path.resolve(__dirname, './cdn.zip'),
                 (shell, resp) => new TestData({ ...shell.data, asset: resp }),
             ),
-            tap((shell) => {
-                expectAssetAttributes(shell.data.asset)
-            }),
-            getRawMetadata(
-                (shell) => ({ rawId: shell.data.asset.rawId }),
-                (shell, resp) =>
-                    new TestData({ ...shell.data, metadata: resp }),
+            getInfo(
+                (shell) => ({ libraryId: shell.data.asset.rawId }),
+                (shell, resp) => {
+                    expect(resp.versions).toEqual(['0.0.1-wip'])
+                    return new TestData({ ...shell.data, metadata: resp })
+                },
             ),
-            tap((shell) => {
-                expectAttributes(shell.data.metadata, [
-                    'name',
-                    'versions',
-                    'namespace',
-                    'id',
-                    'releases',
-                ])
-            }),
+            getVersionInfo(
+                (shell) => ({
+                    libraryId: shell.data.asset.rawId,
+                    version: shell.data.metadata.versions[0],
+                }),
+                (shell, resp) => {
+                    expect(resp.version).toEqual('0.0.1-wip')
+                    return shell.data
+                },
+            ),
         )
         .subscribe(() => {
             done()
@@ -105,23 +120,11 @@ test('get explorer', (done) => {
                 path.resolve(__dirname, './cdn.zip'),
                 (shell, resp) => new TestData({ ...shell.data, asset: resp }),
             ),
-            tap((shell) => {
-                expectAssetAttributes(shell.data.asset)
-            }),
-            getRawMetadata(
-                (shell) => ({ rawId: shell.data.asset.rawId }),
+            getInfo(
+                (shell) => ({ libraryId: shell.data.asset.rawId }),
                 (shell, resp) =>
                     new TestData({ ...shell.data, metadata: resp }),
             ),
-            tap((shell) => {
-                expectAttributes(shell.data.metadata, [
-                    'name',
-                    'versions',
-                    'namespace',
-                    'id',
-                    'releases',
-                ])
-            }),
             getPackageFolderContent(
                 (shell) => ({
                     rawId: shell.data.asset.rawId,
@@ -163,6 +166,82 @@ test('get explorer', (done) => {
                     expect(resp.files[0].size).toBeGreaterThan(0)
                     return shell.data
                 },
+            ),
+        )
+        .subscribe(() => {
+            done()
+        })
+})
+
+test('download package', (done) => {
+    shell$<TestData>()
+        .pipe(
+            uploadPackage(
+                path.resolve(__dirname, './cdn.zip'),
+                (shell, resp) => new TestData({ ...shell.data, asset: resp }),
+            ),
+            getInfo(
+                (shell) => ({ libraryId: shell.data.asset.rawId }),
+                (shell, resp) =>
+                    new TestData({ ...shell.data, metadata: resp }),
+            ),
+            downloadPackage(
+                (shell) => ({
+                    libraryId: shell.data.asset.rawId,
+                    version: shell.data.metadata.versions[0],
+                }),
+                (shell, resp) =>
+                    new TestData({ ...shell.data, downloaded: resp }),
+            ),
+            tap((shell) => {
+                const fileReader = new FileReader()
+                fileReader.onload = function (event) {
+                    const original = readFileSync(
+                        path.resolve(__dirname, './cdn.zip'),
+                    )
+                    const downloaded = new Uint8Array(
+                        event.target.result as ArrayBuffer,
+                    )
+                    expect(original).toEqual(downloaded)
+                    //fs.writeFileSync(path.resolve(__dirname, './result.zip'), downloaded)
+                }
+                fileReader.readAsArrayBuffer(shell.data.downloaded)
+            }),
+        )
+        .subscribe(() => {
+            done()
+        })
+})
+
+test('delete package', (done) => {
+    shell$<TestData>()
+        .pipe(
+            uploadPackage(
+                path.resolve(__dirname, './cdn.zip'),
+                (shell, resp) => new TestData({ ...shell.data, asset: resp }),
+            ),
+            getInfo(
+                (shell) => ({ libraryId: shell.data.asset.rawId }),
+                (shell, resp) =>
+                    new TestData({ ...shell.data, metadata: resp }),
+            ),
+            deleteLibrary(
+                (shell) => ({
+                    libraryId: shell.data.asset.rawId,
+                }),
+                (shell, resp) =>
+                    new TestData({ ...shell.data, downloaded: resp }),
+            ),
+            getInfo(
+                (shell) => ({ libraryId: shell.data.asset.rawId }),
+                (shell) => {
+                    expect(false).toBeTruthy()
+                    return shell.data
+                },
+                onHTTPErrors((resp) => {
+                    expect(resp.status).toBe(404)
+                    return 'ManagedError'
+                }),
             ),
         )
         .subscribe(() => {
