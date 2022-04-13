@@ -5,6 +5,7 @@ import {
     HTTPError,
     NativeRequestOptions,
     send$,
+    sendFormData,
 } from './utils'
 
 export class Router {
@@ -53,6 +54,40 @@ export class Router {
             { ...nativeRequestOptions, headers },
             callerOptions.monitoring,
         )
+    }
+
+    sendFormData$({
+        command,
+        path,
+        formData,
+        nativeRequestOptions,
+        callerOptions,
+    }: {
+        command: CommandType
+        path: string
+        formData: FormData
+        nativeRequestOptions?: NativeRequestOptions
+        callerOptions?: CallerRequestOptions
+    }) {
+        nativeRequestOptions = nativeRequestOptions || {}
+
+        if (!nativeRequestOptions.method) {
+            nativeRequestOptions.method = Router.defaultMethodMapping[command]
+        }
+
+        const headers = {
+            ...nativeRequestOptions.headers,
+            ...this.headers,
+            ...(callerOptions.headers || {}),
+        }
+
+        return sendFormData({
+            url: `${this.basePath}${path}`,
+            formData,
+            method: nativeRequestOptions.method as 'POST' | 'PUT',
+            headers,
+            callerOptions,
+        })
     }
 }
 

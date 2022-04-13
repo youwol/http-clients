@@ -295,27 +295,27 @@ export function downloadBlob(
     return response$
 }
 
-export function uploadBlob(
-    url: string,
-    fileName: string,
-    method: 'PUT' | 'POST',
-    blob: Blob,
+export function sendFormData({
+    url,
+    formData,
+    method,
     headers,
-    callerOptions: CallerRequestOptions = {},
-): Observable<unknown | HTTPError> {
+    callerOptions,
+}: {
+    url: string
+    formData: FormData
+    method: 'PUT' | 'POST'
+    headers
+    callerOptions: CallerRequestOptions
+}) {
     const { channels$ } = callerOptions.monitoring || {}
-
     const follower =
         channels$ &&
         new RequestFollower({
-            requestId: callerOptions.monitoring.requestId || fileName,
+            requestId: callerOptions.monitoring.requestId,
             channels$,
             commandType: 'upload',
         })
-
-    const file = new File([blob], fileName, { type: blob.type })
-    const formData = new FormData()
-    formData.append('file', file)
 
     const xhr = new XMLHttpRequest()
     const response = new ReplaySubject<unknown>(1)
@@ -359,4 +359,18 @@ export function uploadBlob(
             return resp
         }),
     )
+}
+
+export function uploadBlob(
+    url: string,
+    fileName: string,
+    method: 'PUT' | 'POST',
+    blob: Blob,
+    headers,
+    callerOptions: CallerRequestOptions = {},
+): Observable<unknown | HTTPError> {
+    const file = new File([blob], fileName, { type: blob.type })
+    const formData = new FormData()
+    formData.append('file', file)
+    return sendFormData({ url, formData, method, headers, callerOptions })
 }
