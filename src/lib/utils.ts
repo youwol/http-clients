@@ -268,7 +268,7 @@ export function downloadBlob(
             commandType: 'download',
         })
 
-    const response$ = new ReplaySubject<Blob>(1)
+    const response$ = new ReplaySubject<Blob | HTTPError>(1)
     const xhr = new XMLHttpRequest()
 
     xhr.open('GET', url)
@@ -289,6 +289,14 @@ export function downloadBlob(
 
     xhr.onload = () => {
         follower && follower.end()
+        if (xhr.status >= 400) {
+            response$.next(
+                new HTTPError(xhr.status, {
+                    statusText: xhr.statusText,
+                }),
+            )
+        }
+
         response$.next(xhr.response)
     }
     xhr.send()
