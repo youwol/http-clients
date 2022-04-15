@@ -19,7 +19,6 @@ test('pyYouwol.admin.system.queryRootLogs', (done) => {
         .queryRootLogs$({ fromTimestamp: Date.now(), maxCount: 100 })
         .pipe(raiseHTTPErrors())
         .subscribe((resp) => {
-            expectAttributes(resp, ['logs'])
             expectAttributes(resp.logs[0], [
                 'level',
                 'attributes',
@@ -31,9 +30,9 @@ test('pyYouwol.admin.system.queryRootLogs', (done) => {
             ])
             // This has to be the last log
             expectAttributes(resp.logs[0].attributes, [
-                ['service', 'admin/logs'],
-                ['router', 'system'],
-                ['method', 'GET'],
+                'router',
+                'method',
+                'traceId',
             ])
             done()
         })
