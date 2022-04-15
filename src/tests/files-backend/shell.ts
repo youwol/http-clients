@@ -13,7 +13,7 @@ import {
     PostFileResponse,
     PostMetadataBody,
     RemoveResponse,
-    StatsResponse,
+    GetInfoResponse,
 } from '../../lib/files-backend'
 
 type ManagedError = 'ManagedError'
@@ -91,19 +91,19 @@ export function upload<T>(
     }
 }
 
-export function getStats<T>(
+export function getInfo<T>(
     input: (shell: Shell<T>) => { fileId: string },
-    cb: (shell: Shell<T>, resp: StatsResponse) => T,
+    cb: (shell: Shell<T>, resp: GetInfoResponse) => T,
     onError: OperatorFunction<
-        StatsResponse | HTTPError,
-        StatsResponse | ManagedError
+        GetInfoResponse | HTTPError,
+        GetInfoResponse | ManagedError
     > = raiseHTTPErrors(),
 ) {
     return (source$: Observable<Shell<T>>) => {
         return source$.pipe(
             mergeMap((shell) => {
                 const { fileId } = input(shell)
-                return shell.assetsGtw.files.getStats$(fileId).pipe(
+                return shell.assetsGtw.files.getInfo$(fileId).pipe(
                     onError,
                     map((resp) => {
                         if (resp == 'ManagedError') {

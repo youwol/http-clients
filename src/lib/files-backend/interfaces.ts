@@ -11,7 +11,7 @@ export interface Metadata {
     fileName: string
 }
 
-export interface StatsResponse {
+export interface GetInfoResponse {
     metadata: Metadata
 }
 

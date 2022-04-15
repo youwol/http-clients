@@ -9,7 +9,7 @@ import {
     PostMetadataBody,
     PostMetadataResponse,
     RemoveResponse,
-    StatsResponse,
+    GetInfoResponse,
 } from './interfaces'
 import { RootRouter } from '../router'
 import { Observable } from 'rxjs'
@@ -78,13 +78,13 @@ export class FilesClient extends RootRouter {
      * @param fileId
      * @param callerOptions
      */
-    getStats$(
+    getInfo$(
         fileId: string,
         callerOptions: CallerRequestOptions = {},
-    ): HTTPResponse$<StatsResponse> {
+    ): HTTPResponse$<GetInfoResponse> {
         return this.send$({
             command: 'query',
-            path: `/files/${fileId}/stats`,
+            path: `/files/${fileId}/info`,
             callerOptions,
         })
     }

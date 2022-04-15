@@ -5,7 +5,7 @@ import path from 'path'
 import { Asset, MetadataResponse } from '../../lib/assets-gateway'
 import { getPyYouwolBasePath, resetPyYouwolDbs$ } from '../common'
 import '../mock-requests'
-import { get, getStats, remove, shell$, updateMetadata, upload } from './shell'
+import { get, getInfo, remove, shell$, updateMetadata, upload } from './shell'
 import { readFileSync } from 'fs'
 import { from } from 'rxjs'
 import { mapTo, mergeMap, reduce, take, tap } from 'rxjs/operators'
@@ -80,7 +80,7 @@ test('upload files, get stats & get content', (done) => {
                     return new TestData({ ...shell.data, asset: resp })
                 },
             ),
-            getStats(
+            getInfo(
                 (shell) => ({ fileId: shell.data.asset.rawId }),
                 (shell, resp) => {
                     expect(resp.metadata.contentType).toBe(
@@ -93,7 +93,9 @@ test('upload files, get stats & get content', (done) => {
                 },
             ),
             get(
-                (shell) => ({ fileId: shell.data.asset.rawId }),
+                (shell) => {
+                    return { fileId: shell.data.asset.rawId }
+                },
                 (shell, resp: Blob) => {
                     return new TestData({ ...shell.data, downloaded: resp })
                 },
@@ -169,7 +171,7 @@ test('upload image file, check thumbnails & delete', (done) => {
                     return shell.data
                 },
             ),
-            getStats(
+            getInfo(
                 (shell) => ({ fileId: shell.data.asset.rawId }),
                 (shell) => {
                     expect(false).toBeTruthy()
@@ -216,7 +218,7 @@ test('upload file, update metadata', (done) => {
                     return shell.data
                 },
             ),
-            getStats(
+            getInfo(
                 (shell) => ({ fileId: shell.data.asset.rawId }),
                 (shell, resp) => {
                     expect(resp.metadata.fileName).toBe(shell.data.asset.name)
