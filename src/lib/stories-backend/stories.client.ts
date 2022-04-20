@@ -46,9 +46,11 @@ export class StoriesClient extends RootRouter {
      * @param callerOptions
      * @returns response
      */
-    getHealthz$(
-        callerOptions: CallerRequestOptions = {},
-    ): HTTPResponse$<HealthzResponse> {
+    getHealthz$({
+        callerOptions,
+    }: {
+        callerOptions: CallerRequestOptions
+    }): HTTPResponse$<HealthzResponse> {
         return this.send$({
             command: 'query',
             path: `/healthz`,
@@ -62,16 +64,24 @@ export class StoriesClient extends RootRouter {
      * @param body
      * @param body.storyId id of the story
      * @param body.title title of the story
-     * @param folderId if this client is used through assets-gtw, destination folderId
+     * @param queryParameters
+     * @param queryParameters.folderId if this client is used through assets-gtw, destination folderId
      * @param callerOptions
      * @return story response or asset depending on whether the client is used through assets-gtw
      */
-    create$(
-        body: { storyId?: string; title: string },
-        folderId?: string,
-        callerOptions: CallerRequestOptions = {},
-    ): HTTPResponse$<Asset | StoryResponse> {
-        const suffix = folderId ? `?folder-id=${folderId}` : ''
+    create$({
+        body,
+        queryParameters,
+        callerOptions,
+    }: {
+        body: { storyId?: string; title: string }
+        queryParameters?: { folderId?: string }
+        callerOptions?: CallerRequestOptions
+    }): HTTPResponse$<Asset | StoryResponse> {
+        const suffix =
+            queryParameters && queryParameters.folderId
+                ? `?folder-id=${queryParameters.folderId}`
+                : ''
         return this.send$({
             command: 'create',
             path: `/stories${suffix}`,
@@ -83,24 +93,35 @@ export class StoriesClient extends RootRouter {
     /**
      * Publish a story from a .zip file
      *
-     * @param fileName string
-     * @param blob Blob content of the zip file
-     * @param folderId if this client is used through assets-gtw, destination folderId
+     * @param body
+     * @param body.fileName string
+     * @param body.blob Blob content of the zip file
+     * @param queryParameters
+     * @param queryParameters.folderId if this client is used through assets-gtw, destination folderId
      * @param callerOptions
      * @return story response or asset depending on whether the client is used through assets-gtw
      */
-    publish$(
-        fileName: string,
-        blob: Blob,
-        folderId?: string,
-        callerOptions: CallerRequestOptions = {},
-    ): HTTPResponse$<Asset | StoryResponse> {
-        const suffix = folderId ? `?folder-id=${folderId}` : ''
+    publish$({
+        body,
+        queryParameters,
+        callerOptions,
+    }: {
+        body: {
+            fileName: string
+            blob: Blob
+        }
+        queryParameters?: { folderId?: string }
+        callerOptions?: CallerRequestOptions
+    }): HTTPResponse$<Asset | StoryResponse> {
+        const suffix =
+            queryParameters && queryParameters.folderId
+                ? `?folder-id=${queryParameters.folderId}`
+                : ''
         return uploadBlob(
             `${this.basePath}/stories${suffix}`,
-            fileName,
+            body.fileName,
             'POST',
-            blob,
+            body.blob,
             {},
             callerOptions,
         ) as Observable<null | HTTPError>
@@ -112,10 +133,13 @@ export class StoriesClient extends RootRouter {
      * @param storyId
      * @param callerOptions
      */
-    getStory$(
-        storyId: string,
-        callerOptions: CallerRequestOptions = {},
-    ): HTTPResponse$<StoryResponse> {
+    getStory$({
+        storyId,
+        callerOptions,
+    }: {
+        storyId: string
+        callerOptions?: CallerRequestOptions
+    }): HTTPResponse$<StoryResponse> {
         return this.send$({
             command: 'query',
             path: `/stories/${storyId}`,
@@ -129,10 +153,13 @@ export class StoriesClient extends RootRouter {
      * @param storyId
      * @param callerOptions
      */
-    deleteStory$(
-        storyId: string,
-        callerOptions: CallerRequestOptions = {},
-    ): HTTPResponse$<DeleteStoryResponse> {
+    deleteStory$({
+        storyId,
+        callerOptions,
+    }: {
+        storyId: string
+        callerOptions?: CallerRequestOptions
+    }): HTTPResponse$<DeleteStoryResponse> {
         return this.send$({
             command: 'delete',
             path: `/stories/${storyId}`,
@@ -146,10 +173,13 @@ export class StoriesClient extends RootRouter {
      * @param storyId storyId
      * @param callerOptions
      */
-    getGlobalContents$(
-        storyId: string,
-        callerOptions: CallerRequestOptions = {},
-    ): HTTPResponse$<GetGlobalContentResponse> {
+    getGlobalContents$({
+        storyId,
+        callerOptions,
+    }: {
+        storyId: string
+        callerOptions?: CallerRequestOptions
+    }): HTTPResponse$<GetGlobalContentResponse> {
         return this.send$({
             command: 'query',
             path: `/stories/${storyId}/global-contents`,
@@ -164,11 +194,15 @@ export class StoriesClient extends RootRouter {
      * @param documentId
      * @param callerOptions
      */
-    getDocument$(
-        storyId: string,
-        documentId: string,
-        callerOptions: CallerRequestOptions = {},
-    ): HTTPResponse$<DocumentResponse> {
+    getDocument$({
+        storyId,
+        documentId,
+        callerOptions,
+    }: {
+        storyId: string
+        documentId: string
+        callerOptions?: CallerRequestOptions
+    }): HTTPResponse$<DocumentResponse> {
         return this.send$({
             command: 'query',
             path: `/stories/${storyId}/documents/${documentId}`,
@@ -183,11 +217,15 @@ export class StoriesClient extends RootRouter {
      * @param body body
      * @param callerOptions
      */
-    updateGlobalContents$(
-        storyId: string,
-        body: PostGlobalContentBody,
-        callerOptions: CallerRequestOptions = {},
-    ): HTTPResponse$<{}> {
+    updateGlobalContents$({
+        storyId,
+        body,
+        callerOptions,
+    }: {
+        storyId: string
+        body: PostGlobalContentBody
+        callerOptions?: CallerRequestOptions
+    }): HTTPResponse$<{}> {
         return this.send$({
             command: 'update',
             path: `/stories/${storyId}/global-contents`,
@@ -208,15 +246,19 @@ export class StoriesClient extends RootRouter {
      * @param body.content content of the document
      * @param callerOptions
      */
-    createDocument$(
-        storyId: string,
+    createDocument$({
+        storyId,
+        body,
+        callerOptions,
+    }: {
+        storyId: string
         body: {
             parentDocumentId: string
             title: string
             content?: DocumentContentBody
-        },
-        callerOptions: CallerRequestOptions = {},
-    ): HTTPResponse$<DocumentResponse> {
+        }
+        callerOptions?: CallerRequestOptions
+    }): HTTPResponse$<DocumentResponse> {
         return this.send$({
             command: 'create',
             path: `/stories/${storyId}/documents`,
@@ -237,12 +279,17 @@ export class StoriesClient extends RootRouter {
      * @param body.title title of the document
      * @param callerOptions
      */
-    updateDocument$(
-        storyId: string,
-        documentId: string,
-        body: UpdateDocumentBody,
-        callerOptions: CallerRequestOptions = {},
-    ): HTTPResponse$<DocumentResponse> {
+    updateDocument$({
+        storyId,
+        documentId,
+        body,
+        callerOptions,
+    }: {
+        storyId: string
+        documentId: string
+        body: UpdateDocumentBody
+        callerOptions?: CallerRequestOptions
+    }): HTTPResponse$<DocumentResponse> {
         return this.send$({
             command: 'update',
             path: `/stories/${storyId}/documents/${documentId}`,
@@ -260,11 +307,15 @@ export class StoriesClient extends RootRouter {
      * @param documentId id of the document to delete
      * @param callerOptions
      */
-    getContent$(
-        storyId: string,
-        documentId: string,
-        callerOptions: CallerRequestOptions = {},
-    ): HTTPResponse$<DocumentContentResp> {
+    getContent$({
+        storyId,
+        documentId,
+        callerOptions,
+    }: {
+        storyId: string
+        documentId: string
+        callerOptions?: CallerRequestOptions
+    }): HTTPResponse$<DocumentContentResp> {
         return this.send$({
             command: 'query',
             path: `/stories/${storyId}/contents/${documentId}`,
@@ -281,12 +332,17 @@ export class StoriesClient extends RootRouter {
      * @param body.content new content
      * @param callerOptions
      */
-    updateContent$(
-        storyId: string,
-        documentId: string,
-        body: DocumentContentBody,
-        callerOptions: CallerRequestOptions = {},
-    ): HTTPResponse$<boolean> {
+    updateContent$({
+        storyId,
+        documentId,
+        body,
+        callerOptions,
+    }: {
+        storyId: string
+        documentId: string
+        body: DocumentContentBody
+        callerOptions?: CallerRequestOptions
+    }): HTTPResponse$<boolean> {
         return this.send$({
             command: 'update',
             path: `/stories/${storyId}/contents/${documentId}`,
@@ -304,11 +360,15 @@ export class StoriesClient extends RootRouter {
      * @param documentId id of the document to delete
      * @param callerOptions
      */
-    deleteDocument$(
-        storyId: string,
-        documentId: string,
-        callerOptions: CallerRequestOptions = {},
-    ): HTTPResponse$<DeleteDocumentResponse> {
+    deleteDocument$({
+        storyId,
+        documentId,
+        callerOptions,
+    }: {
+        storyId: string
+        documentId: string
+        callerOptions?: CallerRequestOptions
+    }): HTTPResponse$<DeleteDocumentResponse> {
         return this.send$({
             command: 'delete',
             path: `/stories/${storyId}/documents/${documentId}`,
@@ -321,17 +381,34 @@ export class StoriesClient extends RootRouter {
      *
      * @param storyId
      * @param parentDocumentId
-     * @param fromIndex starting children document's index
-     * @param count number of document returned after start at fromIndex (included)
+     * @param queryParameters
+     * @param queryParameters.fromIndex starting children document's index
+     * @param queryParameters.count number of document returned after start at fromIndex (included)
      * @param callerOptions
      */
-    queryDocuments$(
-        storyId: string,
-        parentDocumentId: string,
-        fromIndex = 0,
-        count = 1000,
-        callerOptions: CallerRequestOptions = {},
-    ): HTTPResponse$<DocumentsResponse> {
+    queryDocuments$({
+        storyId,
+        parentDocumentId,
+        queryParameters,
+        callerOptions,
+    }: {
+        storyId: string
+        parentDocumentId: string
+        queryParameters?: {
+            fromIndex?: number
+            count?: number
+        }
+        callerOptions?: CallerRequestOptions
+    }): HTTPResponse$<DocumentsResponse> {
+        const fromIndex =
+            queryParameters && queryParameters.fromIndex
+                ? queryParameters.fromIndex
+                : 0
+        const count =
+            queryParameters && queryParameters.count
+                ? queryParameters.count
+                : 1000
+
         return this.send$({
             command: 'query',
             path: `/stories/${storyId}/documents/${parentDocumentId}/children?from-index=${fromIndex}&count=${count}`,
@@ -347,12 +424,17 @@ export class StoriesClient extends RootRouter {
      * @param body body
      * @param callerOptions
      */
-    moveDocument$(
-        storyId: string,
-        documentId: string,
-        body: MoveDocumentBody,
-        callerOptions: CallerRequestOptions = {},
-    ): HTTPResponse$<MoveDocumentResponse> {
+    moveDocument$({
+        storyId,
+        documentId,
+        body,
+        callerOptions,
+    }: {
+        storyId: string
+        documentId: string
+        body: MoveDocumentBody
+        callerOptions?: CallerRequestOptions
+    }): HTTPResponse$<MoveDocumentResponse> {
         return this.send$({
             command: 'update',
             path: `/stories/${storyId}/documents/${documentId}/move`,
@@ -370,11 +452,15 @@ export class StoriesClient extends RootRouter {
      * @param body body
      * @param callerOptions
      */
-    addPlugin$(
-        storyId: string,
-        body: AddPluginBody,
-        callerOptions: CallerRequestOptions = {},
-    ): HTTPResponse$<PostPluginResponse> {
+    addPlugin$({
+        storyId,
+        body,
+        callerOptions,
+    }: {
+        storyId: string
+        body: AddPluginBody
+        callerOptions?: CallerRequestOptions
+    }): HTTPResponse$<PostPluginResponse> {
         return this.send$({
             command: 'update',
             path: `/stories/${storyId}/plugins`,
@@ -391,10 +477,13 @@ export class StoriesClient extends RootRouter {
      * @param storyId storyId
      * @param callerOptions
      */
-    downloadZip$(
-        storyId: string,
-        callerOptions: CallerRequestOptions = {},
-    ): HTTPResponse$<Blob> {
+    downloadZip$({
+        storyId,
+        callerOptions,
+    }: {
+        storyId: string
+        callerOptions?: CallerRequestOptions
+    }): HTTPResponse$<Blob> {
         return downloadBlob(
             `${this.basePath}/stories/${storyId}/download-zip`,
             storyId,

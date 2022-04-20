@@ -29,13 +29,10 @@ export function createStory<T>(
         return source$.pipe(
             mergeMap((shell) => {
                 return shell.assetsGtw.stories
-                    .create$(
-                        {
-                            title,
-                            storyId,
-                        },
-                        shell.homeFolderId,
-                    )
+                    .create$({
+                        body: { title, storyId },
+                        queryParameters: { folderId: shell.homeFolderId },
+                    })
                     .pipe(
                         raiseHTTPErrors(),
                         tap((resp) => {
@@ -56,7 +53,7 @@ export function getStory<T>(
     return (source$: Observable<Shell<T>>) => {
         return source$.pipe(
             mergeMap((shell) => {
-                return shell.assetsGtw.stories.getStory$(storyId).pipe(
+                return shell.assetsGtw.stories.getStory$({ storyId }).pipe(
                     onError,
                     map((resp) => {
                         if (resp == 'ErrorManaged') return shell
@@ -85,17 +82,19 @@ export function getGlobalContents<T>(
     return (source$: Observable<Shell<T>>) => {
         return source$.pipe(
             mergeMap((shell) => {
-                return shell.assetsGtw.stories.getGlobalContents$(storyId).pipe(
-                    raiseHTTPErrors(),
-                    tap((resp) => {
-                        expectAttributes(resp, [
-                            'css',
-                            'javascript',
-                            'components',
-                        ])
-                    }),
-                    mapToShell(shell, cb),
-                )
+                return shell.assetsGtw.stories
+                    .getGlobalContents$({ storyId })
+                    .pipe(
+                        raiseHTTPErrors(),
+                        tap((resp) => {
+                            expectAttributes(resp, [
+                                'css',
+                                'javascript',
+                                'components',
+                            ])
+                        }),
+                        mapToShell(shell, cb),
+                    )
             }),
         )
     }
@@ -110,7 +109,7 @@ export function updateGlobalContents<T>(
         return source$.pipe(
             mergeMap((shell) => {
                 return shell.assetsGtw.stories
-                    .updateGlobalContents$(storyId, content)
+                    .updateGlobalContents$({ storyId, body: content })
                     .pipe(
                         raiseHTTPErrors(),
                         tap((resp) => {
@@ -134,20 +133,18 @@ export function getContent<T>(
         return source$.pipe(
             mergeMap((shell) => {
                 const args = input(shell)
-                return shell.assetsGtw.stories
-                    .getContent$(args.storyId, args.documentId)
-                    .pipe(
-                        raiseHTTPErrors(),
-                        tap((resp) => {
-                            expectAttributes(resp, [
-                                'html',
-                                'css',
-                                'components',
-                                'styles',
-                            ])
-                        }),
-                        mapToShell(shell, cb),
-                    )
+                return shell.assetsGtw.stories.getContent$(args).pipe(
+                    raiseHTTPErrors(),
+                    tap((resp) => {
+                        expectAttributes(resp, [
+                            'html',
+                            'css',
+                            'components',
+                            'styles',
+                        ])
+                    }),
+                    mapToShell(shell, cb),
+                )
             }),
         )
     }
@@ -166,7 +163,7 @@ export function updateContent<T>(
             mergeMap((shell) => {
                 const args = input(shell)
                 return shell.assetsGtw.stories
-                    .updateContent$(args.storyId, args.documentId, args.body)
+                    .updateContent$(args)
                     .pipe(raiseHTTPErrors(), mapToShell(shell, cb))
             }),
         )
@@ -185,22 +182,20 @@ export function updateDocument<T>(
         return source$.pipe(
             mergeMap((shell) => {
                 const args = input(shell)
-                return shell.assetsGtw.stories
-                    .updateDocument$(args.storyId, args.documentId, args.body)
-                    .pipe(
-                        raiseHTTPErrors(),
-                        tap((resp) => {
-                            expectAttributes(resp, [
-                                'documentId',
-                                'title',
-                                'position',
-                                'storyId',
-                                'contentId',
-                                'parentDocumentId',
-                            ])
-                        }),
-                        mapToShell(shell, cb),
-                    )
+                return shell.assetsGtw.stories.updateDocument$(args).pipe(
+                    raiseHTTPErrors(),
+                    tap((resp) => {
+                        expectAttributes(resp, [
+                            'documentId',
+                            'title',
+                            'position',
+                            'storyId',
+                            'contentId',
+                            'parentDocumentId',
+                        ])
+                    }),
+                    mapToShell(shell, cb),
+                )
             }),
         )
     }
@@ -217,15 +212,13 @@ export function deleteDocument<T>(
         return source$.pipe(
             mergeMap((shell) => {
                 const args = input(shell)
-                return shell.assetsGtw.stories
-                    .deleteDocument$(args.storyId, args.documentId)
-                    .pipe(
-                        raiseHTTPErrors(),
-                        tap((resp) => {
-                            expectAttributes(resp, ['deletedDocuments'])
-                        }),
-                        mapToShell(shell, cb),
-                    )
+                return shell.assetsGtw.stories.deleteDocument$(args).pipe(
+                    raiseHTTPErrors(),
+                    tap((resp) => {
+                        expectAttributes(resp, ['deletedDocuments'])
+                    }),
+                    mapToShell(shell, cb),
+                )
             }),
         )
     }
@@ -244,8 +237,11 @@ export function addPlugin<T>(
             mergeMap((shell) => {
                 const args = input(shell)
                 return shell.assetsGtw.stories
-                    .addPlugin$(args.storyId, args.body, {
-                        headers: args.headers,
+                    .addPlugin$({
+                        ...args,
+                        callerOptions: {
+                            headers: args.headers,
+                        },
                     })
                     .pipe(
                         raiseHTTPErrors(),
@@ -279,13 +275,16 @@ export function addDocuments<T>(
                 return forkJoin(
                     args.titles.map((title) =>
                         shell.assetsGtw.stories
-                            .createDocument$(args.storyId, {
-                                parentDocumentId: args.parentDocumentId,
-                                title,
-                                content:
-                                    args.contents && args.contents[title]
-                                        ? args.contents[title]
-                                        : undefined,
+                            .createDocument$({
+                                storyId: args.storyId,
+                                body: {
+                                    parentDocumentId: args.parentDocumentId,
+                                    title,
+                                    content:
+                                        args.contents && args.contents[title]
+                                            ? args.contents[title]
+                                            : undefined,
+                                },
                             })
                             .pipe(raiseHTTPErrors()),
                     ),
@@ -313,20 +312,13 @@ export function queryDocuments<T>(
         return source$.pipe(
             mergeMap((shell) => {
                 const args = input(shell)
-                return shell.assetsGtw.stories
-                    .queryDocuments$(
-                        args.storyId,
-                        args.parentDocumentId,
-                        args.fromIndex,
-                        args.count,
-                    )
-                    .pipe(
-                        raiseHTTPErrors(),
-                        tap((resp) => {
-                            expectAttributes(resp, ['documents'])
-                        }),
-                        mapToShell(shell, cb),
-                    )
+                return shell.assetsGtw.stories.queryDocuments$(args).pipe(
+                    raiseHTTPErrors(),
+                    tap((resp) => {
+                        expectAttributes(resp, ['documents'])
+                    }),
+                    mapToShell(shell, cb),
+                )
             }),
         )
     }
@@ -345,11 +337,7 @@ export function moveDocument<T>(
             mergeMap((shell) => {
                 const args = input(shell)
                 return shell.assetsGtw.stories
-                    .moveDocument$(
-                        args.storyId,
-                        args.documentId,
-                        args.destination,
-                    )
+                    .moveDocument$({ ...args, body: args.destination })
                     .pipe(
                         raiseHTTPErrors(),
                         tap((resp) => {
@@ -375,7 +363,10 @@ export function publish<T>(
             mergeMap((shell) => {
                 const args = input(shell)
                 return shell.assetsGtw.stories
-                    .publish$(args.filename, args.blob, args.folderId)
+                    .publish$({
+                        body: { fileName: args.filename, blob: args.blob },
+                        queryParameters: { folderId: args.folderId },
+                    })
                     .pipe(
                         raiseHTTPErrors(),
                         tap((resp) => {
@@ -398,7 +389,7 @@ export function downloadZip<T>(
         return source$.pipe(
             mergeMap((shell) => {
                 const args = input(shell)
-                return shell.assetsGtw.stories.downloadZip$(args.storyId).pipe(
+                return shell.assetsGtw.stories.downloadZip$(args).pipe(
                     raiseHTTPErrors(),
                     tap((resp) => {
                         expect(resp).toBeInstanceOf(Blob)
@@ -420,7 +411,7 @@ export function deleteStory<T>(
         return source$.pipe(
             mergeMap((shell) => {
                 const args = input(shell)
-                return shell.assetsGtw.stories.deleteStory$(args.storyId).pipe(
+                return shell.assetsGtw.stories.deleteStory$(args).pipe(
                     raiseHTTPErrors(),
                     tap((resp) => {
                         expect(resp).toEqual(null)
