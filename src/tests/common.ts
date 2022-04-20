@@ -57,10 +57,14 @@ export type ManagedError = 'ManagedError'
 
 export class Shell<T> {
     homeFolderId: string
+    defaultDriveId: string
+    privateGroupId: string
     assetsGtw: AssetsGatewayClient
     context: T
     constructor(params: {
         homeFolderId: string
+        privateGroupId: string
+        defaultDriveId: string
         assetsGtw: AssetsGatewayClient
         context?: T
     }) {
@@ -76,6 +80,8 @@ export function shell$<T>(context?: T) {
             expect(resp.driveName).toBe('Default drive')
             return new Shell<T>({
                 homeFolderId: resp.homeFolderId,
+                defaultDriveId: resp.driveId,
+                privateGroupId: resp.groupId,
                 assetsGtw,
                 context,
             })
