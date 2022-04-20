@@ -49,8 +49,8 @@ export class StoriesClient extends RootRouter {
     getHealthz$({
         callerOptions,
     }: {
-        callerOptions: CallerRequestOptions
-    }): HTTPResponse$<HealthzResponse> {
+        callerOptions?: CallerRequestOptions
+    } = {}): HTTPResponse$<HealthzResponse> {
         return this.send$({
             command: 'query',
             path: `/healthz`,
