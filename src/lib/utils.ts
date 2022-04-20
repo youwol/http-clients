@@ -174,7 +174,6 @@ export interface RequestMonitoring {
 export interface CallerRequestOptions {
     monitoring?: RequestMonitoring
     headers?: Record<string, string>
-    extraUrlParameters?: { [k: string]: string }
 }
 
 export interface NativeRequestOptions extends RequestInit {
@@ -255,9 +254,10 @@ export function downloadBlob(
     url: string,
     fileId: string,
     headers: { [_key: string]: string },
-    callerOptions: CallerRequestOptions,
+    callerOptions?: CallerRequestOptions,
     total?: number,
 ): Observable<Blob | HTTPError> {
+    callerOptions = callerOptions || {}
     const { requestId, channels$ } = callerOptions.monitoring || {}
 
     const follower =
@@ -303,14 +303,59 @@ export function downloadBlob(
     return response$
 }
 
+function camelCaseToKebabCase(str: string) {
+    return str.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`)
+}
+
+function queryParametersToUrlSuffix(queryParameters: { [k: string]: string }) {
+    return Object.entries(queryParameters || {})
+        .filter(([_, v]) => v != undefined)
+        .map(([k, v]) => `${camelCaseToKebabCase(k)}=${v}&`)
+        .reduce((acc, e) => `${acc}${e}`, '')
+}
+
+function setHeadersXHR(xhr: XMLHttpRequest, headers: { [k: string]: string }) {
+    Object.entries(headers).forEach(([key, val]: [string, string]) => {
+        xhr.setRequestHeader(key, val)
+    })
+}
+
+function instrumentXHR(
+    xhr: XMLHttpRequest,
+    response: Subject<unknown>,
+    follower?: RequestFollower,
+) {
+    follower &&
+        (xhr.onloadstart = (event) => follower && follower.start(event.total))
+
+    follower &&
+        (xhr.upload.onprogress = (event) =>
+            follower && follower.progressTo(event.loaded))
+
+    xhr.onload = () => {
+        if (xhr.readyState === 4) {
+            if (xhr.statusText === 'OK') {
+                follower && follower.end()
+                response.next(JSON.parse(xhr.responseText))
+            } else {
+                response.next(
+                    new HTTPError(xhr.status, JSON.parse(xhr.responseText)),
+                )
+            }
+        }
+    }
+}
+
 export function sendFormData({
     url,
+    queryParameters,
     formData,
     method,
     headers,
     callerOptions,
 }: {
     url: string
+    queryParameters?: { [_k: string]: string }
     formData: FormData
     method: 'PUT' | 'POST'
     headers
@@ -328,36 +373,13 @@ export function sendFormData({
     const xhr = new XMLHttpRequest()
     const response = new ReplaySubject<unknown>(1)
 
+    const params = queryParametersToUrlSuffix(queryParameters || {})
+    url = queryParameters ? `${url}?${params}` : url
     xhr.open(method, url, true)
 
-    const allHeaders = {
-        'content-type': 'multipart/form-data',
-        ...headers,
-        ...(callerOptions.headers || {}),
-    }
-    Object.entries(allHeaders).forEach(([key, val]: [string, string]) => {
-        xhr.setRequestHeader(key, val)
-    })
+    setHeadersXHR(xhr, { ...headers, ...(callerOptions.headers || {}) })
 
-    channels$ &&
-        (xhr.onloadstart = (event) => follower && follower.start(event.total))
-
-    channels$ &&
-        (xhr.upload.onprogress = (event) =>
-            follower && follower.progressTo(event.loaded))
-
-    xhr.onload = () => {
-        if (xhr.readyState === 4) {
-            if (xhr.statusText === 'OK') {
-                follower && follower.end()
-                response.next(JSON.parse(xhr.responseText))
-            } else {
-                response.next(
-                    new HTTPError(xhr.status, JSON.parse(xhr.responseText)),
-                )
-            }
-        }
-    }
+    instrumentXHR(xhr, response, follower)
     xhr.send(formData)
     return response.pipe(
         map((resp) => {

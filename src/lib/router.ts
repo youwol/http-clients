@@ -38,7 +38,7 @@ export class Router {
         callerOptions?: CallerRequestOptions
     }): Observable<TResponse | HTTPError> {
         nativeRequestOptions = nativeRequestOptions || {}
-
+        callerOptions = callerOptions || {}
         if (!nativeRequestOptions.method) {
             nativeRequestOptions.method = Router.defaultMethodMapping[command]
         }
@@ -60,17 +60,19 @@ export class Router {
         command,
         path,
         formData,
+        queryParameters,
         nativeRequestOptions,
         callerOptions,
     }: {
         command: CommandType
+        queryParameters?: { [_k: string]: string }
         path: string
         formData: FormData
         nativeRequestOptions?: NativeRequestOptions
         callerOptions?: CallerRequestOptions
     }) {
         nativeRequestOptions = nativeRequestOptions || {}
-
+        callerOptions = callerOptions || {}
         if (!nativeRequestOptions.method) {
             nativeRequestOptions.method = Router.defaultMethodMapping[command]
         }
@@ -83,6 +85,7 @@ export class Router {
 
         return sendFormData({
             url: `${this.basePath}${path}`,
+            queryParameters,
             formData,
             method: nativeRequestOptions.method as 'POST' | 'PUT',
             headers,
