@@ -1,4 +1,4 @@
-import { shell$ } from '../cdn-backend/shell'
+import '../mock-requests'
 import {
     addDocuments,
     addPlugin,
@@ -21,6 +21,7 @@ import {
     expectAttributes,
     resetPyYouwolDbs$,
     Shell,
+    shell$,
 } from '../common'
 import { DocumentResponse } from '../../lib/stories-backend'
 import { onHTTPErrors } from '../../lib'
@@ -62,7 +63,7 @@ test('create story, play with content', (done) => {
             createStory(storyId, title, (shell, resp) => {
                 expectAssetAttributes(resp)
                 expect(resp.name).toBe(title)
-                return shell.data
+                return shell.context
             }),
             getStory(storyId, (shell, resp) => {
                 expectAttributes(resp, [
@@ -75,22 +76,22 @@ test('create story, play with content', (done) => {
                 expect(resp.title).toBe(title)
                 expect(resp.rootDocumentId).toBe(`root_${resp.storyId}`)
                 expect(resp.authors).toHaveLength(1)
-                return { ...shell.data, ...resp }
+                return { ...shell.context, ...resp }
             }),
             getContent(
                 (shell) => ({
-                    documentId: shell.data.rootDocumentId,
-                    storyId: shell.data.storyId,
+                    documentId: shell.context.rootDocumentId,
+                    storyId: shell.context.storyId,
                 }),
                 (shell, resp) => {
                     expect(resp).toEqual(initialContent)
-                    return shell.data
+                    return shell.context
                 },
             ),
             updateContent(
                 (shell) => ({
-                    documentId: shell.data.rootDocumentId,
-                    storyId: shell.data.storyId,
+                    documentId: shell.context.rootDocumentId,
+                    storyId: shell.context.storyId,
                     body: {
                         html: '<div> Hello world </div>',
                         css: '',
@@ -99,17 +100,17 @@ test('create story, play with content', (done) => {
                     },
                 }),
                 (shell) => {
-                    return shell.data
+                    return shell.context
                 },
             ),
             getContent(
                 (shell) => ({
-                    documentId: shell.data.rootDocumentId,
-                    storyId: shell.data.storyId,
+                    documentId: shell.context.rootDocumentId,
+                    storyId: shell.context.storyId,
                 }),
                 (shell, resp) => {
                     expect(resp.html).toBe('<div> Hello world </div>')
-                    return shell.data
+                    return shell.context
                 },
             ),
         )
@@ -126,27 +127,27 @@ test('create story, play with documents', (done) => {
             createStory(storyId, title, (shell, resp) => {
                 expectAssetAttributes(resp)
                 expect(resp.name).toBe(title)
-                return shell.data
+                return shell.context
             }),
             getStory(storyId, (shell, resp) => {
-                return { ...shell.data, ...resp }
+                return { ...shell.context, ...resp }
             }),
             queryDocuments(
                 (shell) => ({
-                    storyId: shell.data.storyId,
-                    parentDocumentId: shell.data.rootDocumentId,
+                    storyId: shell.context.storyId,
+                    parentDocumentId: shell.context.rootDocumentId,
                     fromIndex: 0,
                     count: 100,
                 }),
                 (shell, resp) => {
                     expect(resp.documents).toHaveLength(0)
-                    return shell.data
+                    return shell.context
                 },
             ),
             addDocuments(
                 (shell: Shell<TestData>) => ({
-                    storyId: shell.data.storyId,
-                    parentDocumentId: shell.data.rootDocumentId,
+                    storyId: shell.context.storyId,
+                    parentDocumentId: shell.context.rootDocumentId,
                     titles: ['page0'],
                     contents: {
                         page0: {
@@ -169,13 +170,13 @@ test('create story, play with documents', (done) => {
                     expect(resp.storyId).toBe(storyId)
                     expect(resp.parentDocumentId).toBe(`root_${storyId}`)
                     expect(resp.title).toBe(`page0`)
-                    return shell.data
+                    return shell.context
                 },
             ),
             queryDocuments(
                 (shell) => ({
-                    storyId: shell.data.storyId,
-                    parentDocumentId: shell.data.rootDocumentId,
+                    storyId: shell.context.storyId,
+                    parentDocumentId: shell.context.rootDocumentId,
                     fromIndex: 0,
                     count: 100,
                 }),
@@ -183,42 +184,42 @@ test('create story, play with documents', (done) => {
                     expect(resp.documents).toHaveLength(1)
                     expect(resp.documents[0].title).toBe(`page0`)
                     return {
-                        ...shell.data,
+                        ...shell.context,
                         pages: { [resp.documents[0].title]: resp.documents[0] },
                     }
                 },
             ),
             updateDocument(
                 (shell) => ({
-                    storyId: shell.data.storyId,
-                    documentId: shell.data.pages['page0'].documentId,
+                    storyId: shell.context.storyId,
+                    documentId: shell.context.pages['page0'].documentId,
                     body: { title: 'page0 - updated' },
                 }),
                 (shell, resp) => {
                     expect(resp.title).toBe(`page0 - updated`)
-                    return shell.data
+                    return shell.context
                 },
             ),
             deleteDocument(
                 (shell) => ({
-                    storyId: shell.data.storyId,
-                    documentId: shell.data.pages['page0'].documentId,
+                    storyId: shell.context.storyId,
+                    documentId: shell.context.pages['page0'].documentId,
                 }),
                 (shell, resp) => {
                     expect(resp.deletedDocuments).toBe(1)
-                    return shell.data
+                    return shell.context
                 },
             ),
             queryDocuments(
                 (shell) => ({
-                    storyId: shell.data.storyId,
-                    parentDocumentId: shell.data.rootDocumentId,
+                    storyId: shell.context.storyId,
+                    parentDocumentId: shell.context.rootDocumentId,
                     fromIndex: 0,
                     count: 100,
                 }),
                 (shell, resp) => {
                     expect(resp.documents).toHaveLength(0)
-                    return shell.data
+                    return shell.context
                 },
             ),
         )
@@ -233,28 +234,28 @@ test('create story, play with global attributes', (done) => {
     shell$<TestData>()
         .pipe(
             createStory(storyId, title, (shell, _resp) => {
-                return shell.data
+                return shell.context
             }),
             getStory(storyId, (shell, resp) => {
                 expect(resp.storyId).toBe(storyId)
                 expect(resp.title).toBe(title)
                 expect(resp.rootDocumentId).toBe(`root_${resp.storyId}`)
                 expect(resp.authors).toHaveLength(1)
-                return shell.data
+                return shell.context
             }),
             getGlobalContents(storyId, (shell, _resp) => {
-                return shell.data
+                return shell.context
             }),
             updateGlobalContents(
                 storyId,
                 { javascript: 'test javascript' },
                 (shell, _resp) => {
-                    return shell.data
+                    return shell.context
                 },
             ),
             getGlobalContents(storyId, (shell, resp) => {
                 expect(resp.javascript).toBe('test javascript')
-                return shell.data
+                return shell.context
             }),
         )
         .subscribe(() => {
@@ -268,27 +269,27 @@ test('create story, play with plugins', (done) => {
     shell$<TestData>()
         .pipe(
             createStory(storyId, title, (shell, _resp) => {
-                return shell.data
+                return shell.context
             }),
             getStory(storyId, (shell, resp) => {
-                return { ...shell.data, ...resp }
+                return { ...shell.context, ...resp }
             }),
             addPlugin(
                 (shell) => ({
-                    storyId: shell.data.storyId,
+                    storyId: shell.context.storyId,
                     body: { packageName: '@youwol/http-clients' },
                     headers: { 'py-youwol-local-only': 'false' },
                 }),
                 (shell, resp) => {
                     expect(resp.packageName).toBe('@youwol/http-clients')
-                    return shell.data
+                    return shell.context
                 },
             ),
             getStory(storyId, (shell, resp) => {
                 expect(resp.requirements.plugins).toEqual([
                     '@youwol/http-clients',
                 ])
-                return shell.data
+                return shell.context
             }),
         )
         .subscribe(() => {
@@ -303,23 +304,23 @@ test('move-document', (done) => {
     let addDoc = (title: string) => {
         return addDocuments(
             (shell: Shell<TestData>) => ({
-                storyId: shell.data.storyId,
-                parentDocumentId: shell.data.rootDocumentId,
+                storyId: shell.context.storyId,
+                parentDocumentId: shell.context.rootDocumentId,
                 titles: [title],
             }),
             (shell, _resp) => {
-                return shell.data
+                return shell.context
             },
         )
     }
     shell$<TestData>()
         .pipe(
             createStory(storyId, title, (shell) => {
-                return shell.data
+                return shell.context
             }),
             getStory(storyId, (shell, resp) => {
                 return {
-                    ...shell.data,
+                    ...shell.context,
                     storyId: resp.storyId,
                     rootDocumentId: resp.rootDocumentId,
                 }
@@ -330,8 +331,8 @@ test('move-document', (done) => {
             addDoc('page3'),
             queryDocuments(
                 (shell) => ({
-                    storyId: shell.data.storyId,
-                    parentDocumentId: shell.data.rootDocumentId,
+                    storyId: shell.context.storyId,
+                    parentDocumentId: shell.context.rootDocumentId,
                     fromIndex: 0,
                     count: 100,
                 }),
@@ -342,7 +343,7 @@ test('move-document', (done) => {
                         'page3',
                     ])
                     return {
-                        ...shell.data,
+                        ...shell.context,
                         pages: resp.documents.reduce(
                             (acc, e) => ({ ...acc, [e.title]: e }),
                             {},
@@ -352,21 +353,21 @@ test('move-document', (done) => {
             ),
             moveDocument(
                 (shell) => ({
-                    storyId: shell.data.storyId,
-                    documentId: shell.data.pages['page1'].documentId,
+                    storyId: shell.context.storyId,
+                    documentId: shell.context.pages['page1'].documentId,
                     destination: {
-                        parent: shell.data.rootDocumentId,
-                        position: shell.data.pages['page3'].position + 1,
+                        parent: shell.context.rootDocumentId,
+                        position: shell.context.pages['page3'].position + 1,
                     },
                 }),
                 (shell, _resp) => {
-                    return shell.data
+                    return shell.context
                 },
             ),
             queryDocuments(
                 (shell) => ({
-                    storyId: shell.data.storyId,
-                    parentDocumentId: shell.data.rootDocumentId,
+                    storyId: shell.context.storyId,
+                    parentDocumentId: shell.context.rootDocumentId,
                     fromIndex: 0,
                     count: 100,
                 }),
@@ -376,7 +377,7 @@ test('move-document', (done) => {
                         'page3',
                         'page1',
                     ])
-                    return shell.data
+                    return shell.context
                 },
             ),
         )
@@ -399,31 +400,31 @@ test('publish story', (done) => {
                     blob: new Blob([arraybuffer]),
                 }),
                 (shell) => {
-                    return shell.data
+                    return shell.context
                 },
             ),
             getStory(storyId, (shell, resp) => {
                 expect(resp.storyId).toBe(storyId)
                 expect(resp.requirements.plugins.length).toEqual(1)
-                return shell.data
+                return shell.context
             }),
             downloadZip(
                 () => ({ storyId }),
                 (shell, resp) => {
-                    return { ...shell.data, downloadedZip: resp }
+                    return { ...shell.context, downloadedZip: resp }
                 },
             ),
             deleteStory(
                 () => ({ storyId, withUrlQueryParams: { purge: true } }),
                 (shell) => {
-                    return shell.data
+                    return shell.context
                 },
             ),
             getStory(
                 storyId,
                 (shell) => {
                     expect(false).toBeTruthy()
-                    return shell.data
+                    return shell.context
                 },
                 onHTTPErrors((resp) => {
                     expect(resp.status).toBe(404)
@@ -434,16 +435,16 @@ test('publish story', (done) => {
                 (shell) => ({
                     folderId: shell.homeFolderId,
                     filename: 'story.zip',
-                    blob: shell.data.downloadedZip,
+                    blob: shell.context.downloadedZip,
                 }),
                 (shell) => {
-                    return shell.data
+                    return shell.context
                 },
             ),
             getStory(storyId, (shell, resp) => {
                 expect(resp.storyId).toBe(storyId)
                 expect(resp.requirements.plugins.length).toEqual(1)
-                return shell.data
+                return shell.context
             }),
         )
         .subscribe(() => {

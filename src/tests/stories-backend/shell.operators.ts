@@ -1,8 +1,12 @@
 import { forkJoin, Observable } from 'rxjs'
-import { map, mergeMap } from 'rxjs/operators'
+import { map, mergeMap, tap } from 'rxjs/operators'
 import { raiseHTTPErrors } from '../../lib'
-import { expectAssetAttributes, expectAttributes } from '../common'
-import { Shell } from '../cdn-backend/shell'
+import {
+    expectAssetAttributes,
+    expectAttributes,
+    mapToShell,
+    Shell,
+} from '../common'
 import {
     AddPluginBody,
     DeleteDocumentResponse,
@@ -34,14 +38,10 @@ export function createStory<T>(
                     )
                     .pipe(
                         raiseHTTPErrors(),
-                        map((resp) => {
+                        tap((resp) => {
                             expectAssetAttributes(resp)
-                            const data = cb(shell, resp)
-                            return new Shell({
-                                ...shell,
-                                data,
-                            })
                         }),
+                        mapToShell(shell, cb),
                     )
             }),
         )
@@ -66,10 +66,10 @@ export function getStory<T>(
                             'title',
                             'authors',
                         ])
-                        const data = cb(shell, resp)
+                        const context = cb(shell, resp)
                         return new Shell({
                             ...shell,
-                            data,
+                            context,
                         })
                     }),
                 )
@@ -87,18 +87,14 @@ export function getGlobalContents<T>(
             mergeMap((shell) => {
                 return shell.assetsGtw.stories.getGlobalContents$(storyId).pipe(
                     raiseHTTPErrors(),
-                    map((resp) => {
+                    tap((resp) => {
                         expectAttributes(resp, [
                             'css',
                             'javascript',
                             'components',
                         ])
-                        const data = cb(shell, resp)
-                        return new Shell({
-                            ...shell,
-                            data,
-                        })
                     }),
+                    mapToShell(shell, cb),
                 )
             }),
         )
@@ -117,14 +113,10 @@ export function updateGlobalContents<T>(
                     .updateGlobalContents$(storyId, content)
                     .pipe(
                         raiseHTTPErrors(),
-                        map((resp) => {
+                        tap((resp) => {
                             expectAttributes(resp, [])
-                            const data = cb(shell, resp)
-                            return new Shell({
-                                ...shell,
-                                data,
-                            })
                         }),
+                        mapToShell(shell, cb),
                     )
             }),
         )
@@ -146,19 +138,15 @@ export function getContent<T>(
                     .getContent$(args.storyId, args.documentId)
                     .pipe(
                         raiseHTTPErrors(),
-                        map((resp) => {
+                        tap((resp) => {
                             expectAttributes(resp, [
                                 'html',
                                 'css',
                                 'components',
                                 'styles',
                             ])
-                            const data = cb(shell, resp)
-                            return new Shell({
-                                ...shell,
-                                data,
-                            })
                         }),
+                        mapToShell(shell, cb),
                     )
             }),
         )
@@ -179,16 +167,7 @@ export function updateContent<T>(
                 const args = input(shell)
                 return shell.assetsGtw.stories
                     .updateContent$(args.storyId, args.documentId, args.body)
-                    .pipe(
-                        raiseHTTPErrors(),
-                        map((resp) => {
-                            const data = cb(shell, resp)
-                            return new Shell({
-                                ...shell,
-                                data,
-                            })
-                        }),
-                    )
+                    .pipe(raiseHTTPErrors(), mapToShell(shell, cb))
             }),
         )
     }
@@ -210,7 +189,7 @@ export function updateDocument<T>(
                     .updateDocument$(args.storyId, args.documentId, args.body)
                     .pipe(
                         raiseHTTPErrors(),
-                        map((resp) => {
+                        tap((resp) => {
                             expectAttributes(resp, [
                                 'documentId',
                                 'title',
@@ -219,12 +198,8 @@ export function updateDocument<T>(
                                 'contentId',
                                 'parentDocumentId',
                             ])
-                            const data = cb(shell, resp)
-                            return new Shell({
-                                ...shell,
-                                data,
-                            })
                         }),
+                        mapToShell(shell, cb),
                     )
             }),
         )
@@ -246,14 +221,10 @@ export function deleteDocument<T>(
                     .deleteDocument$(args.storyId, args.documentId)
                     .pipe(
                         raiseHTTPErrors(),
-                        map((resp) => {
+                        tap((resp) => {
                             expectAttributes(resp, ['deletedDocuments'])
-                            const data = cb(shell, resp)
-                            return new Shell({
-                                ...shell,
-                                data,
-                            })
                         }),
+                        mapToShell(shell, cb),
                     )
             }),
         )
@@ -278,18 +249,14 @@ export function addPlugin<T>(
                     })
                     .pipe(
                         raiseHTTPErrors(),
-                        map((resp) => {
+                        tap((resp) => {
                             expectAttributes(resp, [
                                 'packageName',
                                 'version',
                                 'requirements',
                             ])
-                            const data = cb(shell, resp)
-                            return new Shell({
-                                ...shell,
-                                data,
-                            })
                         }),
+                        mapToShell(shell, cb),
                     )
             }),
         )
@@ -323,14 +290,10 @@ export function addDocuments<T>(
                             .pipe(raiseHTTPErrors()),
                     ),
                 ).pipe(
-                    map((resp) => {
+                    tap((resp) => {
                         expect(resp).toBeInstanceOf(Array)
-                        const data = cb(shell, resp)
-                        return new Shell({
-                            ...shell,
-                            data,
-                        })
                     }),
+                    mapToShell(shell, cb),
                 )
             }),
         )
@@ -359,14 +322,10 @@ export function queryDocuments<T>(
                     )
                     .pipe(
                         raiseHTTPErrors(),
-                        map((resp) => {
+                        tap((resp) => {
                             expectAttributes(resp, ['documents'])
-                            const data = cb(shell, resp)
-                            return new Shell({
-                                ...shell,
-                                data,
-                            })
                         }),
+                        mapToShell(shell, cb),
                     )
             }),
         )
@@ -393,14 +352,10 @@ export function moveDocument<T>(
                     )
                     .pipe(
                         raiseHTTPErrors(),
-                        map((resp) => {
+                        tap((resp) => {
                             expectAttributes(resp, [])
-                            const data = cb(shell, resp as null)
-                            return new Shell({
-                                ...shell,
-                                data,
-                            })
                         }),
+                        mapToShell(shell, cb),
                     )
             }),
         )
@@ -423,14 +378,10 @@ export function publish<T>(
                     .publish$(args.filename, args.blob, args.folderId)
                     .pipe(
                         raiseHTTPErrors(),
-                        map((resp) => {
+                        tap((resp) => {
                             expectAssetAttributes(resp)
-                            const data = cb(shell, resp as null)
-                            return new Shell({
-                                ...shell,
-                                data,
-                            })
                         }),
+                        mapToShell(shell, cb),
                     )
             }),
         )
@@ -449,14 +400,10 @@ export function downloadZip<T>(
                 const args = input(shell)
                 return shell.assetsGtw.stories.downloadZip$(args.storyId).pipe(
                     raiseHTTPErrors(),
-                    map((resp) => {
+                    tap((resp) => {
                         expect(resp).toBeInstanceOf(Blob)
-                        const data = cb(shell, resp)
-                        return new Shell({
-                            ...shell,
-                            data,
-                        })
                     }),
+                    mapToShell(shell, cb),
                 )
             }),
         )
@@ -475,14 +422,10 @@ export function deleteStory<T>(
                 const args = input(shell)
                 return shell.assetsGtw.stories.deleteStory$(args.storyId).pipe(
                     raiseHTTPErrors(),
-                    map((resp) => {
+                    tap((resp) => {
                         expect(resp).toEqual(null)
-                        const data = cb(shell, resp)
-                        return new Shell({
-                            ...shell,
-                            data,
-                        })
                     }),
+                    mapToShell(shell, cb),
                 )
             }),
         )
