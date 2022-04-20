@@ -43,23 +43,25 @@ export class FilesClient extends RootRouter {
     upload$(
         dataDescription: {
             fileName: string
-            blob: Blob
             fileId?: string
+            content: Blob | File
         },
         folderId?: string,
         callerOptions: CallerRequestOptions = {},
     ): HTTPResponse$<NewAssetResponse<PostFileResponse> | PostFileResponse> {
         const suffix = folderId ? `?folder-id=${folderId}` : ''
-        const file = new File(
-            [dataDescription.blob],
-            dataDescription.fileName,
-            {
-                type: dataDescription.blob.type,
-            },
-        )
+        const content = dataDescription.content
+        const file =
+            content instanceof Blob
+                ? new File([content], dataDescription.fileName, {
+                      type: content.type,
+                  })
+                : content
+
         const formData = new FormData()
         formData.append('file', file)
-        formData.append('file_id', dataDescription.fileId)
+        dataDescription.fileId &&
+            formData.append('file_id', dataDescription.fileId)
         formData.append('file_name', dataDescription.fileName)
 
         return this.sendFormData$({
