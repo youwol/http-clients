@@ -64,40 +64,42 @@ test('upload files, get stats & get content', (done) => {
             }),
             upload(
                 (shell) => ({
-                    fileName: shell.data.fileName,
-                    fileId: shell.data.fileName,
-                    path: path.resolve(testDataDir, shell.data.fileName),
+                    fileName: shell.context.fileName,
+                    fileId: shell.context.fileName,
+                    path: path.resolve(testDataDir, shell.context.fileName),
                 }),
                 (shell, resp) => {
-                    expect(resp.name).toBe(shell.data.fileName)
-                    expect(resp.rawResponse.fileName).toBe(shell.data.fileName)
+                    expect(resp.name).toBe(shell.context.fileName)
+                    expect(resp.rawResponse.fileName).toBe(
+                        shell.context.fileName,
+                    )
                     expect(resp.rawResponse.contentType).toBe(
                         expectedContentTypes[resp.name],
                     )
                     expect(resp.rawResponse.contentEncoding).toBe(
                         expectedContentEncodings[resp.name],
                     )
-                    return new TestData({ ...shell.data, asset: resp })
+                    return new TestData({ ...shell.context, asset: resp })
                 },
             ),
             getInfo(
-                (shell) => ({ fileId: shell.data.asset.rawId }),
+                (shell) => ({ fileId: shell.context.asset.rawId }),
                 (shell, resp) => {
                     expect(resp.metadata.contentType).toBe(
-                        expectedContentTypes[shell.data.fileName],
+                        expectedContentTypes[shell.context.fileName],
                     )
                     expect(resp.metadata.contentEncoding).toBe(
-                        expectedContentEncodings[shell.data.fileName],
+                        expectedContentEncodings[shell.context.fileName],
                     )
-                    return new TestData(shell.data)
+                    return new TestData(shell.context)
                 },
             ),
             get(
                 (shell) => {
-                    return { fileId: shell.data.asset.rawId }
+                    return { fileId: shell.context.asset.rawId }
                 },
                 (shell, resp: Blob) => {
-                    return new TestData({ ...shell.data, downloaded: resp })
+                    return new TestData({ ...shell.context, downloaded: resp })
                 },
             ),
             mergeMap((shell) => {
@@ -105,18 +107,18 @@ test('upload files, get stats & get content', (done) => {
                     const fileReader = new FileReader()
                     fileReader.onload = function (event) {
                         const original = readFileSync(
-                            path.resolve(testDataDir, shell.data.fileName),
+                            path.resolve(testDataDir, shell.context.fileName),
                         )
                         const downloaded = new Uint8Array(
                             event.target.result as ArrayBuffer,
                         )
-                        if (!shell.data.fileName.endsWith('.br')) {
+                        if (!shell.context.fileName.endsWith('.br')) {
                             // there is auto brotli decompression activated in unit tests
                             expect(original).toHaveLength(downloaded.length)
                         }
                         resolve(shell)
                     }
-                    fileReader.readAsArrayBuffer(shell.data.downloaded)
+                    fileReader.readAsArrayBuffer(shell.context.downloaded)
                 })
                 return from(promise)
             }),
@@ -135,14 +137,14 @@ test('upload image file, check thumbnails & delete', (done) => {
         .pipe(
             upload(
                 (shell) => ({
-                    fileName: shell.data.fileName,
-                    fileId: shell.data.fileName,
-                    path: path.resolve(testDataDir, shell.data.fileName),
+                    fileName: shell.context.fileName,
+                    fileId: shell.context.fileName,
+                    path: path.resolve(testDataDir, shell.context.fileName),
                 }),
                 (shell, resp) => {
                     expect(resp.images).toHaveLength(1)
                     return new TestData({
-                        ...shell.data,
+                        ...shell.context,
                         asset: resp,
                         thumbnailUrl: resp.images[0],
                     })
@@ -150,7 +152,7 @@ test('upload image file, check thumbnails & delete', (done) => {
             ),
             mergeMap((shell) => {
                 const request = new Request(
-                    `${getPyYouwolBasePath()}${shell.data.thumbnailUrl}`,
+                    `${getPyYouwolBasePath()}${shell.context.thumbnailUrl}`,
                 )
                 return from(fetch(request)).pipe(
                     mergeMap((data) => {
@@ -165,17 +167,17 @@ test('upload image file, check thumbnails & delete', (done) => {
             }),
             remove(
                 (shell) => ({
-                    fileId: shell.data.asset.rawId,
+                    fileId: shell.context.asset.rawId,
                 }),
                 (shell) => {
-                    return shell.data
+                    return shell.context
                 },
             ),
             getInfo(
-                (shell) => ({ fileId: shell.data.asset.rawId }),
+                (shell) => ({ fileId: shell.context.asset.rawId }),
                 (shell) => {
                     expect(false).toBeTruthy()
-                    return shell.data
+                    return shell.context
                 },
                 onHTTPErrors((resp) => {
                     expect(resp.status).toBe(404)
@@ -195,36 +197,38 @@ test('upload file, update metadata', (done) => {
         .pipe(
             upload(
                 (shell) => ({
-                    fileName: shell.data.fileName,
-                    fileId: shell.data.fileName,
-                    path: path.resolve(testDataDir, shell.data.fileName),
+                    fileName: shell.context.fileName,
+                    fileId: shell.context.fileName,
+                    path: path.resolve(testDataDir, shell.context.fileName),
                 }),
                 (shell, resp) => {
                     return new TestData({
-                        ...shell.data,
+                        ...shell.context,
                         asset: resp,
                     })
                 },
             ),
             updateMetadata(
                 (shell) => ({
-                    fileId: shell.data.asset.rawId,
+                    fileId: shell.context.asset.rawId,
                     metadata: {
                         contentType: 'tutu',
                         contentEncoding: 'tata',
                     },
                 }),
                 (shell) => {
-                    return shell.data
+                    return shell.context
                 },
             ),
             getInfo(
-                (shell) => ({ fileId: shell.data.asset.rawId }),
+                (shell) => ({ fileId: shell.context.asset.rawId }),
                 (shell, resp) => {
-                    expect(resp.metadata.fileName).toBe(shell.data.asset.name)
+                    expect(resp.metadata.fileName).toBe(
+                        shell.context.asset.name,
+                    )
                     expect(resp.metadata.contentType).toBe('tutu')
                     expect(resp.metadata.contentEncoding).toBe('tata')
-                    return shell.data
+                    return shell.context
                 },
             ),
         )

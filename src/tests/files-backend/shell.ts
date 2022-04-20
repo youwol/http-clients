@@ -5,10 +5,16 @@ import {
     DefaultDriveResponse,
     NewAssetResponse,
 } from '../../lib/assets-gateway'
-import { map, mergeMap } from 'rxjs/operators'
+import { map, mergeMap, tap } from 'rxjs/operators'
 import { Observable, OperatorFunction } from 'rxjs'
 import { readFileSync } from 'fs'
-import { expectAssetAttributes, expectAttributes } from '../common'
+import {
+    expectAssetAttributes,
+    expectAttributes,
+    ManagedError,
+    mapToShell,
+    Shell,
+} from '../common'
 import {
     PostFileResponse,
     PostMetadataBody,
@@ -16,22 +22,7 @@ import {
     GetInfoResponse,
 } from '../../lib/files-backend'
 
-type ManagedError = 'ManagedError'
-
-export class Shell<T> {
-    homeFolderId: string
-    assetsGtw: AssetsGatewayClient
-    data: T
-    constructor(params: {
-        homeFolderId: string
-        assetsGtw: AssetsGatewayClient
-        data?: T
-    }) {
-        Object.assign(this, params)
-    }
-}
-
-export function shell$<T>(data?: any) {
+export function shell$<T>(context?: any) {
     const assetsGtw = new AssetsGatewayClient()
     return assetsGtw.explorer.getDefaultUserDrive$().pipe(
         raiseHTTPErrors(),
@@ -40,7 +31,7 @@ export function shell$<T>(data?: any) {
             return new Shell<T>({
                 homeFolderId: resp.homeFolderId,
                 assetsGtw,
-                data,
+                context,
             })
         }),
     )
@@ -59,19 +50,15 @@ export function upload<T>(
             mergeMap((shell) => {
                 const { fileId, fileName, path } = input(shell)
                 const buffer = readFileSync(path)
-                const arraybuffer = Uint8Array.from(buffer).buffer
+                const blob = new Blob([Uint8Array.from(buffer).buffer])
                 return shell.assetsGtw.files
                     .upload$(
-                        {
-                            fileName,
-                            blob: new Blob([arraybuffer]),
-                            fileId,
-                        },
+                        { fileId, fileName, content: blob },
                         shell.homeFolderId,
                     )
                     .pipe(
                         raiseHTTPErrors(),
-                        map((resp: NewAssetResponse<PostFileResponse>) => {
+                        tap((resp: NewAssetResponse<PostFileResponse>) => {
                             expectAssetAttributes(resp)
                             expectAttributes(resp.rawResponse, [
                                 'fileId',
@@ -79,12 +66,8 @@ export function upload<T>(
                                 'contentType',
                                 'contentEncoding',
                             ])
-                            const data = cb(shell, resp)
-                            return new Shell({
-                                ...shell,
-                                data,
-                            })
                         }),
+                        mapToShell(shell, cb),
                     )
             }),
         )
@@ -114,10 +97,10 @@ export function getInfo<T>(
                             'contentType',
                             'contentEncoding',
                         ])
-                        const data = cb(shell, resp)
+                        const context = cb(shell, resp)
                         return new Shell({
                             ...shell,
-                            data,
+                            context,
                         })
                     }),
                 )
@@ -136,16 +119,7 @@ export function updateMetadata<T>(
                 const { fileId, metadata } = input(shell)
                 return shell.assetsGtw.files
                     .updateMetadata$(fileId, metadata)
-                    .pipe(
-                        raiseHTTPErrors(),
-                        map((resp) => {
-                            const data = cb(shell, resp)
-                            return new Shell({
-                                ...shell,
-                                data,
-                            })
-                        }),
-                    )
+                    .pipe(raiseHTTPErrors(), mapToShell(shell, cb))
             }),
         )
     }
@@ -161,14 +135,10 @@ export function get<T>(
                 const { fileId } = input(shell)
                 return shell.assetsGtw.files.get$(fileId).pipe(
                     raiseHTTPErrors(),
-                    map((resp) => {
+                    tap((resp) => {
                         expect(resp).toBeInstanceOf(Blob)
-                        const data = cb(shell, resp)
-                        return new Shell({
-                            ...shell,
-                            data,
-                        })
                     }),
+                    mapToShell(shell, cb),
                 )
             }),
         )
@@ -183,16 +153,9 @@ export function remove<T>(
         return source$.pipe(
             mergeMap((shell) => {
                 const { fileId } = input(shell)
-                return shell.assetsGtw.files.remove$(fileId).pipe(
-                    raiseHTTPErrors(),
-                    map((resp) => {
-                        const data = cb(shell, resp)
-                        return new Shell({
-                            ...shell,
-                            data,
-                        })
-                    }),
-                )
+                return shell.assetsGtw.files
+                    .remove$(fileId)
+                    .pipe(raiseHTTPErrors(), mapToShell(shell, cb))
             }),
         )
     }
