@@ -30,8 +30,11 @@ test('query healthz', (done) => {
 })
 
 test('get data from empty db', (done) => {
-    storage.applications
-        .getData$('@youwol/platform-essentials', 'integration-tests')
+    storage
+        .getData$({
+            packageName: '@youwol/platform-essentials',
+            dataName: 'integration-tests',
+        })
         .pipe(raiseHTTPErrors())
         .subscribe((resp: Json) => {
             expect(resp).toEqual({})
@@ -40,8 +43,12 @@ test('get data from empty db', (done) => {
 })
 
 test('post data', (done) => {
-    storage.applications
-        .postData$('@youwol/platform-essentials', 'integration-tests', testData)
+    storage
+        .postData$({
+            packageName: '@youwol/platform-essentials',
+            dataName: 'integration-tests',
+            body: testData,
+        })
         .pipe(raiseHTTPErrors())
         .subscribe((resp: Record<string, never>) => {
             expect(resp).toEqual({})
@@ -50,8 +57,11 @@ test('post data', (done) => {
 })
 
 test('get data', (done) => {
-    storage.applications
-        .getData$('@youwol/platform-essentials', 'integration-tests')
+    storage
+        .getData$({
+            packageName: '@youwol/platform-essentials',
+            dataName: 'integration-tests',
+        })
         .pipe(raiseHTTPErrors())
         .subscribe((resp: Json) => {
             expect(resp).toEqual(testData)
