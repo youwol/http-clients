@@ -1,13 +1,9 @@
 // eslint-disable-next-line eslint-comments/disable-enable-pair -- to not have problem
 /* eslint-disable jest/no-done-callback -- eslint-comment Find a good way to work with rxjs in jest */
 
-import { Json, raiseHTTPErrors } from '../../lib'
-import { CdnSessionsStorageClient } from '../../lib/cdn-sessions-storage'
-
 import { resetPyYouwolDbs$ } from '../common'
 import '../mock-requests'
-
-const storage = new CdnSessionsStorageClient()
+import { getData, postData, shell$ } from './shell'
 
 beforeAll(async (done) => {
     resetPyYouwolDbs$().subscribe(() => {
@@ -19,52 +15,45 @@ const testData = {
     content: 'some content',
 }
 
-test('query healthz', (done) => {
-    storage
-        .getHealthz$()
-        .pipe(raiseHTTPErrors())
-        .subscribe((resp) => {
-            expect(resp.status).toBe('cdn-sessions-storage ok')
-            done()
-        })
-})
-
 test('get data from empty db', (done) => {
-    storage
-        .getData$({
-            packageName: '@youwol/platform-essentials',
-            dataName: 'integration-tests',
-        })
-        .pipe(raiseHTTPErrors())
-        .subscribe((resp: Json) => {
-            expect(resp).toEqual({})
+    shell$()
+        .pipe(
+            getData(
+                () => ({
+                    packageName: '@youwol/platform-essentials',
+                    dataName: 'integration-tests',
+                    body: testData,
+                }),
+                (shell, resp) => {
+                    expect(resp).toEqual({})
+                },
+            ),
+        )
+        .subscribe(() => {
             done()
         })
 })
 
-test('post data', (done) => {
-    storage
-        .postData$({
-            packageName: '@youwol/platform-essentials',
-            dataName: 'integration-tests',
-            body: testData,
-        })
-        .pipe(raiseHTTPErrors())
-        .subscribe((resp: Record<string, never>) => {
-            expect(resp).toEqual({})
-            done()
-        })
-})
-
-test('get data', (done) => {
-    storage
-        .getData$({
-            packageName: '@youwol/platform-essentials',
-            dataName: 'integration-tests',
-        })
-        .pipe(raiseHTTPErrors())
-        .subscribe((resp: Json) => {
-            expect(resp).toEqual(testData)
+test('post/get data', (done) => {
+    shell$()
+        .pipe(
+            postData(() => ({
+                packageName: '@youwol/platform-essentials',
+                dataName: 'integration-tests',
+                body: testData,
+            })),
+            getData(
+                () => ({
+                    packageName: '@youwol/platform-essentials',
+                    dataName: 'integration-tests',
+                    body: testData,
+                }),
+                (shell, resp) => {
+                    expect(resp).toEqual(testData)
+                },
+            ),
+        )
+        .subscribe(() => {
             done()
         })
 })
