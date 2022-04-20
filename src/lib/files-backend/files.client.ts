@@ -32,37 +32,43 @@ export class FilesClient extends RootRouter {
     /**
      * Publish a story from a .zip file
      *
-     * @param dataDescription string
-     * @param dataDescription.fileName filename
-     * @param dataDescription.blob Blob content of the zip file
-     * @param dataDescription.fileId optional fileId
-     * @param folderId if this client is used through assets-gtw, destination folderId
+     * @param body
+     * @param body.fileName filename
+     * @param body.blob Blob content of the zip file
+     * @param body.fileId optional fileId
+     * @param queryParameters
+     * @param queryParameters.folderId if this client is used through assets-gtw, destination folderId
      * @param callerOptions
      * @return file response or asset depending on whether the client is used through assets-gtw
      */
-    upload$(
-        dataDescription: {
+    upload$({
+        body,
+        queryParameters,
+        callerOptions,
+    }: {
+        body: {
             fileName: string
             fileId?: string
             content: Blob | File
-        },
-        folderId?: string,
-        callerOptions: CallerRequestOptions = {},
-    ): HTTPResponse$<NewAssetResponse<PostFileResponse> | PostFileResponse> {
-        const suffix = folderId ? `?folder-id=${folderId}` : ''
-        const content = dataDescription.content
+        }
+        queryParameters?: { folderId?: string }
+        callerOptions?: CallerRequestOptions
+    }): HTTPResponse$<NewAssetResponse<PostFileResponse> | PostFileResponse> {
+        const suffix = queryParameters.folderId
+            ? `?folder-id=${queryParameters.folderId}`
+            : ''
+        const content = body.content
         const file =
             content instanceof Blob
-                ? new File([content], dataDescription.fileName, {
+                ? new File([content], body.fileName, {
                       type: content.type,
                   })
                 : content
 
         const formData = new FormData()
         formData.append('file', file)
-        dataDescription.fileId &&
-            formData.append('file_id', dataDescription.fileId)
-        formData.append('file_name', dataDescription.fileName)
+        body.fileId && formData.append('file_id', body.fileId)
+        formData.append('file_name', body.fileName)
 
         return this.sendFormData$({
             command: 'upload',
@@ -80,10 +86,13 @@ export class FilesClient extends RootRouter {
      * @param fileId
      * @param callerOptions
      */
-    getInfo$(
-        fileId: string,
-        callerOptions: CallerRequestOptions = {},
-    ): HTTPResponse$<GetInfoResponse> {
+    getInfo$({
+        fileId,
+        callerOptions,
+    }: {
+        fileId: string
+        callerOptions?: CallerRequestOptions
+    }): HTTPResponse$<GetInfoResponse> {
         return this.send$({
             command: 'query',
             path: `/files/${fileId}/info`,
@@ -98,11 +107,15 @@ export class FilesClient extends RootRouter {
      * @param body metadata fields
      * @param callerOptions
      */
-    updateMetadata$(
-        fileId: string,
-        body: PostMetadataBody,
-        callerOptions: CallerRequestOptions = {},
-    ): HTTPResponse$<PostMetadataResponse> {
+    updateMetadata$({
+        fileId,
+        body,
+        callerOptions,
+    }: {
+        fileId: string
+        body: PostMetadataBody
+        callerOptions?: CallerRequestOptions
+    }): HTTPResponse$<PostMetadataResponse> {
         return this.send$({
             command: 'update',
             path: `/files/${fileId}/metadata`,
@@ -119,10 +132,13 @@ export class FilesClient extends RootRouter {
      * @param fileId
      * @param callerOptions
      */
-    get$(
-        fileId: string,
-        callerOptions: CallerRequestOptions = {},
-    ): HTTPResponse$<Blob> {
+    get$({
+        fileId,
+        callerOptions,
+    }: {
+        fileId: string
+        callerOptions?: CallerRequestOptions
+    }): HTTPResponse$<Blob> {
         return downloadBlob(
             `${this.basePath}/files/${fileId}`,
             fileId,
@@ -137,10 +153,13 @@ export class FilesClient extends RootRouter {
      * @param fileId
      * @param callerOptions
      */
-    remove$(
-        fileId: string,
-        callerOptions: CallerRequestOptions = {},
-    ): HTTPResponse$<RemoveResponse> {
+    remove$({
+        fileId,
+        callerOptions,
+    }: {
+        fileId: string
+        callerOptions?: CallerRequestOptions
+    }): HTTPResponse$<RemoveResponse> {
         return this.send$({
             command: 'delete',
             path: `/files/${fileId}`,

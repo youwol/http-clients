@@ -52,10 +52,10 @@ export function upload<T>(
                 const buffer = readFileSync(path)
                 const blob = new Blob([Uint8Array.from(buffer).buffer])
                 return shell.assetsGtw.files
-                    .upload$(
-                        { fileId, fileName, content: blob },
-                        shell.homeFolderId,
-                    )
+                    .upload$({
+                        body: { fileId, fileName, content: blob },
+                        queryParameters: { folderId: shell.homeFolderId },
+                    })
                     .pipe(
                         raiseHTTPErrors(),
                         tap((resp: NewAssetResponse<PostFileResponse>) => {
@@ -86,7 +86,7 @@ export function getInfo<T>(
         return source$.pipe(
             mergeMap((shell) => {
                 const { fileId } = input(shell)
-                return shell.assetsGtw.files.getInfo$(fileId).pipe(
+                return shell.assetsGtw.files.getInfo$({ fileId }).pipe(
                     onError,
                     map((resp) => {
                         if (resp == 'ManagedError') {
@@ -118,7 +118,7 @@ export function updateMetadata<T>(
             mergeMap((shell) => {
                 const { fileId, metadata } = input(shell)
                 return shell.assetsGtw.files
-                    .updateMetadata$(fileId, metadata)
+                    .updateMetadata$({ fileId, body: metadata })
                     .pipe(raiseHTTPErrors(), mapToShell(shell, cb))
             }),
         )
@@ -133,7 +133,7 @@ export function get<T>(
         return source$.pipe(
             mergeMap((shell) => {
                 const { fileId } = input(shell)
-                return shell.assetsGtw.files.get$(fileId).pipe(
+                return shell.assetsGtw.files.get$({ fileId }).pipe(
                     raiseHTTPErrors(),
                     tap((resp) => {
                         expect(resp).toBeInstanceOf(Blob)
@@ -154,7 +154,7 @@ export function remove<T>(
             mergeMap((shell) => {
                 const { fileId } = input(shell)
                 return shell.assetsGtw.files
-                    .remove$(fileId)
+                    .remove$({ fileId })
                     .pipe(raiseHTTPErrors(), mapToShell(shell, cb))
             }),
         )
