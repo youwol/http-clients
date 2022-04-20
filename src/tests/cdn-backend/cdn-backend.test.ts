@@ -63,7 +63,7 @@ test('get resource', (done) => {
                 (shell) => ({
                     libraryId: shell.data.asset.rawId,
                     version: '0.0.1-wip',
-                    path: 'package.json',
+                    restOfPath: 'package.json',
                 }),
                 (shell, resp) => {
                     expectAttributes(resp, [
@@ -127,8 +127,8 @@ test('get explorer', (done) => {
             ),
             getPackageFolderContent(
                 (shell) => ({
-                    rawId: shell.data.asset.rawId,
-                    path: '',
+                    libraryName: shell.data.asset.rawId,
+                    restOfPath: '',
                     version: shell.data.metadata.versions[0],
                 }),
                 (shell, resp) => {
@@ -141,8 +141,8 @@ test('get explorer', (done) => {
             ),
             getPackageFolderContent(
                 (shell) => ({
-                    rawId: shell.data.asset.rawId,
-                    path: 'assets',
+                    libraryName: shell.data.asset.rawId,
+                    restOfPath: 'assets',
                     version: shell.data.metadata.versions[0],
                 }),
                 (shell, resp) => {
@@ -154,8 +154,8 @@ test('get explorer', (done) => {
             ),
             getPackageFolderContent(
                 (shell) => ({
-                    rawId: shell.data.asset.rawId,
-                    path: 'assets/styles',
+                    libraryName: shell.data.asset.rawId,
+                    restOfPath: 'assets/styles',
                     version: shell.data.metadata.versions[0],
                 }),
                 (shell, resp) => {

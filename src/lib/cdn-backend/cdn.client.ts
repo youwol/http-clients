@@ -36,9 +36,11 @@ export class CdnClient extends RootRouter {
      * @param callerOptions
      * @returns response
      */
-    getHealthz$(
-        callerOptions: CallerRequestOptions = {},
-    ): HTTPResponse$<HealthzResponse> {
+    getHealthz$({
+        callerOptions,
+    }: {
+        callerOptions?: CallerRequestOptions
+    }): HTTPResponse$<HealthzResponse> {
         return this.send$({
             command: 'query',
             path: `/healthz`,
@@ -52,10 +54,13 @@ export class CdnClient extends RootRouter {
      * @param libraryId
      * @param callerOptions
      */
-    getLibraryInfo$(
-        libraryId: string,
-        callerOptions: CallerRequestOptions = {},
-    ): HTTPResponse$<LibraryInfoResponse> {
+    getLibraryInfo$({
+        libraryId,
+        callerOptions,
+    }: {
+        libraryId: string
+        callerOptions?: CallerRequestOptions
+    }): HTTPResponse$<LibraryInfoResponse> {
         return this.send$({
             command: 'query',
             path: `/libraries/${libraryId}`,
@@ -70,11 +75,15 @@ export class CdnClient extends RootRouter {
      * @param version
      * @param callerOptions
      */
-    getVersionInfo$(
-        libraryId: string,
-        version: string,
-        callerOptions: CallerRequestOptions = {},
-    ): HTTPResponse$<LibraryInfoResponse> {
+    getVersionInfo$({
+        libraryId,
+        version,
+        callerOptions,
+    }: {
+        libraryId: string
+        version: string
+        callerOptions?: CallerRequestOptions
+    }): HTTPResponse$<LibraryInfoResponse> {
         return this.send$({
             command: 'query',
             path: `/libraries/${libraryId}/${version}`,
@@ -87,10 +96,13 @@ export class CdnClient extends RootRouter {
      * @param libraryId
      * @param callerOptions
      */
-    deleteLibrary$(
-        libraryId: string,
-        callerOptions: CallerRequestOptions = {},
-    ): HTTPResponse$<DeleteLibraryResponse> {
+    deleteLibrary$({
+        libraryId,
+        callerOptions,
+    }: {
+        libraryId: string
+        callerOptions?: CallerRequestOptions
+    }): HTTPResponse$<DeleteLibraryResponse> {
         return this.send$({
             command: 'delete',
             path: `/libraries/${libraryId}`,
@@ -105,11 +117,15 @@ export class CdnClient extends RootRouter {
      * @param version
      * @param callerOptions
      */
-    getEntryPoint$(
-        libraryId: string,
-        version: string,
-        callerOptions: CallerRequestOptions = {},
-    ): HTTPResponse$<Blob> {
+    getEntryPoint$({
+        libraryId,
+        version,
+        callerOptions,
+    }: {
+        libraryId: string
+        version: string
+        callerOptions?: CallerRequestOptions
+    }): HTTPResponse$<Blob> {
         return this.send$({
             command: 'query',
             path: `/resources/${libraryId}/${version}`,
@@ -125,12 +141,17 @@ export class CdnClient extends RootRouter {
      * @param restOfPath
      * @param callerOptions
      */
-    getResource$(
-        libraryId: string,
-        version: string,
-        restOfPath: string,
-        callerOptions: CallerRequestOptions = {},
-    ): HTTPResponse$<Blob> {
+    getResource$({
+        libraryId,
+        version,
+        callerOptions,
+        restOfPath,
+    }: {
+        libraryId: string
+        version: string
+        restOfPath: string
+        callerOptions?: CallerRequestOptions
+    }): HTTPResponse$<Blob> {
         return this.send$({
             command: 'query',
             path: `/resources/${libraryId}/${version}/${restOfPath}`,
@@ -146,11 +167,15 @@ export class CdnClient extends RootRouter {
      * @param callerOptions
      * @return blob of the library's zip file
      */
-    downloadLibrary(
-        libraryId: string,
-        version: string,
-        callerOptions: CallerRequestOptions = {},
-    ): HTTPResponse$<Blob> {
+    downloadLibrary({
+        libraryId,
+        version,
+        callerOptions,
+    }: {
+        libraryId: string
+        version: string
+        callerOptions?: CallerRequestOptions
+    }): HTTPResponse$<Blob> {
         return downloadBlob(
             `${this.basePath}/download-library/${libraryId}/${version}`,
             'library',
@@ -162,24 +187,32 @@ export class CdnClient extends RootRouter {
     /**
      * Upload a zip file of a CDN package.
      *
-     * @param fileName string
-     * @param blob Blob content of the zip file
-     * @param folderId if this client is used through assets-gtw, destination folderId
+     * @param body
+     * @param body.fileName string
+     * @param body.blob Blob content of the zip file
+     * @param queryParameters
+     * @param queryParameters.folderId if this client is used through assets-gtw, destination folderId
      * @param callerOptions
      * @return package response or asset depending on whether the client is used through assets-gtw
      */
-    upload$(
-        fileName: string,
-        blob: Blob,
-        folderId?: string,
-        callerOptions: CallerRequestOptions = {},
-    ): HTTPResponse$<Asset | PublishResponse> {
-        const suffix = folderId ? `?folder-id=${folderId}` : ''
+    upload$({
+        body,
+        queryParameters,
+        callerOptions,
+    }: {
+        body: { fileName: string; blob: Blob }
+        queryParameters?: { folderId?: string }
+        callerOptions?: CallerRequestOptions
+    }): HTTPResponse$<Asset | PublishResponse> {
+        const suffix =
+            queryParameters && queryParameters.folderId
+                ? `?folder-id=${queryParameters.folderId}`
+                : ''
         return uploadBlob(
             `${this.basePath}/publish-library${suffix}`,
-            fileName,
+            body.fileName,
             'POST',
-            blob,
+            body.blob,
             {},
             callerOptions,
         ) as Observable<Asset | HTTPError>
@@ -193,12 +226,17 @@ export class CdnClient extends RootRouter {
      * @param restOfPath path of the folder
      * @param callerOptions
      */
-    queryExplorer$(
-        libraryName: string,
-        version: string,
-        restOfPath: string,
-        callerOptions: CallerRequestOptions = {},
-    ): HTTPResponse$<ExplorerResponse> {
+    queryExplorer$({
+        libraryName,
+        version,
+        restOfPath,
+        callerOptions,
+    }: {
+        libraryName: string
+        version: string
+        restOfPath: string
+        callerOptions?: CallerRequestOptions
+    }): HTTPResponse$<ExplorerResponse> {
         return this.send$({
             command: 'query',
             path: `/explorer/${libraryName}/${version}/${restOfPath}`,

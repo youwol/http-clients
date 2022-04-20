@@ -47,11 +47,13 @@ export function uploadPackage<T>(
                 const filename = filePath.split('/').slice(-1)[0]
                 const arraybuffer = Uint8Array.from(buffer).buffer
                 return shell.assetsGtw.cdn
-                    .upload$(
-                        filename,
-                        new Blob([arraybuffer]),
-                        shell.homeFolderId,
-                    )
+                    .upload$({
+                        body: {
+                            fileName: filename,
+                            blob: new Blob([arraybuffer]),
+                        },
+                        queryParameters: { folderId: shell.homeFolderId },
+                    })
                     .pipe(
                         raiseHTTPErrors(),
                         map((resp) => {
@@ -75,20 +77,17 @@ export function downloadPackage<T>(
     return (source$: Observable<Shell<T>>) => {
         return source$.pipe(
             mergeMap((shell) => {
-                const { libraryId, version } = input(shell)
-                return shell.assetsGtw.cdn
-                    .downloadLibrary(libraryId, version)
-                    .pipe(
-                        raiseHTTPErrors(),
-                        map((resp) => {
-                            expect(resp).toBeInstanceOf(Blob)
-                            const data = cb(shell, resp)
-                            return new Shell({
-                                ...shell,
-                                data,
-                            })
-                        }),
-                    )
+                return shell.assetsGtw.cdn.downloadLibrary(input(shell)).pipe(
+                    raiseHTTPErrors(),
+                    map((resp) => {
+                        expect(resp).toBeInstanceOf(Blob)
+                        const data = cb(shell, resp)
+                        return new Shell({
+                            ...shell,
+                            data,
+                        })
+                    }),
+                )
             }),
         )
     }
@@ -105,8 +104,7 @@ export function getInfo<T>(
     return (source$: Observable<Shell<T>>) => {
         return source$.pipe(
             mergeMap((shell) => {
-                const { libraryId } = input(shell)
-                return shell.assetsGtw.cdn.getLibraryInfo$(libraryId).pipe(
+                return shell.assetsGtw.cdn.getLibraryInfo$(input(shell)).pipe(
                     onError,
                     map((resp) => {
                         if (resp == 'ManagedError') return shell
@@ -136,27 +134,24 @@ export function getVersionInfo<T>(
     return (source$: Observable<Shell<T>>) => {
         return source$.pipe(
             mergeMap((shell) => {
-                const { libraryId, version } = input(shell)
-                return shell.assetsGtw.cdn
-                    .getVersionInfo$(libraryId, version)
-                    .pipe(
-                        raiseHTTPErrors(),
-                        map((resp) => {
-                            expectAttributes(resp, [
-                                'name',
-                                'version',
-                                'id',
-                                'namespace',
-                                'type',
-                                'fingerprint',
-                            ])
-                            const data = cb(shell, resp)
-                            return new Shell({
-                                ...shell,
-                                data,
-                            })
-                        }),
-                    )
+                return shell.assetsGtw.cdn.getVersionInfo$(input(shell)).pipe(
+                    raiseHTTPErrors(),
+                    map((resp) => {
+                        expectAttributes(resp, [
+                            'name',
+                            'version',
+                            'id',
+                            'namespace',
+                            'type',
+                            'fingerprint',
+                        ])
+                        const data = cb(shell, resp)
+                        return new Shell({
+                            ...shell,
+                            data,
+                        })
+                    }),
+                )
             }),
         )
     }
@@ -164,8 +159,8 @@ export function getVersionInfo<T>(
 
 export function getPackageFolderContent<T>(
     input: (shell: Shell<T>) => {
-        rawId: string
-        path: string
+        libraryName: string
+        restOfPath: string
         version: string
     },
     cb: (shell: Shell<T>, resp) => T,
@@ -173,20 +168,17 @@ export function getPackageFolderContent<T>(
     return (source$: Observable<Shell<T>>) => {
         return source$.pipe(
             mergeMap((shell) => {
-                const { rawId, path, version } = input(shell)
-                return shell.assetsGtw.cdn
-                    .queryExplorer$(rawId, version, path)
-                    .pipe(
-                        raiseHTTPErrors(),
-                        map((resp) => {
-                            expectAttributes(resp, ['folders', 'files'])
-                            const data = cb(shell, resp)
-                            return new Shell({
-                                ...shell,
-                                data,
-                            })
-                        }),
-                    )
+                return shell.assetsGtw.cdn.queryExplorer$(input(shell)).pipe(
+                    raiseHTTPErrors(),
+                    map((resp) => {
+                        expectAttributes(resp, ['folders', 'files'])
+                        const data = cb(shell, resp)
+                        return new Shell({
+                            ...shell,
+                            data,
+                        })
+                    }),
+                )
             }),
         )
     }
@@ -218,9 +210,8 @@ export function getEntryPoint<T>(
     return (source$: Observable<Shell<T>>) => {
         return source$.pipe(
             mergeMap((shell) => {
-                const { libraryId, version } = input(shell)
                 return shell.assetsGtw.cdn
-                    .getEntryPoint$(libraryId, version)
+                    .getEntryPoint$(input(shell))
                     .pipe(raiseHTTPErrors(), mapToShell(shell, cb))
             }),
         )
@@ -231,16 +222,15 @@ export function getResource<T>(
     input: (shell: Shell<T>) => {
         libraryId: string
         version: string
-        path: string
+        restOfPath: string
     },
     cb: (shell: Shell<T>, resp) => T,
 ) {
     return (source$: Observable<Shell<T>>) => {
         return source$.pipe(
             mergeMap((shell) => {
-                const { libraryId, path, version } = input(shell)
                 return shell.assetsGtw.cdn
-                    .getResource$(libraryId, version, path)
+                    .getResource$(input(shell))
                     .pipe(raiseHTTPErrors(), mapToShell(shell, cb))
             }),
         )
@@ -256,8 +246,7 @@ export function deleteLibrary<T>(
     return (source$: Observable<Shell<T>>) => {
         return source$.pipe(
             mergeMap((shell) => {
-                const { libraryId } = input(shell)
-                return shell.assetsGtw.cdn.deleteLibrary$(libraryId).pipe(
+                return shell.assetsGtw.cdn.deleteLibrary$(input(shell)).pipe(
                     raiseHTTPErrors(),
                     map((resp) => {
                         expectAttributes(resp, ['deletedVersionsCount'])
