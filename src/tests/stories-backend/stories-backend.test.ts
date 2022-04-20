@@ -1,5 +1,6 @@
 import '../mock-requests'
 import {
+    healthz,
     addDocuments,
     addPlugin,
     createStory,
@@ -48,6 +49,16 @@ class TestData {
         Object.assign(this, params)
     }
 }
+
+test('healthz', (done) => {
+    class Context {}
+
+    shell$<Context>()
+        .pipe(healthz())
+        .subscribe(() => {
+            done()
+        })
+})
 
 test('create story, play with content', (done) => {
     const title = 'test story: play with content'

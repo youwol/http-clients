@@ -20,6 +20,22 @@ import {
     UpdateDocumentBody,
 } from '../../lib/stories-backend'
 
+export function healthz<T>() {
+    return (source$: Observable<Shell<T>>) => {
+        return source$.pipe(
+            mergeMap((shell) => {
+                return shell.assetsGtw.stories.getHealthz$().pipe(
+                    raiseHTTPErrors(),
+                    tap((resp) => {
+                        expect(resp.status).toBe('stories-backend serving')
+                    }),
+                    mapToShell(shell),
+                )
+            }),
+        )
+    }
+}
+
 export function createStory<T>(
     storyId: string,
     title: string,
