@@ -3,7 +3,7 @@
 
 import { resetPyYouwolDbs$ } from '../common'
 import '../mock-requests'
-import { getData, postData, shell$ } from './shell'
+import { getData, postData, shell$, healthz } from './shell'
 
 beforeAll(async (done) => {
     resetPyYouwolDbs$().subscribe(() => {
@@ -14,6 +14,16 @@ beforeAll(async (done) => {
 const testData = {
     content: 'some content',
 }
+
+test('healthz', (done) => {
+    class Context {}
+
+    shell$<Context>()
+        .pipe(healthz())
+        .subscribe(() => {
+            done()
+        })
+})
 
 test('get data from empty db', (done) => {
     shell$()

@@ -1,6 +1,6 @@
 import '../mock-requests'
 import { Json, raiseHTTPErrors } from '../../lib'
-import { map, mergeMap } from 'rxjs/operators'
+import { map, mergeMap, tap } from 'rxjs/operators'
 import { Observable, of, OperatorFunction } from 'rxjs'
 import { CdnSessionsStorageClient } from '../../lib/cdn-sessions-storage'
 
@@ -27,6 +27,22 @@ export function mapToShell<T, T1>(
                     ...shell,
                     context,
                 })
+            }),
+        )
+    }
+}
+
+export function healthz<T>() {
+    return (source$: Observable<Shell<T>>) => {
+        return source$.pipe(
+            mergeMap((shell) => {
+                return shell.client.getHealthz$().pipe(
+                    raiseHTTPErrors(),
+                    tap((resp) => {
+                        expect(resp.status).toBe('cdn-sessions-storage ok')
+                    }),
+                    mapToShell(shell),
+                )
             }),
         )
     }
