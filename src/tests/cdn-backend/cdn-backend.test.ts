@@ -3,13 +3,12 @@
 
 import path from 'path'
 import { Asset, MetadataResponse } from '../../lib/assets-gateway'
-import { expectAttributes, resetPyYouwolDbs$ } from '../common'
+import { expectAttributes, resetPyYouwolDbs$, shell$ } from '../common'
 import '../mock-requests'
 import {
     getPackageFolderContent,
     getInfo,
     getResource,
-    shell$,
     uploadPackage,
     downloadPackage,
     deleteLibrary,

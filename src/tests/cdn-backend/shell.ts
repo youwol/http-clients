@@ -1,9 +1,5 @@
 import '../mock-requests'
 import { HTTPError, raiseHTTPErrors } from '../../lib'
-import {
-    AssetsGatewayClient,
-    DefaultDriveResponse,
-} from '../../lib/assets-gateway'
 import { map, mergeMap, tap } from 'rxjs/operators'
 import { Observable, OperatorFunction } from 'rxjs'
 import { readFileSync } from 'fs'
@@ -16,17 +12,6 @@ import {
 import { LibraryInfoResponse } from '../../lib/cdn-backend'
 
 type ManagedError = 'ManagedError'
-
-export function shell$<T>() {
-    const assetsGtw = new AssetsGatewayClient()
-    return assetsGtw.explorer.getDefaultUserDrive$().pipe(
-        raiseHTTPErrors(),
-        map((resp: DefaultDriveResponse) => {
-            expect(resp.driveName).toBe('Default drive')
-            return new Shell<T>({ homeFolderId: resp.homeFolderId, assetsGtw })
-        }),
-    )
-}
 
 export function uploadPackage<T>(
     filePath: string,
