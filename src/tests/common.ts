@@ -5,6 +5,7 @@ import {
     DefaultDriveResponse,
 } from '../lib/assets-gateway'
 import { map } from 'rxjs/operators'
+import { Observable, OperatorFunction } from 'rxjs'
 
 RootRouter.HostName = getPyYouwolBasePath()
 RootRouter.Headers = { 'py-youwol-local-only': 'true' }
@@ -52,26 +53,52 @@ export function expectAssetAttributes(resp: unknown) {
     ])
 }
 
+export type ManagedError = 'ManagedError'
+
 export class Shell<T> {
     homeFolderId: string
     assetsGtw: AssetsGatewayClient
-    data: T
+    context: T
     constructor(params: {
         homeFolderId: string
         assetsGtw: AssetsGatewayClient
-        data?: T
+        context?: T
     }) {
         Object.assign(this, params)
     }
 }
 
-export function shell$<T>() {
+export function shell$<T>(context?: T) {
     const assetsGtw = new AssetsGatewayClient()
     return assetsGtw.explorer.getDefaultUserDrive$().pipe(
         raiseHTTPErrors(),
         map((resp: DefaultDriveResponse) => {
             expect(resp.driveName).toBe('Default drive')
-            return new Shell<T>({ homeFolderId: resp.homeFolderId, assetsGtw })
+            return new Shell<T>({
+                homeFolderId: resp.homeFolderId,
+                assetsGtw,
+                context,
+            })
         }),
     )
+}
+
+export function mapToShell<T, T1>(
+    shell,
+    cb?: (shell: Shell<T1>, resp) => T1,
+): OperatorFunction<T, Shell<T1>> {
+    return (obs$: Observable<T>) => {
+        return obs$.pipe(
+            map((resp) => {
+                if (!cb) {
+                    return shell
+                }
+                const context = cb(shell, resp)
+                return new Shell({
+                    ...shell,
+                    context,
+                })
+            }),
+        )
+    }
 }
