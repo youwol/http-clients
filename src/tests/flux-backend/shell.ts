@@ -185,11 +185,15 @@ export function uploadPackages<T>(
                         const filename = path.split('/').slice(-1)[0]
                         const arraybuffer = Uint8Array.from(buffer).buffer
                         return shell.assetsGtw.cdn
-                            .upload$(
-                                filename,
-                                new Blob([arraybuffer]),
-                                shell.homeFolderId,
-                            )
+                            .upload$({
+                                body: {
+                                    fileName: filename,
+                                    blob: new Blob([arraybuffer]),
+                                },
+                                queryParameters: {
+                                    folderId: shell.homeFolderId,
+                                },
+                            })
                             .pipe(take(1))
                     }),
                 ).pipe(mapToShell(shell, cb))
