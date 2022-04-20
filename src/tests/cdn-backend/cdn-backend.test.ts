@@ -47,21 +47,22 @@ test('get resource', (done) => {
         .pipe(
             uploadPackage(
                 path.resolve(__dirname, './cdn.zip'),
-                (shell, resp) => new TestData({ ...shell.data, asset: resp }),
+                (shell, resp) =>
+                    new TestData({ ...shell.context, asset: resp }),
             ),
             getEntryPoint(
                 (shell) => ({
-                    libraryId: shell.data.asset.rawId,
+                    libraryId: shell.context.asset.rawId,
                     version: '0.0.1-wip',
                 }),
                 (shell, resp) => {
                     expect(resp.includes('<!doctype html>')).toBeTruthy()
-                    return shell.data
+                    return shell.context
                 },
             ),
             getResource(
                 (shell) => ({
-                    libraryId: shell.data.asset.rawId,
+                    libraryId: shell.context.asset.rawId,
                     version: '0.0.1-wip',
                     restOfPath: 'package.json',
                 }),
@@ -74,7 +75,7 @@ test('get resource', (done) => {
                     ])
                     expect(resp['name']).toBe('@youwol/todo-app-js')
                     expect(resp['version']).toBe('0.0.1-wip')
-                    return shell.data
+                    return shell.context
                 },
             ),
         )
@@ -88,23 +89,24 @@ test('get info', (done) => {
         .pipe(
             uploadPackage(
                 path.resolve(__dirname, './cdn.zip'),
-                (shell, resp) => new TestData({ ...shell.data, asset: resp }),
+                (shell, resp) =>
+                    new TestData({ ...shell.context, asset: resp }),
             ),
             getInfo(
-                (shell) => ({ libraryId: shell.data.asset.rawId }),
+                (shell) => ({ libraryId: shell.context.asset.rawId }),
                 (shell, resp) => {
                     expect(resp.versions).toEqual(['0.0.1-wip'])
-                    return new TestData({ ...shell.data, metadata: resp })
+                    return new TestData({ ...shell.context, metadata: resp })
                 },
             ),
             getVersionInfo(
                 (shell) => ({
-                    libraryId: shell.data.asset.rawId,
-                    version: shell.data.metadata.versions[0],
+                    libraryId: shell.context.asset.rawId,
+                    version: shell.context.metadata.versions[0],
                 }),
                 (shell, resp) => {
                     expect(resp.version).toEqual('0.0.1-wip')
-                    return shell.data
+                    return shell.context
                 },
             ),
         )
@@ -118,45 +120,46 @@ test('get explorer', (done) => {
         .pipe(
             uploadPackage(
                 path.resolve(__dirname, './cdn.zip'),
-                (shell, resp) => new TestData({ ...shell.data, asset: resp }),
+                (shell, resp) =>
+                    new TestData({ ...shell.context, asset: resp }),
             ),
             getInfo(
-                (shell) => ({ libraryId: shell.data.asset.rawId }),
+                (shell) => ({ libraryId: shell.context.asset.rawId }),
                 (shell, resp) =>
-                    new TestData({ ...shell.data, metadata: resp }),
+                    new TestData({ ...shell.context, metadata: resp }),
             ),
             getPackageFolderContent(
                 (shell) => ({
-                    libraryName: shell.data.asset.rawId,
+                    libraryName: shell.context.asset.rawId,
                     restOfPath: '',
-                    version: shell.data.metadata.versions[0],
+                    version: shell.context.metadata.versions[0],
                 }),
                 (shell, resp) => {
                     expectAttributes(resp, ['files', 'folders', 'size'])
                     expect(resp.files.length).toBe(5)
                     expect(resp.folders.length).toBe(1)
                     expectAttributes(resp.folders[0], ['name', 'path', 'size'])
-                    return shell.data
+                    return shell.context
                 },
             ),
             getPackageFolderContent(
                 (shell) => ({
-                    libraryName: shell.data.asset.rawId,
+                    libraryName: shell.context.asset.rawId,
                     restOfPath: 'assets',
-                    version: shell.data.metadata.versions[0],
+                    version: shell.context.metadata.versions[0],
                 }),
                 (shell, resp) => {
                     expect(resp.files.length).toBe(0)
                     expect(resp.folders.length).toBe(1)
                     expect(resp.folders[0].path).toBe('assets/styles')
-                    return shell.data
+                    return shell.context
                 },
             ),
             getPackageFolderContent(
                 (shell) => ({
-                    libraryName: shell.data.asset.rawId,
+                    libraryName: shell.context.asset.rawId,
                     restOfPath: 'assets/styles',
-                    version: shell.data.metadata.versions[0],
+                    version: shell.context.metadata.versions[0],
                 }),
                 (shell, resp) => {
                     expect(resp.files.length).toBe(1)
@@ -164,7 +167,7 @@ test('get explorer', (done) => {
                     expect(resp.files[0].name).toBe('style.css')
                     expect(resp.files[0].encoding).toBe('br')
                     expect(resp.files[0].size).toBeGreaterThan(0)
-                    return shell.data
+                    return shell.context
                 },
             ),
         )
@@ -178,20 +181,21 @@ test('download package', (done) => {
         .pipe(
             uploadPackage(
                 path.resolve(__dirname, './cdn.zip'),
-                (shell, resp) => new TestData({ ...shell.data, asset: resp }),
+                (shell, resp) =>
+                    new TestData({ ...shell.context, asset: resp }),
             ),
             getInfo(
-                (shell) => ({ libraryId: shell.data.asset.rawId }),
+                (shell) => ({ libraryId: shell.context.asset.rawId }),
                 (shell, resp) =>
-                    new TestData({ ...shell.data, metadata: resp }),
+                    new TestData({ ...shell.context, metadata: resp }),
             ),
             downloadPackage(
                 (shell) => ({
-                    libraryId: shell.data.asset.rawId,
-                    version: shell.data.metadata.versions[0],
+                    libraryId: shell.context.asset.rawId,
+                    version: shell.context.metadata.versions[0],
                 }),
                 (shell, resp) =>
-                    new TestData({ ...shell.data, downloaded: resp }),
+                    new TestData({ ...shell.context, downloaded: resp }),
             ),
             tap((shell) => {
                 const fileReader = new FileReader()
@@ -205,7 +209,7 @@ test('download package', (done) => {
                     expect(original).toEqual(downloaded)
                     //fs.writeFileSync(path.resolve(__dirname, './result.zip'), downloaded)
                 }
-                fileReader.readAsArrayBuffer(shell.data.downloaded)
+                fileReader.readAsArrayBuffer(shell.context.downloaded)
             }),
         )
         .subscribe(() => {
@@ -218,25 +222,26 @@ test('delete package', (done) => {
         .pipe(
             uploadPackage(
                 path.resolve(__dirname, './cdn.zip'),
-                (shell, resp) => new TestData({ ...shell.data, asset: resp }),
+                (shell, resp) =>
+                    new TestData({ ...shell.context, asset: resp }),
             ),
             getInfo(
-                (shell) => ({ libraryId: shell.data.asset.rawId }),
+                (shell) => ({ libraryId: shell.context.asset.rawId }),
                 (shell, resp) =>
-                    new TestData({ ...shell.data, metadata: resp }),
+                    new TestData({ ...shell.context, metadata: resp }),
             ),
             deleteLibrary(
                 (shell) => ({
-                    libraryId: shell.data.asset.rawId,
+                    libraryId: shell.context.asset.rawId,
                 }),
                 (shell, resp) =>
-                    new TestData({ ...shell.data, downloaded: resp }),
+                    new TestData({ ...shell.context, downloaded: resp }),
             ),
             getInfo(
-                (shell) => ({ libraryId: shell.data.asset.rawId }),
+                (shell) => ({ libraryId: shell.context.asset.rawId }),
                 (shell) => {
                     expect(false).toBeTruthy()
-                    return shell.data
+                    return shell.context
                 },
                 onHTTPErrors((resp) => {
                     expect(resp.status).toBe(404)

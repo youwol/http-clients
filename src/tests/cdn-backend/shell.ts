@@ -4,26 +4,18 @@ import {
     AssetsGatewayClient,
     DefaultDriveResponse,
 } from '../../lib/assets-gateway'
-import { map, mergeMap } from 'rxjs/operators'
+import { map, mergeMap, tap } from 'rxjs/operators'
 import { Observable, OperatorFunction } from 'rxjs'
 import { readFileSync } from 'fs'
-import { expectAssetAttributes, expectAttributes } from '../common'
+import {
+    expectAssetAttributes,
+    expectAttributes,
+    mapToShell,
+    Shell,
+} from '../common'
 import { LibraryInfoResponse } from '../../lib/cdn-backend'
 
 type ManagedError = 'ManagedError'
-
-export class Shell<T> {
-    homeFolderId: string
-    assetsGtw: AssetsGatewayClient
-    data: T
-    constructor(params: {
-        homeFolderId: string
-        assetsGtw: AssetsGatewayClient
-        data?: T
-    }) {
-        Object.assign(this, params)
-    }
-}
 
 export function shell$<T>() {
     const assetsGtw = new AssetsGatewayClient()
@@ -56,14 +48,10 @@ export function uploadPackage<T>(
                     })
                     .pipe(
                         raiseHTTPErrors(),
-                        map((resp) => {
+                        tap((resp) => {
                             expectAssetAttributes(resp)
-                            const data = cb(shell, resp)
-                            return new Shell({
-                                ...shell,
-                                data,
-                            })
                         }),
+                        mapToShell(shell, cb),
                     )
             }),
         )
@@ -79,14 +67,10 @@ export function downloadPackage<T>(
             mergeMap((shell) => {
                 return shell.assetsGtw.cdn.downloadLibrary(input(shell)).pipe(
                     raiseHTTPErrors(),
-                    map((resp) => {
+                    tap((resp) => {
                         expect(resp).toBeInstanceOf(Blob)
-                        const data = cb(shell, resp)
-                        return new Shell({
-                            ...shell,
-                            data,
-                        })
                     }),
+                    mapToShell(shell, cb),
                 )
             }),
         )
@@ -115,10 +99,9 @@ export function getInfo<T>(
                             'id',
                             'releases',
                         ])
-                        const data = cb(shell, resp)
                         return new Shell({
                             ...shell,
-                            data,
+                            context: cb(shell, resp),
                         })
                     }),
                 )
@@ -136,7 +119,7 @@ export function getVersionInfo<T>(
             mergeMap((shell) => {
                 return shell.assetsGtw.cdn.getVersionInfo$(input(shell)).pipe(
                     raiseHTTPErrors(),
-                    map((resp) => {
+                    tap((resp) => {
                         expectAttributes(resp, [
                             'name',
                             'version',
@@ -145,12 +128,8 @@ export function getVersionInfo<T>(
                             'type',
                             'fingerprint',
                         ])
-                        const data = cb(shell, resp)
-                        return new Shell({
-                            ...shell,
-                            data,
-                        })
                     }),
+                    mapToShell(shell, cb),
                 )
             }),
         )
@@ -170,36 +149,16 @@ export function getPackageFolderContent<T>(
             mergeMap((shell) => {
                 return shell.assetsGtw.cdn.queryExplorer$(input(shell)).pipe(
                     raiseHTTPErrors(),
-                    map((resp) => {
+                    tap((resp) => {
                         expectAttributes(resp, ['folders', 'files'])
-                        const data = cb(shell, resp)
-                        return new Shell({
-                            ...shell,
-                            data,
-                        })
                     }),
+                    mapToShell(shell, cb),
                 )
             }),
         )
     }
 }
 
-export function mapToShell<T, T1>(
-    shell,
-    cb: (shell: Shell<T1>, resp) => T1,
-): OperatorFunction<T, Shell<T1>> {
-    return (obs$: Observable<T>) => {
-        return obs$.pipe(
-            map((resp) => {
-                const data = cb(shell, resp)
-                return new Shell({
-                    ...shell,
-                    data,
-                })
-            }),
-        )
-    }
-}
 export function getEntryPoint<T>(
     input: (shell: Shell<T>) => {
         libraryId: string
@@ -248,14 +207,10 @@ export function deleteLibrary<T>(
             mergeMap((shell) => {
                 return shell.assetsGtw.cdn.deleteLibrary$(input(shell)).pipe(
                     raiseHTTPErrors(),
-                    map((resp) => {
+                    tap((resp) => {
                         expectAttributes(resp, ['deletedVersionsCount'])
-                        const data = cb(shell, resp)
-                        return new Shell({
-                            ...shell,
-                            data,
-                        })
                     }),
+                    mapToShell(shell, cb),
                 )
             }),
         )
