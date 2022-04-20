@@ -3,9 +3,9 @@
 
 import path from 'path'
 import { Asset, MetadataResponse } from '../../lib/assets-gateway'
-import { getPyYouwolBasePath, resetPyYouwolDbs$ } from '../common'
+import { getPyYouwolBasePath, resetPyYouwolDbs$, shell$ } from '../common'
 import '../mock-requests'
-import { get, getInfo, remove, shell$, updateMetadata, upload } from './shell'
+import { get, getInfo, remove, updateMetadata, upload } from './shell'
 import { readFileSync } from 'fs'
 import { from } from 'rxjs'
 import { mapTo, mergeMap, reduce, take, tap } from 'rxjs/operators'
