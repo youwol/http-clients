@@ -7,6 +7,7 @@ import { StoriesClient } from '../stories-backend'
 import { FilesClient } from '../files-backend'
 import { FluxClient } from '../flux-backend'
 import { TreedbClient } from '../treedb-backend'
+import { AssetsClient } from '../assets-backend'
 
 export class AssetsGatewayClient extends RootRouter {
     public readonly explorerDeprecated: ExplorerRouter
@@ -19,6 +20,7 @@ export class AssetsGatewayClient extends RootRouter {
     public readonly files: FilesClient
     public readonly flux: FluxClient
     public readonly treedb: TreedbClient
+    public readonly assets: AssetsClient
 
     constructor({
         headers,
@@ -52,6 +54,10 @@ export class AssetsGatewayClient extends RootRouter {
         this.treedb = new TreedbClient({
             headers,
             basePath: `/api/assets-gateway/treedb-backend`,
+        })
+        this.assets = new AssetsClient({
+            headers,
+            basePath: `/api/assets-gateway/assets-backend`,
         })
     }
 
