@@ -21,7 +21,7 @@ beforeAll(async (done) => {
 
 test('assetsGtw.assets.get$, 404, dispatch error', (done) => {
     const error$ = new ReplaySubject<HTTPError>(1)
-    assetsGtw.assets
+    assetsGtw.assetsDeprecated
         .get$('tutu')
         .pipe(dispatchHTTPErrors(error$))
         .subscribe(() => {
@@ -35,7 +35,7 @@ test('assetsGtw.assets.get$, 404, dispatch error', (done) => {
 })
 
 test('assetsGtw.assets.get$, 404, raise error', (done) => {
-    assetsGtw.assets
+    assetsGtw.assetsDeprecated
         .get$('tutu')
         .pipe(raiseHTTPErrors())
         .subscribe(
@@ -51,7 +51,7 @@ test('assetsGtw.assets.get$, 404, raise error', (done) => {
 })
 
 test('assetsGtw.assets.get$, 404, on error', (done) => {
-    assetsGtw.assets
+    assetsGtw.assetsDeprecated
         .get$('tutu')
         .pipe(onHTTPErrors(() => 'an error occurred'))
         .subscribe((resp: Asset | string) => {
@@ -64,7 +64,7 @@ test('assetsGtw.assets.get$, 404, on error', (done) => {
 })
 
 test('assetsGtw.assets.get$, 404, muteHTTPErrors', (done) => {
-    assetsGtw.assets
+    assetsGtw.assetsDeprecated
         .get$('tutu')
         .pipe(muteHTTPErrors())
         .subscribe(() => {

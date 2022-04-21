@@ -23,7 +23,7 @@ let homeFolderId: string
 let rawId: string
 
 test('assetsGtw.explorer.groups.getDefaultUserDrive$', (done) => {
-    assetsGtw.explorer
+    assetsGtw.explorerDeprecated
         .getDefaultUserDrive$()
         .pipe(raiseHTTPErrors())
         .subscribe((resp: DefaultDriveResponse) => {
@@ -34,7 +34,7 @@ test('assetsGtw.explorer.groups.getDefaultUserDrive$', (done) => {
 })
 
 test('assetsGtw.assets.fluxProject.create$', (done) => {
-    assetsGtw.assets.fluxProject
+    assetsGtw.assetsDeprecated.fluxProject
         .create$(homeFolderId, {
             name: 'test',
             description: 'platform-essentials integration test',
@@ -64,7 +64,7 @@ test('assetsGtw.assets.fluxProject.create$', (done) => {
 })
 
 test('assetsGtw.assets.fluxProject.queryProject$', (done) => {
-    assetsGtw.raw.fluxProject
+    assetsGtw.rawDeprecated.fluxProject
         .getProject$(rawId)
         .pipe(raiseHTTPErrors())
         .subscribe((resp: Project) => {
@@ -74,7 +74,7 @@ test('assetsGtw.assets.fluxProject.queryProject$', (done) => {
 })
 
 test('assetsGtw.assets.fluxProject.updateMetadata$', (done) => {
-    assetsGtw.raw.fluxProject
+    assetsGtw.rawDeprecated.fluxProject
         .updateMetadata$(rawId, {
             description: 'Updated description',
             libraries: {},

@@ -69,7 +69,7 @@ test('assetsGtw.queryGroups$', (done) => {
 
 // eslint-disable-next-line jest/expect-expect -- eslint-comment expect hidden in 'expectAttributes'
 test('assetsGtw.explorer.groups.getDefaultDrive$', (done) => {
-    assetsGtw.explorer.groups
+    assetsGtw.explorerDeprecated.groups
         .getDefaultDrive$(privateGrpId)
         .pipe(raiseHTTPErrors())
         .subscribe((resp: DefaultDriveResponse) => {
@@ -78,8 +78,8 @@ test('assetsGtw.explorer.groups.getDefaultDrive$', (done) => {
         })
 })
 
-test('assetsGtw.assets.fluxProject.create$', (done) => {
-    assetsGtw.assets.fluxProject
+test('assetsGtw.assetsDeprecated.fluxProject.create$', (done) => {
+    assetsGtw.assetsDeprecated.fluxProject
         .create$(homeFolderId, {
             name: 'test',
             description: 'platform-essentials integration test',
@@ -93,8 +93,8 @@ test('assetsGtw.assets.fluxProject.create$', (done) => {
 
 let storyAssetId = undefined
 
-test('assetsGtw.assets.story.create$', (done) => {
-    assetsGtw.assets.story
+test('assetsGtw.assetsDeprecated.story.create$', (done) => {
+    assetsGtw.assetsDeprecated.story
         .create$(homeFolderId, {
             title: 'test-story',
         })
@@ -107,8 +107,8 @@ test('assetsGtw.assets.story.create$', (done) => {
         })
 })
 
-test('assetsGtw.assets.get$', (done) => {
-    assetsGtw.assets
+test('assetsGtw.assetsDeprecated.get$', (done) => {
+    assetsGtw.assetsDeprecated
         .get$(storyAssetId)
         .pipe(raiseHTTPErrors())
         .subscribe((resp: Asset) => {
@@ -129,8 +129,8 @@ test('assetsGtw.assets.get$', (done) => {
         })
 })
 
-test('assetsGtw.assets.getAccess$', (done) => {
-    assetsGtw.assets
+test('assetsGtw.assetsDeprecated.getAccess$', (done) => {
+    assetsGtw.assetsDeprecated
         .getAccess$(storyAssetId)
         .pipe(raiseHTTPErrors())
         .subscribe((resp: AccessInfo) => {
@@ -151,9 +151,9 @@ test('assetsGtw.assets.getAccess$', (done) => {
         })
 })
 
-test('assetsGtw.assets.updateAccess$', (done) => {
+test('assetsGtw.assetsDeprecated.updateAccess$', (done) => {
     const groupId = btoa('/youwol-users')
-    assetsGtw.assets
+    assetsGtw.assetsDeprecated
         .updateAccess$(storyAssetId, groupId, {
             read: 'authorized',
             share: 'authorized',
@@ -170,8 +170,8 @@ test('assetsGtw.assets.updateAccess$', (done) => {
         })
 })
 
-test('assetsGtw.assets.update$', (done) => {
-    assetsGtw.assets
+test('assetsGtw.assetsDeprecated.update$', (done) => {
+    assetsGtw.assetsDeprecated
         .update$(storyAssetId, {
             name: 'renamed story',
             tags: ['story'],
@@ -184,8 +184,8 @@ test('assetsGtw.assets.update$', (done) => {
         })
 })
 
-test('assetsGtw.assets.removePicture$ 404', (done) => {
-    assetsGtw.assets
+test('assetsGtw.assetsDeprecated.removePicture$ 404', (done) => {
+    assetsGtw.assetsDeprecated
         .removePicture$(storyAssetId, 'not found picture')
         .pipe(
             onHTTPErrors((error) => {
@@ -199,7 +199,7 @@ test('assetsGtw.assets.removePicture$ 404', (done) => {
         })
 })
 
-test('assetsGtw.assets.addPicture$', (done) => {
+test('assetsGtw.assetsDeprecated.addPicture$', (done) => {
     const channel$ = new Subject<RequestEvent>()
     const buffer = readFileSync(path.resolve(__dirname, './img.png'))
     const arraybuffer = Uint8Array.from(buffer).buffer
@@ -211,7 +211,7 @@ test('assetsGtw.assets.addPicture$', (done) => {
         requestId: 'add-image',
         channels$: channel$,
     }
-    assetsGtw.assets
+    assetsGtw.assetsDeprecated
         .addPicture$(storyAssetId, 'test.png', new Blob([arraybuffer]), {
             monitoring,
         })
@@ -247,8 +247,8 @@ test('assetsGtw.assets.addPicture$', (done) => {
         })
 })
 
-test('assetsGtw.assets.removePicture$ 200', (done) => {
-    assetsGtw.assets
+test('assetsGtw.assetsDeprecated.removePicture$ 200', (done) => {
+    assetsGtw.assetsDeprecated
         .removePicture$(storyAssetId, 'test.png')
         .pipe(raiseHTTPErrors())
         .subscribe((resp) => {

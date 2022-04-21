@@ -15,7 +15,7 @@ let homeFolderId: string
 beforeAll(async (done) => {
     resetPyYouwolDbs$()
         .pipe(
-            mergeMap(() => assetsGtw.explorer.getDefaultUserDrive$()),
+            mergeMap(() => assetsGtw.explorerDeprecated.getDefaultUserDrive$()),
             raiseHTTPErrors(),
         )
         .subscribe((resp) => {
@@ -26,7 +26,7 @@ beforeAll(async (done) => {
 
 let rawId: string
 test('assetsGtw.assets.data.upload$', (done) => {
-    assetsGtw.assets.data
+    assetsGtw.assetsDeprecated.data
         .upload$(homeFolderId, 'test-data.txt', new Blob(['hello world :)']))
         .pipe(raiseHTTPErrors())
         .subscribe((resp) => {
@@ -44,7 +44,7 @@ test('assetsGtw.raw.data.download$', (done) => {
     })
     const monitoring = { channels$: channel$, requestId: 'download' }
 
-    assetsGtw.raw.data
+    assetsGtw.rawDeprecated.data
         .download$(rawId, { monitoring })
         .pipe(raiseHTTPErrors())
         .subscribe((resp) => {

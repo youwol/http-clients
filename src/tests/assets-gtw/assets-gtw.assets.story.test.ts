@@ -30,7 +30,7 @@ beforeAll(async (done) => {
     jest.setTimeout(90 * 1000)
     resetPyYouwolDbs$()
         .pipe(
-            mergeMap(() => assetsGtw.explorer.getDefaultUserDrive$()),
+            mergeMap(() => assetsGtw.explorerDeprecated.getDefaultUserDrive$()),
             raiseHTTPErrors(),
         )
         .subscribe((resp: DefaultDriveResponse) => {
@@ -50,7 +50,7 @@ test('create story, play with content', (done) => {
     }
     const storyId = 'test-story-play-with-content'
 
-    assetsGtw.assets.story
+    assetsGtw.assetsDeprecated.story
         .create$(homeFolderId, {
             title,
             storyId,
@@ -62,7 +62,7 @@ test('create story, play with content', (done) => {
                 expect(resp.name).toBe(title)
             }),
             mergeMap((resp: Asset) =>
-                assetsGtw.raw.story.getStory$(resp.rawId),
+                assetsGtw.rawDeprecated.story.getStory$(resp.rawId),
             ),
             raiseHTTPErrors(),
             tap((story: StoryResponse) => {
@@ -78,7 +78,7 @@ test('create story, play with content', (done) => {
                 expect(story.authors).toHaveLength(1)
             }),
             mergeMap((resp: StoryResponse) =>
-                assetsGtw.raw.story.getContent$(
+                assetsGtw.rawDeprecated.story.getContent$(
                     resp.storyId,
                     resp.rootDocumentId,
                 ),
@@ -88,16 +88,23 @@ test('create story, play with content', (done) => {
                 expect(content).toEqual(initialContent)
             }),
             mergeMap(() =>
-                assetsGtw.raw.story.updateContent$(storyId, `root_${storyId}`, {
-                    html: '<div> Hello world </div>',
-                    css: '',
-                    components: '',
-                    styles: '',
-                }),
+                assetsGtw.rawDeprecated.story.updateContent$(
+                    storyId,
+                    `root_${storyId}`,
+                    {
+                        html: '<div> Hello world </div>',
+                        css: '',
+                        components: '',
+                        styles: '',
+                    },
+                ),
             ),
             raiseHTTPErrors(),
             mergeMap(() =>
-                assetsGtw.raw.story.getContent$(storyId, `root_${storyId}`),
+                assetsGtw.rawDeprecated.story.getContent$(
+                    storyId,
+                    `root_${storyId}`,
+                ),
             ),
             raiseHTTPErrors(),
             tap((content) => {
@@ -113,7 +120,7 @@ test('create story, play with documents', (done) => {
     const title = 'test story: play with documents'
     const storyId = 'test-story-play-with-documents'
 
-    assetsGtw.assets.story
+    assetsGtw.assetsDeprecated.story
         .create$(homeFolderId, {
             title,
             storyId,
@@ -125,11 +132,11 @@ test('create story, play with documents', (done) => {
                 expect(resp.name).toBe(title)
             }),
             mergeMap((resp: Asset) =>
-                assetsGtw.raw.story.getStory$(resp.rawId),
+                assetsGtw.rawDeprecated.story.getStory$(resp.rawId),
             ),
             raiseHTTPErrors(),
             /*mergeMap((resp: Story) =>
-                assetsGtw.raw.story.getDocument$(
+                assetsGtw.rawDeprecated.story.getDocument$(
                     resp.storyId,
                     resp.rootDocumentId,
                 ),
@@ -139,7 +146,7 @@ test('create story, play with documents', (done) => {
                 expect(resp).toBeTruthy()
             }),*/
             mergeMap(() =>
-                assetsGtw.raw.story.queryDocuments$(
+                assetsGtw.rawDeprecated.story.queryDocuments$(
                     storyId,
                     `root_${storyId}`,
                     0,
@@ -151,7 +158,7 @@ test('create story, play with documents', (done) => {
                 expect(resp.documents).toHaveLength(0)
             }),
             mergeMap(() =>
-                assetsGtw.raw.story.createDocument$(storyId, {
+                assetsGtw.rawDeprecated.story.createDocument$(storyId, {
                     parentDocumentId: `root_${storyId}`,
                     title: 'page0',
                     content: {
@@ -177,7 +184,7 @@ test('create story, play with documents', (done) => {
                 expect(resp.title).toBe(`page0`)
             }),
             mergeMap((resp: DocumentResponse) =>
-                assetsGtw.raw.story.queryDocuments$(
+                assetsGtw.rawDeprecated.story.queryDocuments$(
                     resp.storyId,
                     resp.parentDocumentId,
                     0,
@@ -191,7 +198,7 @@ test('create story, play with documents', (done) => {
             }),
             mergeMap((resp: DocumentsResponse) => {
                 const doc = resp.documents[0]
-                return assetsGtw.raw.story.updateDocument$(
+                return assetsGtw.rawDeprecated.story.updateDocument$(
                     doc.storyId,
                     doc.documentId,
                     { title: 'page0 - updated' },
@@ -202,14 +209,14 @@ test('create story, play with documents', (done) => {
                 expect(resp.title).toBe(`page0 - updated`)
             }),
             mergeMap((resp: DocumentResponse) =>
-                assetsGtw.raw.story.deleteDocument$(
+                assetsGtw.rawDeprecated.story.deleteDocument$(
                     resp.storyId,
                     resp.documentId,
                 ),
             ),
             raiseHTTPErrors(),
             mergeMap(() =>
-                assetsGtw.raw.story.queryDocuments$(
+                assetsGtw.rawDeprecated.story.queryDocuments$(
                     storyId,
                     `root_${storyId}`,
                     0,
@@ -230,7 +237,7 @@ test('create story, play with plugins', (done) => {
     const title = 'test story: play with plugins'
     const storyId = 'test-story-play-with-plugins'
 
-    assetsGtw.assets.story
+    assetsGtw.assetsDeprecated.story
         .create$(homeFolderId, {
             title,
             storyId,
@@ -238,7 +245,7 @@ test('create story, play with plugins', (done) => {
         .pipe(
             raiseHTTPErrors(),
             mergeMap(() => {
-                return assetsGtw.raw.story.addPlugin$(
+                return assetsGtw.rawDeprecated.story.addPlugin$(
                     storyId,
                     {
                         packageName: '@youwol/http-clients',
@@ -251,7 +258,7 @@ test('create story, play with plugins', (done) => {
                 expect(resp.packageName).toBe('@youwol/http-clients')
             }),
             mergeMap(() => {
-                return assetsGtw.raw.story.getStory$(storyId)
+                return assetsGtw.rawDeprecated.story.getStory$(storyId)
             }),
             raiseHTTPErrors(),
             tap((resp) => {
@@ -270,12 +277,12 @@ test('publish story', (done) => {
     const arraybuffer = Uint8Array.from(buffer).buffer
     const storyId = 'ce0ee416-048a-486c-ab08-23ad8c05b25c'
     let downloadedBlob
-    assetsGtw.assets.story
+    assetsGtw.assetsDeprecated.story
         .publish$(homeFolderId, 'story.zip', new Blob([arraybuffer]))
         .pipe(
             raiseHTTPErrors(),
             mergeMap(() => {
-                return assetsGtw.raw.story.getStory$(storyId)
+                return assetsGtw.rawDeprecated.story.getStory$(storyId)
             }),
             raiseHTTPErrors(),
             tap((resp: StoryResponse) => {
@@ -283,7 +290,7 @@ test('publish story', (done) => {
                 expect(resp.requirements.plugins.length).toEqual(1)
             }),
             mergeMap(() => {
-                return assetsGtw.raw.story.downloadZip$(storyId)
+                return assetsGtw.rawDeprecated.story.downloadZip$(storyId)
             }),
             raiseHTTPErrors(),
             tap((resp: Blob) => {
@@ -291,24 +298,24 @@ test('publish story', (done) => {
                 downloadedBlob = resp
             }),
             mergeMap(() => {
-                return assetsGtw.explorer.items.delete$(btoa(storyId))
+                return assetsGtw.explorerDeprecated.items.delete$(btoa(storyId))
             }),
             raiseHTTPErrors(),
             mergeMap(() => {
-                return assetsGtw.explorer.drives.purge$(driveId)
+                return assetsGtw.explorerDeprecated.drives.purge$(driveId)
             }),
             raiseHTTPErrors(),
             mergeMap((resp) => {
                 expect(resp.itemsCount).toBe(1)
                 expect(resp.items[0].itemId).toBe(btoa(storyId))
-                return assetsGtw.raw.story.getStory$(storyId)
+                return assetsGtw.rawDeprecated.story.getStory$(storyId)
             }),
             onHTTPErrors((resp) => {
                 expect(resp.status).toBe(404)
                 return undefined
             }),
             mergeMap(() => {
-                return assetsGtw.assets.story.publish$(
+                return assetsGtw.assetsDeprecated.story.publish$(
                     homeFolderId,
                     'story.zip',
                     downloadedBlob,
@@ -316,7 +323,7 @@ test('publish story', (done) => {
             }),
             raiseHTTPErrors(),
             mergeMap(() => {
-                return assetsGtw.raw.story.getStory$(storyId)
+                return assetsGtw.rawDeprecated.story.getStory$(storyId)
             }),
             raiseHTTPErrors(),
             tap((resp: StoryResponse) => {

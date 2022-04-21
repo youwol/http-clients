@@ -9,9 +9,10 @@ import { FluxClient } from '../flux-backend'
 import { TreedbClient } from '../treedb-backend'
 
 export class AssetsGatewayClient extends RootRouter {
-    public readonly explorer: ExplorerRouter
-    public readonly assets: AssetsRouter
-    public readonly raw: RawRouter
+    public readonly explorerDeprecated: ExplorerRouter
+    public readonly assetsDeprecated: AssetsRouter
+    public readonly rawDeprecated: RawRouter
+
     public readonly misc: MiscRouter
     public readonly cdn: CdnClient
     public readonly stories: StoriesClient
@@ -28,9 +29,9 @@ export class AssetsGatewayClient extends RootRouter {
             basePath: '/api/assets-gateway',
             headers,
         })
-        this.explorer = new ExplorerRouter(this)
-        this.assets = new AssetsRouter(this)
-        this.raw = new RawRouter(this)
+        this.explorerDeprecated = new ExplorerRouter(this)
+        this.assetsDeprecated = new AssetsRouter(this)
+        this.rawDeprecated = new RawRouter(this)
         this.misc = new MiscRouter(this)
         this.cdn = new CdnClient({
             headers,

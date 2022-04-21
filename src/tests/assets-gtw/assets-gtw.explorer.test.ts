@@ -85,8 +85,8 @@ test('assetsGtw.queryGroups()', (done) => {
         })
 })
 
-test('assetsGtw.explorer.groups.getDefaultUserDrive$', (done) => {
-    assetsGtw.explorer
+test('assetsGtw.explorerDeprecated.groups.getDefaultUserDrive$', (done) => {
+    assetsGtw.explorerDeprecated
         .getDefaultUserDrive$()
         .pipe(raiseHTTPErrors())
         .subscribe((resp: DefaultDriveResponse) => {
@@ -112,8 +112,8 @@ test('assetsGtw.explorer.groups.getDefaultUserDrive$', (done) => {
         })
 })
 
-test('assetsGtw.explorer.groups.getDefaultDrive$', (done) => {
-    assetsGtw.explorer.groups
+test('assetsGtw.explorerDeprecated.groups.getDefaultDrive$', (done) => {
+    assetsGtw.explorerDeprecated.groups
         .getDefaultDrive$(privateGrpId)
         .pipe(raiseHTTPErrors())
         .subscribe((resp: DefaultDriveResponse) => {
@@ -123,8 +123,8 @@ test('assetsGtw.explorer.groups.getDefaultDrive$', (done) => {
         })
 })
 
-test('assetsGtw.explorer.groups.queryDrives$', (done) => {
-    assetsGtw.explorer.groups
+test('assetsGtw.explorerDeprecated.groups.queryDrives$', (done) => {
+    assetsGtw.explorerDeprecated.groups
         .queryDrives$(privateGrpId)
         .pipe(raiseHTTPErrors())
         .subscribe((resp: DrivesResponse) => {
@@ -136,8 +136,8 @@ test('assetsGtw.explorer.groups.queryDrives$', (done) => {
         })
 })
 
-test('assetsGtw.explorer.drives.get$', (done) => {
-    assetsGtw.explorer.drives
+test('assetsGtw.explorerDeprecated.drives.get$', (done) => {
+    assetsGtw.explorerDeprecated.drives
         .get$(defaultDriveId)
         .pipe(raiseHTTPErrors())
         .subscribe((resp: DriveResponse) => {
@@ -146,10 +146,14 @@ test('assetsGtw.explorer.drives.get$', (done) => {
         })
 })
 
-test('assetsGtw.explorer.drives.rename$', (done) => {
-    assetsGtw.explorer.drives
+test('assetsGtw.explorerDeprecated.drives.rename$', (done) => {
+    assetsGtw.explorerDeprecated.drives
         .rename$(defaultDriveId, { name: 'new name' })
-        .pipe(mergeMap(() => assetsGtw.explorer.drives.get$(defaultDriveId)))
+        .pipe(
+            mergeMap(() =>
+                assetsGtw.explorerDeprecated.drives.get$(defaultDriveId),
+            ),
+        )
         .pipe(raiseHTTPErrors())
         .subscribe((resp: DriveResponse) => {
             expect(resp.name).toBe('new name')
@@ -157,8 +161,8 @@ test('assetsGtw.explorer.drives.rename$', (done) => {
         })
 })
 
-test('assetsGtw.explorer.folders.queryChildren$ => default folders in default drive', (done) => {
-    assetsGtw.explorer.folders
+test('assetsGtw.explorerDeprecated.folders.queryChildren$ => default folders in default drive', (done) => {
+    assetsGtw.explorerDeprecated.folders
         .queryChildren$(defaultDriveId)
         .pipe(raiseHTTPErrors())
         .subscribe((resp: ChildrenFolderResponse) => {
@@ -168,8 +172,8 @@ test('assetsGtw.explorer.folders.queryChildren$ => default folders in default dr
         })
 })
 
-test('assetsGtw.explorer.groups.createDrive$', (done) => {
-    assetsGtw.explorer.groups
+test('assetsGtw.explorerDeprecated.groups.createDrive$', (done) => {
+    assetsGtw.explorerDeprecated.groups
         .createDrive$(privateGrpId, { name: 'test drive' })
         .pipe(raiseHTTPErrors())
         .subscribe((resp: DriveResponse) => {
@@ -180,9 +184,9 @@ test('assetsGtw.explorer.groups.createDrive$', (done) => {
         })
 })
 
-test('assetsGtw.explorer.folders.create$', (done) => {
+test('assetsGtw.explorerDeprecated.folders.create$', (done) => {
     const folderName = 'test folder'
-    assetsGtw.explorer.folders
+    assetsGtw.explorerDeprecated.folders
         .create$(homeFolderId, { name: folderName })
         .pipe(raiseHTTPErrors())
         .subscribe((resp: FolderResponse) => {
@@ -202,7 +206,7 @@ let storyTreeId: string
 let storyAssetId: string
 
 test('assetsGtw.assets.story.create$', (done) => {
-    assetsGtw.assets.story
+    assetsGtw.assetsDeprecated.story
         .create$(homeFolderId, {
             title: 'test-story',
         })
@@ -216,8 +220,8 @@ test('assetsGtw.assets.story.create$', (done) => {
         })
 })
 
-test('assetsGtw.explorer.items.get$', (done) => {
-    assetsGtw.explorer.items
+test('assetsGtw.explorerDeprecated.items.get$', (done) => {
+    assetsGtw.explorerDeprecated.items
         .get$(storyTreeId)
         .pipe(raiseHTTPErrors())
         .subscribe((resp: ItemResponse) => {
@@ -227,8 +231,8 @@ test('assetsGtw.explorer.items.get$', (done) => {
         })
 })
 
-test('assetsGtw.explorer.getPermissions$', (done) => {
-    assetsGtw.explorer
+test('assetsGtw.explorerDeprecated.getPermissions$', (done) => {
+    assetsGtw.explorerDeprecated
         .getPermissions$(storyTreeId)
         .pipe(raiseHTTPErrors())
         .subscribe((resp: PermissionsResponse) => {
@@ -240,8 +244,8 @@ test('assetsGtw.explorer.getPermissions$', (done) => {
         })
 })
 
-test('assetsGtw.explorer.items.borrowItem$', (done) => {
-    assetsGtw.explorer
+test('assetsGtw.explorerDeprecated.items.borrowItem$', (done) => {
+    assetsGtw.explorerDeprecated
         .borrowItem$(storyTreeId, { destinationFolderId: workingFolderId })
         .pipe(raiseHTTPErrors())
         .subscribe((resp: ItemResponse) => {
@@ -252,8 +256,8 @@ test('assetsGtw.explorer.items.borrowItem$', (done) => {
         })
 })
 
-test('assetsGtw.explorer.move$', (done) => {
-    assetsGtw.explorer
+test('assetsGtw.explorerDeprecated.move$', (done) => {
+    assetsGtw.explorerDeprecated
         .move$(storyTreeId, { destinationFolderId: workingFolderId })
         .pipe(raiseHTTPErrors())
         .subscribe((resp: ChildrenFolderResponse) => {
@@ -267,8 +271,8 @@ test('assetsGtw.explorer.move$', (done) => {
         })
 })
 
-test('assetsGtw.explorer.items.delete$', (done) => {
-    assetsGtw.explorer.items
+test('assetsGtw.explorerDeprecated.items.delete$', (done) => {
+    assetsGtw.explorerDeprecated.items
         .delete$(storyTreeId)
         .pipe(raiseHTTPErrors())
         .subscribe((resp) => {
@@ -277,9 +281,9 @@ test('assetsGtw.explorer.items.delete$', (done) => {
         })
 })
 
-test('assetsGtw.explorer.folders.rename$', (done) => {
+test('assetsGtw.explorerDeprecated.folders.rename$', (done) => {
     const folderName = 'test folder renamed'
-    assetsGtw.explorer.folders
+    assetsGtw.explorerDeprecated.folders
         .rename$(homeFolderId, { name: folderName })
         .pipe(raiseHTTPErrors())
         .subscribe((resp: FolderResponse) => {
@@ -289,8 +293,8 @@ test('assetsGtw.explorer.folders.rename$', (done) => {
         })
 })
 
-test('assetsGtw.explorer.folders.queryChildren$', (done) => {
-    assetsGtw.explorer.folders
+test('assetsGtw.explorerDeprecated.folders.queryChildren$', (done) => {
+    assetsGtw.explorerDeprecated.folders
         .queryChildren$(homeFolderId)
         .pipe(raiseHTTPErrors())
         .subscribe((resp: ChildrenFolderResponse) => {
@@ -301,13 +305,15 @@ test('assetsGtw.explorer.folders.queryChildren$', (done) => {
         })
 })
 
-test('assetsGtw.explorer.folders.delete$', (done) => {
-    assetsGtw.explorer.folders
+test('assetsGtw.explorerDeprecated.folders.delete$', (done) => {
+    assetsGtw.explorerDeprecated.folders
         .delete$(workingFolderId)
         .pipe(
             raiseHTTPErrors(),
             mergeMap(() => {
-                return assetsGtw.explorer.folders.queryChildren$(homeFolderId)
+                return assetsGtw.explorerDeprecated.folders.queryChildren$(
+                    homeFolderId,
+                )
             }),
         )
         .subscribe((resp: ChildrenFolderResponse) => {
@@ -317,8 +323,8 @@ test('assetsGtw.explorer.folders.delete$', (done) => {
         })
 })
 
-test('assetsGtw.explorer.drives.queryDeletedItems$', (done) => {
-    assetsGtw.explorer.drives
+test('assetsGtw.explorerDeprecated.drives.queryDeletedItems$', (done) => {
+    assetsGtw.explorerDeprecated.drives
         .queryDeletedItems$(defaultDriveId)
         .pipe(raiseHTTPErrors())
         .subscribe((resp: DeletedResponse) => {
@@ -328,8 +334,8 @@ test('assetsGtw.explorer.drives.queryDeletedItems$', (done) => {
         })
 })
 
-test('assetsGtw.explorer.drives.purge$', (done) => {
-    assetsGtw.explorer.drives
+test('assetsGtw.explorerDeprecated.drives.purge$', (done) => {
+    assetsGtw.explorerDeprecated.drives
         .purge$(defaultDriveId)
         .pipe(raiseHTTPErrors())
         .subscribe((resp) => {
@@ -338,13 +344,15 @@ test('assetsGtw.explorer.drives.purge$', (done) => {
         })
 })
 
-test('assetsGtw.explorer.drives.delete$', (done) => {
-    assetsGtw.explorer.drives
+test('assetsGtw.explorerDeprecated.drives.delete$', (done) => {
+    assetsGtw.explorerDeprecated.drives
         .delete$(newDriveId)
         .pipe(
             raiseHTTPErrors(),
             mergeMap(() => {
-                return assetsGtw.explorer.groups.queryDrives$(privateGrpId)
+                return assetsGtw.explorerDeprecated.groups.queryDrives$(
+                    privateGrpId,
+                )
             }),
         )
         .subscribe((resp: DrivesResponse) => {

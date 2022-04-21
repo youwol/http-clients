@@ -5,7 +5,7 @@ import { mergeMap, tap } from 'rxjs/operators'
 import { raiseHTTPErrors } from '../../lib'
 import { AssetsGatewayClient } from '../../lib/assets-gateway'
 
-import { EmojisResponse } from '../../lib/assets-gateway/routers/misc/interfaces'
+import { EmojisResponse } from '../../lib/assets-gateway'
 import { expectAttributes, resetPyYouwolDbs$ } from '../common'
 import '../mock-requests'
 
@@ -15,7 +15,7 @@ beforeAll(async (done) => {
     jest.setTimeout(90 * 1000)
     resetPyYouwolDbs$()
         .pipe(
-            mergeMap(() => assetsGtw.explorer.getDefaultUserDrive$()),
+            mergeMap(() => assetsGtw.explorerDeprecated.getDefaultUserDrive$()),
             raiseHTTPErrors(),
         )
         .subscribe(() => {
