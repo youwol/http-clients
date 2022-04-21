@@ -129,7 +129,7 @@ test('get explorer', (done) => {
             ),
             getPackageFolderContent(
                 (shell) => ({
-                    libraryName: shell.context.asset.rawId,
+                    libraryId: shell.context.asset.rawId,
                     restOfPath: '',
                     version: shell.context.metadata.versions[0],
                 }),
@@ -143,7 +143,7 @@ test('get explorer', (done) => {
             ),
             getPackageFolderContent(
                 (shell) => ({
-                    libraryName: shell.context.asset.rawId,
+                    libraryId: shell.context.asset.rawId,
                     restOfPath: 'assets',
                     version: shell.context.metadata.versions[0],
                 }),
@@ -156,7 +156,7 @@ test('get explorer', (done) => {
             ),
             getPackageFolderContent(
                 (shell) => ({
-                    libraryName: shell.context.asset.rawId,
+                    libraryId: shell.context.asset.rawId,
                     restOfPath: 'assets/styles',
                     version: shell.context.metadata.versions[0],
                 }),

@@ -228,19 +228,19 @@ export class CdnClient extends RootRouter {
      * @param callerOptions
      */
     queryExplorer$({
-        libraryName,
+        libraryId,
         version,
         restOfPath,
         callerOptions,
     }: {
-        libraryName: string
+        libraryId: string
         version: string
         restOfPath: string
         callerOptions?: CallerRequestOptions
     }): HTTPResponse$<QueryExplorerResponse> {
         return this.send$({
             command: 'query',
-            path: `/explorer/${libraryName}/${version}/${restOfPath}`,
+            path: `/explorer/${libraryId}/${version}/${restOfPath}`,
             callerOptions,
         })
     }

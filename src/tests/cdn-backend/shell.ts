@@ -123,7 +123,7 @@ export function getVersionInfo<T>(
 
 export function getPackageFolderContent<T>(
     input: (shell: Shell<T>) => {
-        libraryName: string
+        libraryId: string
         restOfPath: string
         version: string
     },
