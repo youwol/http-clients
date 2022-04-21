@@ -1,6 +1,6 @@
 import { RootRouter } from '../router'
 import { CallerRequestOptions, HTTPResponse$, Json } from '../utils'
-import { HealthzResponse } from './interfaces'
+import { GetHealthzResponse } from './interfaces'
 
 export class CdnSessionsStorageClient extends RootRouter {
     constructor({
@@ -24,8 +24,8 @@ export class CdnSessionsStorageClient extends RootRouter {
         callerOptions,
     }: {
         callerOptions?: CallerRequestOptions
-    } = {}): HTTPResponse$<HealthzResponse> {
-        return this.send$<HealthzResponse>({
+    } = {}): HTTPResponse$<GetHealthzResponse> {
+        return this.send$<GetHealthzResponse>({
             command: 'query',
             path: `/healthz`,
             callerOptions,

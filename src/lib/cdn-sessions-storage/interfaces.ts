@@ -1,3 +1,3 @@
-export interface HealthzResponse {
+export interface GetHealthzResponse {
     status: 'cdn-sessions-storage ok'
 }
