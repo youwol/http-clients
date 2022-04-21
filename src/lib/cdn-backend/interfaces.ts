@@ -10,6 +10,11 @@ export interface FolderResponse {
     size: number
 }
 
+export interface UploadBody {
+    fileName: string
+    blob: Blob
+}
+
 export interface FileResponse {
     name: string
     encoding: string

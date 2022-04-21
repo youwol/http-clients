@@ -11,6 +11,7 @@ import {
     GetLibraryInfoResponse,
     DeleteLibraryResponse,
     GetVersionInfoResponse,
+    UploadBody,
 } from './interfaces'
 import { RootRouter } from '../router'
 import { NewAssetResponse } from '../assets-gateway'
@@ -200,7 +201,7 @@ export class CdnClient extends RootRouter {
         queryParameters,
         callerOptions,
     }: {
-        body: { fileName: string; blob: Blob }
+        body: UploadBody
         queryParameters?: { folderId?: string }
         callerOptions?: CallerRequestOptions
     }): HTTPResponse$<NewAssetResponse<UploadResponse> | UploadResponse> {
