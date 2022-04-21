@@ -1,7 +1,7 @@
 export * from './story.router'
 export {
-    DocumentResponse,
-    DocumentsResponse,
-    PostPluginResponse,
+    GetDocumentResponse,
+    QueryDocumentsResponse,
+    AddPluginResponse,
     StoryResponse,
 } from '../../../../stories-backend/interfaces'

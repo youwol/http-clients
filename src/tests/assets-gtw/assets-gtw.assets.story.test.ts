@@ -7,9 +7,9 @@ import {
     Asset,
     AssetsGatewayClient,
     DefaultDriveResponse,
-    DocumentResponse,
-    DocumentsResponse,
-    PostPluginResponse,
+    GetDocumentResponse,
+    QueryDocumentsResponse,
+    AddPluginResponse,
     StoryResponse,
 } from '../../lib/assets-gateway'
 import {
@@ -154,7 +154,7 @@ test('create story, play with documents', (done) => {
                 ),
             ),
             raiseHTTPErrors(),
-            tap((resp: DocumentsResponse) => {
+            tap((resp: QueryDocumentsResponse) => {
                 expect(resp.documents).toHaveLength(0)
             }),
             mergeMap(() =>
@@ -170,7 +170,7 @@ test('create story, play with documents', (done) => {
                 }),
             ),
             raiseHTTPErrors(),
-            tap((resp: DocumentResponse) => {
+            tap((resp: GetDocumentResponse) => {
                 expectAttributes(resp, [
                     'storyId',
                     'documentId',
@@ -183,7 +183,7 @@ test('create story, play with documents', (done) => {
                 expect(resp.parentDocumentId).toBe(`root_${storyId}`)
                 expect(resp.title).toBe(`page0`)
             }),
-            mergeMap((resp: DocumentResponse) =>
+            mergeMap((resp: GetDocumentResponse) =>
                 assetsGtw.rawDeprecated.story.queryDocuments$(
                     resp.storyId,
                     resp.parentDocumentId,
@@ -192,11 +192,11 @@ test('create story, play with documents', (done) => {
                 ),
             ),
             raiseHTTPErrors(),
-            tap((resp: DocumentsResponse) => {
+            tap((resp: QueryDocumentsResponse) => {
                 expect(resp.documents).toHaveLength(1)
                 expect(resp.documents[0].title).toBe(`page0`)
             }),
-            mergeMap((resp: DocumentsResponse) => {
+            mergeMap((resp: QueryDocumentsResponse) => {
                 const doc = resp.documents[0]
                 return assetsGtw.rawDeprecated.story.updateDocument$(
                     doc.storyId,
@@ -208,7 +208,7 @@ test('create story, play with documents', (done) => {
             tap((resp: Document) => {
                 expect(resp.title).toBe(`page0 - updated`)
             }),
-            mergeMap((resp: DocumentResponse) =>
+            mergeMap((resp: GetDocumentResponse) =>
                 assetsGtw.rawDeprecated.story.deleteDocument$(
                     resp.storyId,
                     resp.documentId,
@@ -224,7 +224,7 @@ test('create story, play with documents', (done) => {
                 ),
             ),
             raiseHTTPErrors(),
-            tap((resp: DocumentsResponse) => {
+            tap((resp: QueryDocumentsResponse) => {
                 expect(resp.documents).toHaveLength(0)
             }),
         )
@@ -254,7 +254,7 @@ test('create story, play with plugins', (done) => {
                 )
             }),
             raiseHTTPErrors(),
-            tap((resp: PostPluginResponse) => {
+            tap((resp: AddPluginResponse) => {
                 expect(resp.packageName).toBe('@youwol/http-clients')
             }),
             mergeMap(() => {

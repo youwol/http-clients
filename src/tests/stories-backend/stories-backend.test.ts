@@ -24,7 +24,7 @@ import {
     Shell,
     shell$,
 } from '../common'
-import { DocumentResponse } from '../../lib/stories-backend'
+import { GetDocumentResponse } from '../../lib/stories-backend'
 import { onHTTPErrors } from '../../lib'
 import { readFileSync } from 'fs'
 import path from 'path'
@@ -39,7 +39,7 @@ beforeAll(async (done) => {
 class TestData {
     public readonly storyId?: string
     public readonly rootDocumentId?: string
-    public readonly pages: { [k: string]: DocumentResponse }
+    public readonly pages: { [k: string]: GetDocumentResponse }
     public readonly downloadedZip: Blob
     constructor(params: {
         storyId?: string

@@ -5,10 +5,10 @@ import {
     HTTPResponse$,
 } from '../../../../utils'
 import {
-    DocumentContentResp,
-    DocumentResponse,
-    DocumentsResponse,
-    PostPluginResponse,
+    GetContentResponse,
+    GetDocumentResponse,
+    QueryDocumentsResponse,
+    AddPluginResponse,
     StoryResponse,
     DocumentContentBody,
 } from '../../../../stories-backend'
@@ -46,7 +46,7 @@ export class RawStoryRouter extends Router {
         storyId: string,
         documentId: string,
         callerOptions: CallerRequestOptions = {},
-    ): HTTPResponse$<DocumentResponse> {
+    ): HTTPResponse$<GetDocumentResponse> {
         return this.send$({
             command: 'query',
             path: `/${storyId}/documents/${documentId}`,
@@ -69,7 +69,7 @@ export class RawStoryRouter extends Router {
         fromIndex = 0,
         count = 1000,
         callerOptions: CallerRequestOptions = {},
-    ): HTTPResponse$<DocumentsResponse> {
+    ): HTTPResponse$<QueryDocumentsResponse> {
         return this.send$({
             command: 'query',
             path: `/${storyId}/documents/${parentDocumentId}/children?from-index=${fromIndex}&count=${count}`,
@@ -95,7 +95,7 @@ export class RawStoryRouter extends Router {
             content?: DocumentContentBody
         },
         callerOptions: CallerRequestOptions = {},
-    ): HTTPResponse$<DocumentResponse> {
+    ): HTTPResponse$<GetDocumentResponse> {
         return this.send$({
             command: 'create',
             path: `/${storyId}/documents`,
@@ -121,7 +121,7 @@ export class RawStoryRouter extends Router {
         documentId: string,
         body: { title: string },
         callerOptions: CallerRequestOptions = {},
-    ): HTTPResponse$<DocumentResponse> {
+    ): HTTPResponse$<GetDocumentResponse> {
         return this.send$({
             command: 'update',
             path: `/${storyId}/documents/${documentId}`,
@@ -143,7 +143,7 @@ export class RawStoryRouter extends Router {
         storyId: string,
         documentId: string,
         callerOptions: CallerRequestOptions = {},
-    ): HTTPResponse$<DocumentResponse> {
+    ): HTTPResponse$<GetDocumentResponse> {
         return this.send$({
             command: 'update',
             path: `/${storyId}/documents/${documentId}/delete`,
@@ -165,7 +165,7 @@ export class RawStoryRouter extends Router {
         storyId: string,
         documentId: string,
         callerOptions: CallerRequestOptions = {},
-    ): HTTPResponse$<DocumentContentResp> {
+    ): HTTPResponse$<GetContentResponse> {
         return this.send$({
             command: 'query',
             path: `/${storyId}/contents/${documentId}`,
@@ -202,7 +202,7 @@ export class RawStoryRouter extends Router {
         storyId: string,
         body: { packageName: string },
         callerOptions: CallerRequestOptions = {},
-    ): HTTPResponse$<PostPluginResponse> {
+    ): HTTPResponse$<AddPluginResponse> {
         return this.send$({
             command: 'update',
             path: `/${storyId}/plugins`,

@@ -7,24 +7,30 @@ import {
 } from '../utils'
 import {
     GetGlobalContentResponse,
-    HealthzResponse,
+    GetHealthzResponse,
     MoveDocumentBody,
     MoveDocumentResponse,
     PostGlobalContentBody,
-    StoryResponse,
     DocumentContentBody,
-    DocumentResponse,
-    DocumentsResponse,
-    DocumentContentResp,
-    PostPluginResponse,
+    GetDocumentResponse,
+    GetContentResponse,
+    AddPluginResponse,
     AddPluginBody,
     UpdateDocumentBody,
     DeleteDocumentResponse,
     DeleteStoryResponse,
+    CreateStoryResponse,
+    PublishStoryResponse,
+    GetStoryResponse,
+    UpdateGlobalContentsResponse,
+    CreateDocumentResponse,
+    UpdateDocumentResponse,
+    UpdateContentsResponse,
+    QueryDocumentsResponse,
 } from './interfaces'
 import { RootRouter } from '../router'
 import { Observable } from 'rxjs'
-import { Asset } from '../assets-gateway'
+import { NewAssetResponse } from '../assets-gateway'
 
 export class StoriesClient extends RootRouter {
     constructor({
@@ -50,7 +56,7 @@ export class StoriesClient extends RootRouter {
         callerOptions,
     }: {
         callerOptions?: CallerRequestOptions
-    } = {}): HTTPResponse$<HealthzResponse> {
+    } = {}): HTTPResponse$<GetHealthzResponse> {
         return this.send$({
             command: 'query',
             path: `/healthz`,
@@ -77,7 +83,9 @@ export class StoriesClient extends RootRouter {
         body: { storyId?: string; title: string }
         queryParameters?: { folderId?: string }
         callerOptions?: CallerRequestOptions
-    }): HTTPResponse$<Asset | StoryResponse> {
+    }): HTTPResponse$<
+        NewAssetResponse<CreateStoryResponse> | CreateStoryResponse
+    > {
         const suffix =
             queryParameters && queryParameters.folderId
                 ? `?folder-id=${queryParameters.folderId}`
@@ -112,7 +120,9 @@ export class StoriesClient extends RootRouter {
         }
         queryParameters?: { folderId?: string }
         callerOptions?: CallerRequestOptions
-    }): HTTPResponse$<Asset | StoryResponse> {
+    }): HTTPResponse$<
+        NewAssetResponse<PublishStoryResponse> | PublishStoryResponse
+    > {
         const suffix =
             queryParameters && queryParameters.folderId
                 ? `?folder-id=${queryParameters.folderId}`
@@ -139,7 +149,7 @@ export class StoriesClient extends RootRouter {
     }: {
         storyId: string
         callerOptions?: CallerRequestOptions
-    }): HTTPResponse$<StoryResponse> {
+    }): HTTPResponse$<GetStoryResponse> {
         return this.send$({
             command: 'query',
             path: `/stories/${storyId}`,
@@ -202,7 +212,7 @@ export class StoriesClient extends RootRouter {
         storyId: string
         documentId: string
         callerOptions?: CallerRequestOptions
-    }): HTTPResponse$<DocumentResponse> {
+    }): HTTPResponse$<GetDocumentResponse> {
         return this.send$({
             command: 'query',
             path: `/stories/${storyId}/documents/${documentId}`,
@@ -225,7 +235,7 @@ export class StoriesClient extends RootRouter {
         storyId: string
         body: PostGlobalContentBody
         callerOptions?: CallerRequestOptions
-    }): HTTPResponse$<{}> {
+    }): HTTPResponse$<UpdateGlobalContentsResponse> {
         return this.send$({
             command: 'update',
             path: `/stories/${storyId}/global-contents`,
@@ -258,7 +268,7 @@ export class StoriesClient extends RootRouter {
             content?: DocumentContentBody
         }
         callerOptions?: CallerRequestOptions
-    }): HTTPResponse$<DocumentResponse> {
+    }): HTTPResponse$<CreateDocumentResponse> {
         return this.send$({
             command: 'create',
             path: `/stories/${storyId}/documents`,
@@ -289,7 +299,7 @@ export class StoriesClient extends RootRouter {
         documentId: string
         body: UpdateDocumentBody
         callerOptions?: CallerRequestOptions
-    }): HTTPResponse$<DocumentResponse> {
+    }): HTTPResponse$<UpdateDocumentResponse> {
         return this.send$({
             command: 'update',
             path: `/stories/${storyId}/documents/${documentId}`,
@@ -315,7 +325,7 @@ export class StoriesClient extends RootRouter {
         storyId: string
         documentId: string
         callerOptions?: CallerRequestOptions
-    }): HTTPResponse$<DocumentContentResp> {
+    }): HTTPResponse$<GetContentResponse> {
         return this.send$({
             command: 'query',
             path: `/stories/${storyId}/contents/${documentId}`,
@@ -342,7 +352,7 @@ export class StoriesClient extends RootRouter {
         documentId: string
         body: DocumentContentBody
         callerOptions?: CallerRequestOptions
-    }): HTTPResponse$<boolean> {
+    }): HTTPResponse$<UpdateContentsResponse> {
         return this.send$({
             command: 'update',
             path: `/stories/${storyId}/contents/${documentId}`,
@@ -399,7 +409,7 @@ export class StoriesClient extends RootRouter {
             count?: number
         }
         callerOptions?: CallerRequestOptions
-    }): HTTPResponse$<DocumentsResponse> {
+    }): HTTPResponse$<QueryDocumentsResponse> {
         const fromIndex =
             queryParameters && queryParameters.fromIndex
                 ? queryParameters.fromIndex
@@ -460,7 +470,7 @@ export class StoriesClient extends RootRouter {
         storyId: string
         body: AddPluginBody
         callerOptions?: CallerRequestOptions
-    }): HTTPResponse$<PostPluginResponse> {
+    }): HTTPResponse$<AddPluginResponse> {
         return this.send$({
             command: 'update',
             path: `/stories/${storyId}/plugins`,

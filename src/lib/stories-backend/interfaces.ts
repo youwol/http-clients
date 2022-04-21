@@ -4,7 +4,7 @@ export interface AuthorResponse {
     authorId: string
 }
 
-export interface HealthzResponse {
+export interface GetHealthzResponse {
     status: 'stories-backend serving'
 }
 
@@ -14,7 +14,7 @@ export interface UpdateDocumentBody {
 /**
  * Document describes a tree structure parent-children
  */
-export interface DocumentResponse {
+export interface GetDocumentResponse {
     documentId: string
     title: string
     position: number
@@ -22,12 +22,13 @@ export interface DocumentResponse {
     contentId: string
     parentDocumentId: string
 }
-
+export interface CreateDocumentResponse extends GetDocumentResponse {}
+export interface UpdateDocumentResponse extends GetDocumentResponse {}
 /**
  * Children documents of a document
  */
-export interface DocumentsResponse {
-    documents: DocumentResponse[]
+export interface QueryDocumentsResponse {
+    documents: GetDocumentResponse[]
 }
 
 /**
@@ -41,6 +42,12 @@ export interface StoryResponse {
     requirements: StoryRequirements
 }
 
+export interface CreateStoryResponse extends StoryResponse {}
+
+export interface PublishStoryResponse extends StoryResponse {}
+
+export interface GetStoryResponse extends StoryResponse {}
+
 export interface DeleteStoryResponse {
     pass
 }
@@ -48,14 +55,14 @@ export interface DeleteStoryResponse {
 /**
  * Content of a document
  */
-export type DocumentContentResp = DocumentContentBody
+export type GetContentResponse = DocumentContentBody
 
 export interface StoryRequirements {
     plugins: string[]
     loadingGraph: LoadingGraph
 }
 
-export interface PostPluginResponse {
+export interface AddPluginResponse {
     packageName: string
     version: string
     requirements: StoryRequirements
@@ -103,6 +110,7 @@ export interface MoveDocumentBody {
 export interface AddPluginBody {
     packageName: string
 }
-
+export interface UpdateContentsResponse {}
+export interface UpdateGlobalContentsResponse {}
 export interface MoveDocumentResponse {}
 export interface GetGlobalContentResponse extends GlobalContent {}

@@ -12,11 +12,11 @@ import {
     DeleteDocumentResponse,
     DeleteStoryResponse,
     DocumentContentBody,
-    DocumentResponse,
-    DocumentsResponse,
+    GetDocumentResponse,
+    QueryDocumentsResponse,
     MoveDocumentBody,
     PostGlobalContentBody,
-    PostPluginResponse,
+    AddPluginResponse,
     UpdateDocumentBody,
 } from '../../lib/stories-backend'
 
@@ -246,7 +246,7 @@ export function addPlugin<T>(
         body: AddPluginBody
         headers: { [k: string]: string }
     },
-    cb: (shell: Shell<T>, resp: PostPluginResponse) => T,
+    cb: (shell: Shell<T>, resp: AddPluginResponse) => T,
 ) {
     return (source$: Observable<Shell<T>>) => {
         return source$.pipe(
@@ -282,7 +282,7 @@ export function addDocuments<T>(
         titles: string[]
         contents?: { [k: string]: DocumentContentBody }
     },
-    cb: (shell: Shell<T>, resp: DocumentResponse[]) => T,
+    cb: (shell: Shell<T>, resp: GetDocumentResponse[]) => T,
 ) {
     return (source$: Observable<Shell<T>>) => {
         return source$.pipe(
@@ -322,7 +322,7 @@ export function queryDocuments<T>(
         fromIndex: number
         count: number
     },
-    cb: (shell: Shell<T>, resp: DocumentsResponse) => T,
+    cb: (shell: Shell<T>, resp: QueryDocumentsResponse) => T,
 ) {
     return (source$: Observable<Shell<T>>) => {
         return source$.pipe(
