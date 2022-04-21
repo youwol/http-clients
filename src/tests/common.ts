@@ -1,11 +1,11 @@
-import { raiseHTTPErrors, RootRouter } from '../lib'
+import { HTTPError, HTTPResponse$, raiseHTTPErrors, RootRouter } from '../lib'
 import { PyYouwolClient } from '../lib/py-youwol'
 import {
     AssetsGatewayClient,
     DefaultDriveResponse,
 } from '../lib/assets-gateway'
-import { map } from 'rxjs/operators'
-import { Observable, OperatorFunction } from 'rxjs'
+import { filter, map, mergeMap, shareReplay, take, tap } from 'rxjs/operators'
+import { merge, Observable, OperatorFunction } from 'rxjs'
 
 RootRouter.HostName = getPyYouwolBasePath()
 RootRouter.Headers = { 'py-youwol-local-only': 'true' }
@@ -74,7 +74,7 @@ export class Shell<T> {
 
 export function shell$<T>(context?: T) {
     const assetsGtw = new AssetsGatewayClient()
-    return assetsGtw.explorer.getDefaultUserDrive$().pipe(
+    return assetsGtw.explorerDeprecated.getDefaultUserDrive$().pipe(
         raiseHTTPErrors(),
         map((resp: DefaultDriveResponse) => {
             expect(resp.driveName).toBe('Default drive')
@@ -104,6 +104,85 @@ export function mapToShell<T, T1>(
                     ...shell,
                     context,
                 })
+            }),
+        )
+    }
+}
+
+export function finalize<TShell, TContext, TResp>({
+    shell,
+    cb,
+    newShell,
+}: {
+    shell
+    cb?: (shell: TShell, resp) => TContext
+    newShell: (args) => TShell
+}): OperatorFunction<TResp, TShell> {
+    return (obs$: Observable<TResp>) => {
+        return obs$.pipe(
+            map((resp) => {
+                if (!cb) {
+                    return shell
+                }
+                const context = cb(shell, resp)
+                return newShell({
+                    ...shell,
+                    context,
+                })
+            }),
+        )
+    }
+}
+
+export function wrap<TShell, TResp, TContext>({
+    observable,
+    authorizedErrors,
+    sideEffects,
+    newShell,
+}: {
+    observable: (shell: TShell) => HTTPResponse$<TResp>
+    authorizedErrors?: (resp) => boolean
+    sideEffects: (resp: TResp, shell?: TShell) => void
+    newShell?: (shell: TShell, resp: TResp) => TShell
+}): OperatorFunction<TShell, TShell> {
+    authorizedErrors = authorizedErrors || (() => false)
+    return (source$: Observable<TShell>) => {
+        return source$.pipe(
+            mergeMap((shell) => {
+                const response$ = observable(shell).pipe(shareReplay(1))
+                const error$ = response$.pipe(
+                    filter((resp) => {
+                        return (
+                            resp instanceof HTTPError && !authorizedErrors(resp)
+                        )
+                    }),
+                    raiseHTTPErrors(),
+                    map(() => shell),
+                )
+                const managedError$ = response$.pipe(
+                    filter((resp) => {
+                        return (
+                            resp instanceof HTTPError && authorizedErrors(resp)
+                        )
+                    }),
+                    map(() => shell),
+                )
+                const success$ = response$.pipe(
+                    filter((resp) => {
+                        return !(resp instanceof HTTPError)
+                    }),
+                    map((resp) => resp as TResp),
+                    tap((resp) => {
+                        sideEffects(resp, shell)
+                    }),
+                    map((resp) => {
+                        if (!newShell) {
+                            return shell
+                        }
+                        return newShell(shell, resp)
+                    }),
+                )
+                return merge(error$, managedError$, success$).pipe(take(1))
             }),
         )
     }
