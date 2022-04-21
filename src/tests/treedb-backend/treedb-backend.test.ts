@@ -34,7 +34,6 @@ import {
     ItemBase,
 } from '../../lib/treedb-backend'
 
-jest.setTimeout(90 * 1000)
 beforeAll(async (done) => {
     resetPyYouwolDbs$().subscribe(() => {
         done()
