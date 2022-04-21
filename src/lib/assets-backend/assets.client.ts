@@ -14,6 +14,7 @@ import {
     UpsertAccessPolicyResponse,
     CreateAssetBody,
     RemoveImageResponse,
+    AddImageBody,
 } from './interfaces'
 import { RootRouter } from '../router'
 
@@ -251,9 +252,7 @@ export class AssetsClient extends RootRouter {
     }: {
         assetId: string
         filename: string
-        body: {
-            content: File | Blob
-        }
+        body: AddImageBody
         callerOptions?: CallerRequestOptions
     }): HTTPResponse$<AddImageResponse> {
         const file =

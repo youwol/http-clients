@@ -15,6 +15,10 @@ export interface AccessPolicy {
     parameters: { [k: string]: unknown }
 }
 
+export interface AddImageBody {
+    content: File | Blob
+}
+
 export interface CreateAssetBody {
     assetId?: string
     relatedId: string
