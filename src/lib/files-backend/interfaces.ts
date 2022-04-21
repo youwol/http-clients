@@ -14,10 +14,14 @@ export interface Metadata {
 export interface GetInfoResponse {
     metadata: Metadata
 }
-
+export interface UploadBody {
+    fileName: string
+    fileId?: string
+    content: Blob | File
+}
 export interface RemoveResponse {}
 
-export interface PostMetadataBody {
+export interface UpdateMetadataBody {
     contentEncoding?: string
     contentType?: string
     fileName?: string

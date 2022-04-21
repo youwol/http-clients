@@ -13,7 +13,7 @@ import {
 } from '../common'
 import {
     UploadResponse,
-    PostMetadataBody,
+    UpdateMetadataBody,
     RemoveResponse,
     GetInfoResponse,
 } from '../../lib/files-backend'
@@ -91,8 +91,11 @@ export function getInfo<T>(
 }
 
 export function updateMetadata<T>(
-    input: (shell: Shell<T>) => { fileId: string; metadata: PostMetadataBody },
-    cb: (shell: Shell<T>, resp: PostMetadataBody) => T,
+    input: (shell: Shell<T>) => {
+        fileId: string
+        metadata: UpdateMetadataBody
+    },
+    cb: (shell: Shell<T>, resp: UpdateMetadataBody) => T,
 ) {
     return (source$: Observable<Shell<T>>) => {
         return source$.pipe(

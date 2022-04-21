@@ -6,10 +6,11 @@ import {
 } from '../utils'
 import {
     UploadResponse,
-    PostMetadataBody,
+    UpdateMetadataBody,
     UpdateMetadataResponse,
     RemoveResponse,
     GetInfoResponse,
+    UploadBody,
 } from './interfaces'
 import { RootRouter } from '../router'
 import { Observable } from 'rxjs'
@@ -46,11 +47,7 @@ export class FilesClient extends RootRouter {
         queryParameters,
         callerOptions,
     }: {
-        body: {
-            fileName: string
-            fileId?: string
-            content: Blob | File
-        }
+        body: UploadBody
         queryParameters?: { folderId?: string }
         callerOptions?: CallerRequestOptions
     }): HTTPResponse$<NewAssetResponse<UploadResponse> | UploadResponse> {
@@ -113,7 +110,7 @@ export class FilesClient extends RootRouter {
         callerOptions,
     }: {
         fileId: string
-        body: PostMetadataBody
+        body: UpdateMetadataBody
         callerOptions?: CallerRequestOptions
     }): HTTPResponse$<UpdateMetadataResponse> {
         return this.send$({
