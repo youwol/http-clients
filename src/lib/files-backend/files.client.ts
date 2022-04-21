@@ -5,9 +5,9 @@ import {
     HTTPResponse$,
 } from '../utils'
 import {
-    PostFileResponse,
+    UploadResponse,
     PostMetadataBody,
-    PostMetadataResponse,
+    UpdateMetadataResponse,
     RemoveResponse,
     GetInfoResponse,
 } from './interfaces'
@@ -53,7 +53,7 @@ export class FilesClient extends RootRouter {
         }
         queryParameters?: { folderId?: string }
         callerOptions?: CallerRequestOptions
-    }): HTTPResponse$<NewAssetResponse<PostFileResponse> | PostFileResponse> {
+    }): HTTPResponse$<NewAssetResponse<UploadResponse> | UploadResponse> {
         const suffix = queryParameters.folderId
             ? `?folder-id=${queryParameters.folderId}`
             : ''
@@ -76,7 +76,7 @@ export class FilesClient extends RootRouter {
             formData: formData,
             callerOptions,
         }) as Observable<
-            NewAssetResponse<PostFileResponse> | PostFileResponse | HTTPError
+            NewAssetResponse<UploadResponse> | UploadResponse | HTTPError
         >
     }
 
@@ -115,7 +115,7 @@ export class FilesClient extends RootRouter {
         fileId: string
         body: PostMetadataBody
         callerOptions?: CallerRequestOptions
-    }): HTTPResponse$<PostMetadataResponse> {
+    }): HTTPResponse$<UpdateMetadataResponse> {
         return this.send$({
             command: 'update',
             path: `/files/${fileId}/metadata`,

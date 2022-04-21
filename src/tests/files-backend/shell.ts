@@ -12,7 +12,7 @@ import {
     Shell,
 } from '../common'
 import {
-    PostFileResponse,
+    UploadResponse,
     PostMetadataBody,
     RemoveResponse,
     GetInfoResponse,
@@ -24,7 +24,7 @@ export function upload<T>(
         fileName: string
         path: string
     },
-    cb: (shell: Shell<T>, resp: NewAssetResponse<PostFileResponse>) => T,
+    cb: (shell: Shell<T>, resp: NewAssetResponse<UploadResponse>) => T,
 ) {
     return (source$: Observable<Shell<T>>) => {
         return source$.pipe(
@@ -39,7 +39,7 @@ export function upload<T>(
                     })
                     .pipe(
                         raiseHTTPErrors(),
-                        tap((resp: NewAssetResponse<PostFileResponse>) => {
+                        tap((resp: NewAssetResponse<UploadResponse>) => {
                             expectAssetAttributes(resp)
                             expectAttributes(resp.rawResponse, [
                                 'fileId',

@@ -1,4 +1,4 @@
-export interface PostFileResponse {
+export interface UploadResponse {
     fileId: string
     fileName: string
     contentType: string
@@ -23,4 +23,4 @@ export interface PostMetadataBody {
     fileName?: string
 }
 
-export interface PostMetadataResponse {}
+export interface UpdateMetadataResponse {}
