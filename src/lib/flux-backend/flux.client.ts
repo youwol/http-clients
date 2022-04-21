@@ -9,11 +9,12 @@ import {
     NewProjectResponse,
     DeleteProjectResponse,
     GetProjectResponse,
-    PostProjectBody,
+    UpdateProjectBody,
     UpdateProjectResponse,
-    PostMetadataBody,
+    UpdateMetadataBody,
     UpdateMetadataResponse,
     UploadResponse,
+    UploadBody,
 } from './interfaces'
 import { RootRouter } from '../router'
 import { Observable } from 'rxjs'
@@ -93,9 +94,7 @@ export class FluxClient extends RootRouter {
         queryParameters,
         callerOptions,
     }: {
-        body: {
-            content: Blob | File
-        }
+        body: UploadBody
         queryParameters: {
             projectId?: string
             folderId?: string
@@ -177,7 +176,7 @@ export class FluxClient extends RootRouter {
         callerOptions,
     }: {
         projectId: string
-        body: PostProjectBody
+        body: UpdateProjectBody
         callerOptions?: CallerRequestOptions
     }): HTTPResponse$<UpdateProjectResponse> {
         return this.send$({
@@ -223,7 +222,7 @@ export class FluxClient extends RootRouter {
         callerOptions,
     }: {
         projectId: string
-        body: PostMetadataBody
+        body: UpdateMetadataBody
         callerOptions?: CallerRequestOptions
     }): HTTPResponse$<UpdateMetadataResponse> {
         return this.send$({

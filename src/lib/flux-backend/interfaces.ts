@@ -8,7 +8,9 @@ export interface NewProjectResponse {
 }
 
 export interface UploadResponse extends NewProjectResponse {}
-
+export interface UploadBody {
+    content: Blob | File
+}
 export interface DeleteProjectResponse {
     status: 'deleted'
     projectId: string
@@ -111,11 +113,11 @@ export interface Project {
 
 export interface GetProjectResponse extends Project {}
 
-export interface PostProjectBody extends Project {}
+export interface UpdateProjectBody extends Project {}
 
 export interface UpdateProjectResponse {}
 
-export interface PostMetadataBody {
+export interface UpdateMetadataBody {
     name?: string
     description?: string
     libraries?: { [k: string]: string }

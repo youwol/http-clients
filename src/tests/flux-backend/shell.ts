@@ -15,7 +15,7 @@ import {
     DeleteProjectResponse,
     GetProjectResponse,
     NewProjectResponse,
-    PostProjectBody,
+    UpdateProjectBody,
 } from '../../lib/flux-backend'
 import { readFileSync } from 'fs'
 
@@ -78,7 +78,7 @@ export function getProject<T>(
 }
 
 export function updateProject<T>(
-    input: (shell: Shell<T>) => { projectId: string; body: PostProjectBody },
+    input: (shell: Shell<T>) => { projectId: string; body: UpdateProjectBody },
     cb?: (shell: Shell<T>, resp: GetProjectResponse) => T,
 ) {
     return (source$: Observable<Shell<T>>) => {
