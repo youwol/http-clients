@@ -10,9 +10,10 @@ import {
     DeleteProjectResponse,
     GetProjectResponse,
     PostProjectBody,
-    PostProjectResponse,
+    UpdateProjectResponse,
     PostMetadataBody,
-    PostMetadataResponse,
+    UpdateMetadataResponse,
+    UploadResponse,
 } from './interfaces'
 import { RootRouter } from '../router'
 import { Observable } from 'rxjs'
@@ -100,9 +101,7 @@ export class FluxClient extends RootRouter {
             folderId?: string
         }
         callerOptions?: CallerRequestOptions
-    }): HTTPResponse$<
-        NewAssetResponse<NewProjectResponse> | NewProjectResponse
-    > {
+    }): HTTPResponse$<NewAssetResponse<UploadResponse> | UploadResponse> {
         const content = body.content
         const file =
             content instanceof Blob
@@ -121,9 +120,7 @@ export class FluxClient extends RootRouter {
             formData: formData,
             callerOptions,
         }) as Observable<
-            | NewAssetResponse<NewProjectResponse>
-            | NewProjectResponse
-            | HTTPError
+            NewAssetResponse<UploadResponse> | UploadResponse | HTTPError
         >
     }
 
@@ -182,7 +179,7 @@ export class FluxClient extends RootRouter {
         projectId: string
         body: PostProjectBody
         callerOptions?: CallerRequestOptions
-    }): HTTPResponse$<PostProjectResponse> {
+    }): HTTPResponse$<UpdateProjectResponse> {
         return this.send$({
             command: 'update',
             path: `/projects/${projectId}`,
@@ -228,7 +225,7 @@ export class FluxClient extends RootRouter {
         projectId: string
         body: PostMetadataBody
         callerOptions?: CallerRequestOptions
-    }): HTTPResponse$<PostMetadataResponse> {
+    }): HTTPResponse$<UpdateMetadataResponse> {
         return this.send$({
             command: 'update',
             path: `/projects/${projectId}/metadata`,

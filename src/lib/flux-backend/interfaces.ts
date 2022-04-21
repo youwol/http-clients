@@ -7,6 +7,8 @@ export interface NewProjectResponse {
     libraries: { [k: string]: string }
 }
 
+export interface UploadResponse extends NewProjectResponse {}
+
 export interface DeleteProjectResponse {
     status: 'deleted'
     projectId: string
@@ -111,7 +113,7 @@ export interface GetProjectResponse extends Project {}
 
 export interface PostProjectBody extends Project {}
 
-export interface PostProjectResponse {}
+export interface UpdateProjectResponse {}
 
 export interface PostMetadataBody {
     name?: string
@@ -119,4 +121,4 @@ export interface PostMetadataBody {
     libraries?: { [k: string]: string }
 }
 
-export interface PostMetadataResponse {}
+export interface UpdateMetadataResponse {}
