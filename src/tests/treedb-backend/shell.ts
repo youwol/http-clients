@@ -4,31 +4,31 @@ import { Observable } from 'rxjs'
 import { mergeMap, tap } from 'rxjs/operators'
 import { raiseHTTPErrors } from '../../lib'
 import {
-    GetChildrenResponse,
-    GetDeletedResponse,
+    QueryChildrenResponse,
+    QueryDeletedResponse,
     GetDriveResponse,
-    GetDrivesResponse,
+    QueryDrivesResponse,
     GetEntityResponse,
     GetFolderResponse,
     GetItemResponse,
-    GetItemsByRelatedIdResponse,
+    QueryItemsByRelatedIdResponse,
     GetPathFolderResponse,
     GetPathResponse,
-    PostDriveBody,
-    PostDriveResponse,
-    PostFolderBody,
-    PostFolderResponse,
-    PostItemBody,
-    PostItemResponse,
+    UpdateDriveBody,
+    UpdateDriveResponse,
+    UpdateFolderBody,
+    UpdateFolderResponse,
+    UpdateItemBody,
+    UpdateItemResponse,
     PostMoveBody,
-    PostMoveResponse,
+    MoveResponse,
     PurgeDriveResponse,
-    PutDriveBody,
-    PutDriveResponse,
-    PutFolderBody,
-    PutFolderResponse,
-    PutItemBody,
-    PutItemResponse,
+    CreateDriveBody,
+    CreateDriveResponse,
+    CreateFolderBody,
+    CreateFolderResponse,
+    CreateItemBody,
+    CreatetemResponse,
 } from '../../lib/treedb-backend'
 
 export function expectDrive(drive: unknown) {
@@ -79,9 +79,9 @@ export function healthz<T>() {
 export function createDrive<T>(
     input: (shell: Shell<T>) => {
         groupId: string
-        body: PutDriveBody
+        body: CreateDriveBody
     },
-    cb?: (shell: Shell<T>, resp: PutDriveResponse) => T,
+    cb?: (shell: Shell<T>, resp: CreateDriveResponse) => T,
 ) {
     return (source$: Observable<Shell<T>>) => {
         return source$.pipe(
@@ -102,7 +102,7 @@ export function queryDrives<T>(
     input: (shell: Shell<T>) => {
         groupId: string
     },
-    cb?: (shell: Shell<T>, resp: GetDrivesResponse) => T,
+    cb?: (shell: Shell<T>, resp: QueryDrivesResponse) => T,
 ) {
     return (source$: Observable<Shell<T>>) => {
         return source$.pipe(
@@ -125,9 +125,9 @@ export function queryDrives<T>(
 export function updateDrive<T>(
     input: (shell: Shell<T>) => {
         driveId: string
-        body: PostDriveBody
+        body: UpdateDriveBody
     },
-    cb?: (shell: Shell<T>, resp: PostDriveResponse) => T,
+    cb?: (shell: Shell<T>, resp: UpdateDriveResponse) => T,
 ) {
     return (source$: Observable<Shell<T>>) => {
         return source$.pipe(
@@ -168,9 +168,9 @@ export function getDrive<T>(
 export function createFolder<T>(
     input: (shell: Shell<T>) => {
         parentFolderId: string
-        body: PutFolderBody
+        body: CreateFolderBody
     },
-    cb?: (shell: Shell<T>, resp: PutFolderResponse) => T,
+    cb?: (shell: Shell<T>, resp: CreateFolderResponse) => T,
 ) {
     return (source$: Observable<Shell<T>>) => {
         return source$.pipe(
@@ -190,9 +190,9 @@ export function createFolder<T>(
 export function updateFolder<T>(
     input: (shell: Shell<T>) => {
         folderId: string
-        body: PostFolderBody
+        body: UpdateFolderBody
     },
-    cb?: (shell: Shell<T>, resp: PostFolderResponse) => T,
+    cb?: (shell: Shell<T>, resp: UpdateFolderResponse) => T,
 ) {
     return (source$: Observable<Shell<T>>) => {
         return source$.pipe(
@@ -233,9 +233,9 @@ export function getFolder<T>(
 export function createItem<T>(
     input: (shell: Shell<T>) => {
         folderId: string
-        body: PutItemBody
+        body: CreateItemBody
     },
-    cb?: (shell: Shell<T>, resp: PutItemResponse) => T,
+    cb?: (shell: Shell<T>, resp: CreatetemResponse) => T,
 ) {
     return (source$: Observable<Shell<T>>) => {
         return source$.pipe(
@@ -255,9 +255,9 @@ export function createItem<T>(
 export function updateItem<T>(
     input: (shell: Shell<T>) => {
         itemId: string
-        body: PostItemBody
+        body: UpdateItemBody
     },
-    cb?: (shell: Shell<T>, resp: PostItemResponse) => T,
+    cb?: (shell: Shell<T>, resp: UpdateItemResponse) => T,
 ) {
     return (source$: Observable<Shell<T>>) => {
         return source$.pipe(
@@ -299,7 +299,7 @@ export function queryItemsByRelatedId<T>(
     input: (shell: Shell<T>) => {
         relatedId: string
     },
-    cb?: (shell: Shell<T>, resp: GetItemsByRelatedIdResponse) => T,
+    cb?: (shell: Shell<T>, resp: QueryItemsByRelatedIdResponse) => T,
 ) {
     return (source$: Observable<Shell<T>>) => {
         return source$.pipe(
@@ -367,7 +367,7 @@ export function move<T>(
     input: (shell: Shell<T>) => {
         body: PostMoveBody
     },
-    cb?: (shell: Shell<T>, resp: PostMoveResponse) => T,
+    cb?: (shell: Shell<T>, resp: MoveResponse) => T,
 ) {
     return (source$: Observable<Shell<T>>) => {
         return source$.pipe(
@@ -415,7 +415,7 @@ export function queryChildren<T>(
     input: (shell: Shell<T>) => {
         parentId: string
     },
-    cb?: (shell: Shell<T>, resp: GetChildrenResponse) => T,
+    cb?: (shell: Shell<T>, resp: QueryChildrenResponse) => T,
 ) {
     return (source$: Observable<Shell<T>>) => {
         return source$.pipe(
@@ -436,7 +436,7 @@ export function queryDeleted<T>(
     input: (shell: Shell<T>) => {
         driveId: string
     },
-    cb?: (shell: Shell<T>, resp: GetDeletedResponse) => T,
+    cb?: (shell: Shell<T>, resp: QueryDeletedResponse) => T,
 ) {
     return (source$: Observable<Shell<T>>) => {
         return source$.pipe(

@@ -1,32 +1,32 @@
 import { CallerRequestOptions, HTTPResponse$ } from '../utils'
 import {
     GetHealthzResponse,
-    PutDriveBody,
-    PostDriveBody,
-    PutFolderBody,
-    PostFolderBody,
-    PutItemBody,
-    PostItemBody,
+    CreateDriveBody,
+    UpdateDriveBody,
+    CreateFolderBody,
+    UpdateFolderBody,
+    CreateItemBody,
+    UpdateItemBody,
     PostMoveBody,
-    PutDriveResponse,
-    GetDrivesResponse,
-    PostDriveResponse,
+    CreateDriveResponse,
+    QueryDrivesResponse,
+    UpdateDriveResponse,
     GetDriveResponse,
     GetFolderResponse,
-    PostFolderResponse,
-    PutFolderResponse,
-    PutItemResponse,
-    PostItemResponse,
+    UpdateFolderResponse,
+    CreateFolderResponse,
+    CreatetemResponse,
+    UpdateItemResponse,
     GetItemResponse,
-    GetItemsByRelatedIdResponse,
+    QueryItemsByRelatedIdResponse,
     GetPathResponse,
     GetPathFolderResponse,
-    PostMoveResponse,
+    MoveResponse,
     GetEntityResponse,
-    GetChildrenResponse,
-    GetDeletedResponse,
-    DeleteItemResponse,
-    DeleteFolderResponse,
+    QueryChildrenResponse,
+    QueryDeletedResponse,
+    TrashItemResponse,
+    TrashFolderResponse,
     PurgeDriveResponse,
     DeleteDriveResponse,
 } from './interfaces'
@@ -77,9 +77,9 @@ export class TreedbClient extends RootRouter {
         callerOptions,
     }: {
         groupId: string
-        body: PutDriveBody
+        body: CreateDriveBody
         callerOptions?: CallerRequestOptions
-    }): HTTPResponse$<PutDriveResponse> {
+    }): HTTPResponse$<CreateDriveResponse> {
         return this.send$({
             command: 'create',
             path: `/groups/${groupId}/drives`,
@@ -103,7 +103,7 @@ export class TreedbClient extends RootRouter {
     }: {
         groupId: string
         callerOptions?: CallerRequestOptions
-    }): HTTPResponse$<GetDrivesResponse> {
+    }): HTTPResponse$<QueryDrivesResponse> {
         return this.send$({
             command: 'query',
             path: `/groups/${groupId}/drives`,
@@ -124,9 +124,9 @@ export class TreedbClient extends RootRouter {
         callerOptions,
     }: {
         driveId: string
-        body: PostDriveBody
+        body: UpdateDriveBody
         callerOptions?: CallerRequestOptions
-    }): HTTPResponse$<PostDriveResponse> {
+    }): HTTPResponse$<UpdateDriveResponse> {
         return this.send$({
             command: 'update',
             path: `/drives/${driveId}`,
@@ -171,9 +171,9 @@ export class TreedbClient extends RootRouter {
         callerOptions,
     }: {
         parentFolderId: string
-        body: PutFolderBody
+        body: CreateFolderBody
         callerOptions?: CallerRequestOptions
-    }): HTTPResponse$<PutFolderResponse> {
+    }): HTTPResponse$<CreateFolderResponse> {
         return this.send$({
             command: 'create',
             path: `/folders/${parentFolderId}`,
@@ -198,9 +198,9 @@ export class TreedbClient extends RootRouter {
         callerOptions,
     }: {
         folderId: string
-        body: PostFolderBody
+        body: UpdateFolderBody
         callerOptions?: CallerRequestOptions
-    }): HTTPResponse$<PostFolderResponse> {
+    }): HTTPResponse$<UpdateFolderResponse> {
         return this.send$({
             command: 'update',
             path: `/folders/${folderId}`,
@@ -244,9 +244,9 @@ export class TreedbClient extends RootRouter {
         callerOptions,
     }: {
         folderId: string
-        body: PutItemBody
+        body: CreateItemBody
         callerOptions?: CallerRequestOptions
-    }): HTTPResponse$<PutItemResponse> {
+    }): HTTPResponse$<CreatetemResponse> {
         return this.send$({
             command: 'create',
             path: `/folders/${folderId}/items`,
@@ -271,9 +271,9 @@ export class TreedbClient extends RootRouter {
         callerOptions,
     }: {
         itemId: string
-        body: PostItemBody
+        body: UpdateItemBody
         callerOptions?: CallerRequestOptions
-    }): HTTPResponse$<PostItemResponse> {
+    }): HTTPResponse$<UpdateItemResponse> {
         return this.send$({
             command: 'update',
             path: `/items/${itemId}`,
@@ -316,7 +316,7 @@ export class TreedbClient extends RootRouter {
     }: {
         relatedId: string
         callerOptions?: CallerRequestOptions
-    }): HTTPResponse$<GetItemsByRelatedIdResponse> {
+    }): HTTPResponse$<QueryItemsByRelatedIdResponse> {
         return this.send$({
             command: 'query',
             path: `/items/from-related/${relatedId}`,
@@ -375,7 +375,7 @@ export class TreedbClient extends RootRouter {
     }: {
         body: PostMoveBody
         callerOptions?: CallerRequestOptions
-    }): HTTPResponse$<PostMoveResponse> {
+    }): HTTPResponse$<MoveResponse> {
         return this.send$({
             command: 'update',
             path: `/move`,
@@ -417,7 +417,7 @@ export class TreedbClient extends RootRouter {
     }: {
         parentId: string
         callerOptions?: CallerRequestOptions
-    }): HTTPResponse$<GetChildrenResponse> {
+    }): HTTPResponse$<QueryChildrenResponse> {
         return this.send$({
             command: 'query',
             path: `/folders/${parentId}/children`,
@@ -437,7 +437,7 @@ export class TreedbClient extends RootRouter {
     }: {
         driveId: string
         callerOptions?: CallerRequestOptions
-    }): HTTPResponse$<GetDeletedResponse> {
+    }): HTTPResponse$<QueryDeletedResponse> {
         return this.send$({
             command: 'query',
             path: `/drives/${driveId}/deleted`,
@@ -457,7 +457,7 @@ export class TreedbClient extends RootRouter {
     }: {
         itemId: string
         callerOptions?: CallerRequestOptions
-    }): HTTPResponse$<DeleteItemResponse> {
+    }): HTTPResponse$<TrashItemResponse> {
         return this.send$({
             command: 'delete',
             path: `/items/${itemId}`,
@@ -476,7 +476,7 @@ export class TreedbClient extends RootRouter {
     }: {
         folderId: string
         callerOptions?: CallerRequestOptions
-    }): HTTPResponse$<DeleteFolderResponse> {
+    }): HTTPResponse$<TrashFolderResponse> {
         return this.send$({
             command: 'delete',
             path: `/folders/${folderId}`,
