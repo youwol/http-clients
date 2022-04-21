@@ -1,6 +1,6 @@
 import { ReleaseResponse } from '../assets-gateway'
 
-export interface HealthzResponse {
+export interface GetHealthzResponse {
     status: 'cdn-backend ok'
 }
 
@@ -16,13 +16,13 @@ export interface FileResponse {
     size: number
 }
 
-export interface ExplorerResponse {
+export interface QueryExplorerResponse {
     size: number
     folders: FolderResponse[]
     files: FileResponse[]
 }
 
-export interface PublishResponse {
+export interface UploadResponse {
     name: string
     id: string
     version: string
@@ -31,7 +31,15 @@ export interface PublishResponse {
     url: string
 }
 
-export interface LibraryInfoResponse {
+export interface GetVersionInfoResponse {
+    name: string
+    versions: string[]
+    namespace: string
+    id: string
+    release: ReleaseResponse[]
+}
+
+export interface GetLibraryInfoResponse {
     name: string
     versions: string[]
     namespace: string

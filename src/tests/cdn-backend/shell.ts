@@ -9,7 +9,7 @@ import {
     mapToShell,
     Shell,
 } from '../common'
-import { LibraryInfoResponse } from '../../lib/cdn-backend'
+import { GetLibraryInfoResponse } from '../../lib/cdn-backend'
 
 type ManagedError = 'ManagedError'
 
@@ -66,8 +66,8 @@ export function getInfo<T>(
     input: (shell: Shell<T>) => { libraryId: string },
     cb: (shell: Shell<T>, resp) => T,
     onError: OperatorFunction<
-        LibraryInfoResponse | HTTPError,
-        LibraryInfoResponse | ManagedError
+        GetLibraryInfoResponse | HTTPError,
+        GetLibraryInfoResponse | ManagedError
     > = raiseHTTPErrors(),
 ) {
     return (source$: Observable<Shell<T>>) => {

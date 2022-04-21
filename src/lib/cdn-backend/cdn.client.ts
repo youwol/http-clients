@@ -1,19 +1,19 @@
 import {
     CallerRequestOptions,
     downloadBlob,
-    HTTPError,
     HTTPResponse$,
     uploadBlob,
 } from '../utils'
 import {
-    HealthzResponse,
-    ExplorerResponse,
-    PublishResponse,
-    LibraryInfoResponse,
+    GetHealthzResponse,
+    QueryExplorerResponse,
+    UploadResponse,
+    GetLibraryInfoResponse,
     DeleteLibraryResponse,
+    GetVersionInfoResponse,
 } from './interfaces'
 import { RootRouter } from '../router'
-import { Asset } from '../assets-gateway'
+import { NewAssetResponse } from '../assets-gateway'
 import { Observable } from 'rxjs'
 
 export class CdnClient extends RootRouter {
@@ -40,7 +40,7 @@ export class CdnClient extends RootRouter {
         callerOptions,
     }: {
         callerOptions?: CallerRequestOptions
-    }): HTTPResponse$<HealthzResponse> {
+    }): HTTPResponse$<GetHealthzResponse> {
         return this.send$({
             command: 'query',
             path: `/healthz`,
@@ -60,7 +60,7 @@ export class CdnClient extends RootRouter {
     }: {
         libraryId: string
         callerOptions?: CallerRequestOptions
-    }): HTTPResponse$<LibraryInfoResponse> {
+    }): HTTPResponse$<GetLibraryInfoResponse> {
         return this.send$({
             command: 'query',
             path: `/libraries/${libraryId}`,
@@ -83,7 +83,7 @@ export class CdnClient extends RootRouter {
         libraryId: string
         version: string
         callerOptions?: CallerRequestOptions
-    }): HTTPResponse$<LibraryInfoResponse> {
+    }): HTTPResponse$<GetVersionInfoResponse> {
         return this.send$({
             command: 'query',
             path: `/libraries/${libraryId}/${version}`,
@@ -203,7 +203,7 @@ export class CdnClient extends RootRouter {
         body: { fileName: string; blob: Blob }
         queryParameters?: { folderId?: string }
         callerOptions?: CallerRequestOptions
-    }): HTTPResponse$<Asset | PublishResponse> {
+    }): HTTPResponse$<NewAssetResponse<UploadResponse> | UploadResponse> {
         const suffix =
             queryParameters && queryParameters.folderId
                 ? `?folder-id=${queryParameters.folderId}`
@@ -215,7 +215,7 @@ export class CdnClient extends RootRouter {
             body.blob,
             {},
             callerOptions,
-        ) as Observable<Asset | HTTPError>
+        ) as HTTPResponse$<NewAssetResponse<UploadResponse> | UploadResponse>
     }
 
     /**
@@ -236,7 +236,7 @@ export class CdnClient extends RootRouter {
         version: string
         restOfPath: string
         callerOptions?: CallerRequestOptions
-    }): HTTPResponse$<ExplorerResponse> {
+    }): HTTPResponse$<QueryExplorerResponse> {
         return this.send$({
             command: 'query',
             path: `/explorer/${libraryName}/${version}/${restOfPath}`,
