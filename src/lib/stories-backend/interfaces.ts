@@ -89,7 +89,7 @@ export interface GlobalContent {
     javascript: string
     components: string
 }
-export interface PostGlobalContentBody {
+export interface UpdateGlobalContentBody {
     css?: string
     javascript?: string
     components?: string
@@ -100,6 +100,20 @@ export interface DocumentContentBody {
     components: string
     styles: string
 }
+export interface CreateBody {
+    storyId?: string
+    title: string
+}
+export interface PublishBody {
+    fileName: string
+    blob: Blob
+}
+export interface CreateDocumentBody {
+    parentDocumentId: string
+    title: string
+    content?: DocumentContentBody
+}
+export interface UpdateContentBody extends DocumentContentBody {}
 export interface DeleteDocumentResponse {
     deletedDocuments: number
 }

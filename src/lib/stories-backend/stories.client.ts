@@ -10,8 +10,7 @@ import {
     GetHealthzResponse,
     MoveDocumentBody,
     MoveDocumentResponse,
-    PostGlobalContentBody,
-    DocumentContentBody,
+    UpdateGlobalContentBody,
     GetDocumentResponse,
     GetContentResponse,
     AddPluginResponse,
@@ -27,6 +26,10 @@ import {
     UpdateDocumentResponse,
     UpdateContentsResponse,
     QueryDocumentsResponse,
+    UpdateContentBody,
+    CreateBody,
+    PublishBody,
+    CreateDocumentBody,
 } from './interfaces'
 import { RootRouter } from '../router'
 import { Observable } from 'rxjs'
@@ -80,7 +83,7 @@ export class StoriesClient extends RootRouter {
         queryParameters,
         callerOptions,
     }: {
-        body: { storyId?: string; title: string }
+        body: CreateBody
         queryParameters?: { folderId?: string }
         callerOptions?: CallerRequestOptions
     }): HTTPResponse$<
@@ -114,10 +117,7 @@ export class StoriesClient extends RootRouter {
         queryParameters,
         callerOptions,
     }: {
-        body: {
-            fileName: string
-            blob: Blob
-        }
+        body: PublishBody
         queryParameters?: { folderId?: string }
         callerOptions?: CallerRequestOptions
     }): HTTPResponse$<
@@ -233,7 +233,7 @@ export class StoriesClient extends RootRouter {
         callerOptions,
     }: {
         storyId: string
-        body: PostGlobalContentBody
+        body: UpdateGlobalContentBody
         callerOptions?: CallerRequestOptions
     }): HTTPResponse$<UpdateGlobalContentsResponse> {
         return this.send$({
@@ -262,11 +262,7 @@ export class StoriesClient extends RootRouter {
         callerOptions,
     }: {
         storyId: string
-        body: {
-            parentDocumentId: string
-            title: string
-            content?: DocumentContentBody
-        }
+        body: CreateDocumentBody
         callerOptions?: CallerRequestOptions
     }): HTTPResponse$<CreateDocumentResponse> {
         return this.send$({
@@ -350,7 +346,7 @@ export class StoriesClient extends RootRouter {
     }: {
         storyId: string
         documentId: string
-        body: DocumentContentBody
+        body: UpdateContentBody
         callerOptions?: CallerRequestOptions
     }): HTTPResponse$<UpdateContentsResponse> {
         return this.send$({

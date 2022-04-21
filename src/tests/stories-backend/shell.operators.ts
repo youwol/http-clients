@@ -15,7 +15,7 @@ import {
     GetDocumentResponse,
     QueryDocumentsResponse,
     MoveDocumentBody,
-    PostGlobalContentBody,
+    UpdateGlobalContentBody,
     AddPluginResponse,
     UpdateDocumentBody,
 } from '../../lib/stories-backend'
@@ -118,7 +118,7 @@ export function getGlobalContents<T>(
 
 export function updateGlobalContents<T>(
     storyId: string,
-    content: PostGlobalContentBody,
+    content: UpdateGlobalContentBody,
     cb: (shell: Shell<T>, resp) => T,
 ) {
     return (source$: Observable<Shell<T>>) => {
