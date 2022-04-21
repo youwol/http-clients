@@ -41,7 +41,7 @@ export class TreedbClient extends RootRouter {
         basePath?: string
     } = {}) {
         super({
-            basePath: basePath || '/api/stories-backend',
+            basePath: basePath || '/api/treedb-backend',
             headers,
         })
     }
