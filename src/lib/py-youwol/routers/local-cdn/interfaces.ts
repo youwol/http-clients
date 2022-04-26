@@ -9,6 +9,25 @@ export type UpdateStatus =
     | 'remoteAhead'
     | 'localAhead'
 
+export interface CdnVersion {
+    version: string
+    filesCount: number
+    entryPointSize: number // in bytes
+}
+
+export interface CdnPackage {
+    name: string
+    id: string
+    versions: CdnVersion[]
+}
+
+export interface CdnStatusResponse {
+    packages: CdnPackage[]
+}
+export interface GetCdnStatusResponse extends CdnStatusResponse {}
+
+export interface CdnPackageResponse extends CdnPackage {}
+
 export interface CheckUpdateResponse {
     status: UpdateStatus
     packageName: string

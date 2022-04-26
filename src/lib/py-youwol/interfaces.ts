@@ -18,6 +18,8 @@ export type Label =
     | 'PackageDownloading'
     | 'ArtifactsResponse'
     | 'CdnResponse'
+    | 'CdnStatusResponse'
+    | 'CdnPackageResponse'
     | 'CheckUpdateResponse'
     | 'CheckUpdatesResponse'
     | 'Label.PACKAGE_DOWNLOADING'
