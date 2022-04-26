@@ -138,7 +138,7 @@ export function expectPipelineStepEvents$(pyYouwol: PyYouwolClient) {
 export function expectArtifacts$(pyYouwol: PyYouwolClient, projectId: string) {
     return combineLatest([
         pyYouwol.admin.projects
-            .getArtifacts$(projectId, 'prod')
+            .getArtifacts$({ projectId, flowId: 'prod' })
             .pipe(raiseHTTPErrors()),
         pyYouwol.admin.projects.webSocket.artifacts$({ projectId }),
     ]).pipe(

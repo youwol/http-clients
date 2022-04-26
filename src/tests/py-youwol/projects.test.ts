@@ -3,7 +3,7 @@ import { combineLatest, Observable, of } from 'rxjs'
 import { expand, map, mapTo, mergeMap, reduce, take, tap } from 'rxjs/operators'
 import { raiseHTTPErrors } from '../../lib'
 import { PyYouwolClient } from '../../lib/py-youwol'
-import { PipelineStepStatusResponse } from '../../lib/py-youwol/routers/projects/interfaces'
+import { PipelineStepStatusResponse } from '../../lib/py-youwol'
 
 import { expectAttributes, resetPyYouwolDbs$ } from '../common'
 /* eslint-disable jest/no-done-callback -- eslint-comment Find a good way to work with rxjs in jest */
@@ -67,7 +67,7 @@ test('pyYouwol.admin.projects.projectStatus', (done) => {
 
     combineLatest([
         pyYouwol.admin.projects
-            .getProjectStatus$(projectId)
+            .getProjectStatus$({ projectId })
             .pipe(raiseHTTPErrors()),
         pyYouwol.admin.projects.webSocket.projectStatus$({ projectId }),
     ]).subscribe(([respHttp, respWs]) => {
@@ -81,7 +81,10 @@ test('pyYouwol.admin.projects.projectStatus', (done) => {
 test('pyYouwol.admin.projects.flowStatus', (done) => {
     combineLatest([
         pyYouwol.admin.projects
-            .flowStatus$(btoa(projectName), 'prod')
+            .getPipelineStatus$({
+                projectId: btoa(projectName),
+                flowId: 'prod',
+            })
             .pipe(raiseHTTPErrors()),
         pyYouwol.admin.projects.webSocket.pipelineStatus$(),
     ])
@@ -100,7 +103,7 @@ function run$(
 ): Observable<PipelineStepStatusResponse> {
     return combineLatest([
         pyYouwol.admin.projects
-            .runStep$(btoa(projectName), 'prod', stepId)
+            .runStep$({ projectId: btoa(projectName), flowId: 'prod', stepId })
             .pipe(raiseHTTPErrors()),
         pyYouwol.admin.projects.webSocket.stepStatus$().pipe(
             map((d) => d.data),
