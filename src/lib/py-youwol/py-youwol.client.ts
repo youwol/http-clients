@@ -3,10 +3,12 @@ import { RootRouter } from '../router'
 import { CallerRequestOptions, HTTPResponse$ } from '../utils'
 import { ContextMessage, HealthzResponse } from './interfaces'
 import { AdminRouter } from './routers/admin.router'
+import { skip } from 'rxjs/operators'
 
 export class PyYouwolClient extends RootRouter {
     public readonly admin: AdminRouter
-    private ws$: Subject<ContextMessage>
+
+    static ws$: Subject<ContextMessage>
 
     constructor({
         headers,
@@ -37,12 +39,12 @@ export class PyYouwolClient extends RootRouter {
     }
 
     webSocket$() {
-        if (this.ws$) {
-            return this.ws$
+        if (PyYouwolClient.ws$) {
+            return PyYouwolClient.ws$
         }
         const path = window.location.host
-        this.ws$ = this.connectWs(`ws://${path}/ws`)
-        return this.ws$
+        PyYouwolClient.ws$ = this.connectWs(`ws://${path}/ws`)
+        return PyYouwolClient.ws$.pipe(skip(1))
     }
 
     private connectWs(path: string) {
@@ -50,9 +52,7 @@ export class PyYouwolClient extends RootRouter {
         const ws = new WebSocket(path)
         ws.onmessage = (event) => {
             const data = JSON.parse(event.data)
-            if (event.data != {}) {
-                channel$.next(data)
-            }
+            channel$.next(data)
         }
         return channel$
     }
