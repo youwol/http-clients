@@ -22,6 +22,20 @@ beforeEach(async (done) => {
     })
 })
 
+test('pyYouwol.admin.local-cdn.status', (done) => {
+    combineLatest([
+        pyYouwol.admin.localCdn.getStatus$().pipe(raiseHTTPErrors()),
+        pyYouwol.admin.localCdn.webSocket.status$(),
+    ])
+        .pipe(take(1))
+        .subscribe(([respHttp, respWs]) => {
+            expect(respHttp.packages).toHaveLength(0)
+            expect(respWs.data.packages).toHaveLength(0)
+            expect(respWs.attributes.topic).toBe('cdn')
+            done()
+        })
+})
+
 test('pyYouwol.admin.local-cdn.collectUpdates - empty', (done) => {
     combineLatest([
         pyYouwol.admin.localCdn
@@ -75,13 +89,56 @@ test('install & pyYouwol.admin.local-cdn.collectUpdates', (done) => {
                     .triggerCollectUpdates$()
                     .pipe(raiseHTTPErrors())
             }),
+            tap((respHttp) => {
+                expect(respHttp.updates).toHaveLength(2)
+                const httpClient = respHttp.updates.find(
+                    (update) => update.packageName == '@youwol/http-clients',
+                )
+                expectUpdateStatus(httpClient)
+            }),
+            mergeMap(() => {
+                return combineLatest([
+                    pyYouwol.admin.localCdn
+                        .getStatus$()
+                        .pipe(raiseHTTPErrors()),
+                    pyYouwol.admin.localCdn.webSocket.status$(),
+                ])
+            }),
+            tap(([respHttp, respWs]) => {
+                expect(respHttp.packages).toHaveLength(2)
+                expect(respWs.data).toEqual(respHttp)
+                expect(respHttp.packages.map((p) => p.name).sort()).toEqual([
+                    '@youwol/http-clients',
+                    'rxjs',
+                ])
+                expect(respWs.attributes.topic).toBe('cdn')
+            }),
+            mergeMap(() => {
+                return combineLatest([
+                    pyYouwol.admin.localCdn
+                        .getPackage$({
+                            packageId: 'QHlvdXdvbC9odHRwLWNsaWVudHM=',
+                        })
+                        .pipe(raiseHTTPErrors()),
+                    pyYouwol.admin.localCdn.webSocket.package$({
+                        packageId: 'QHlvdXdvbC9odHRwLWNsaWVudHM=',
+                    }),
+                ])
+            }),
+            tap(([respHttp, respWs]) => {
+                expect(respHttp.name).toBe('@youwol/http-clients')
+                expect(respHttp.versions).toHaveLength(1)
+                expectAttributes(respHttp.versions[0], [
+                    'version',
+                    'filesCount',
+                    'entryPointSize',
+                ])
+                expect(respHttp.versions[0].entryPointSize).toBeGreaterThan(0)
+                expect(respHttp.versions[0].filesCount).toBeGreaterThan(0)
+                expect(respWs.data).toEqual(respHttp)
+            }),
         )
-        .subscribe((respHttp) => {
-            expect(respHttp.updates).toHaveLength(2)
-            const httpClient = respHttp.updates.find(
-                (update) => update.packageName == '@youwol/http-clients',
-            )
-            expectUpdateStatus(httpClient)
+        .subscribe(() => {
             done()
         })
 })
@@ -93,13 +150,15 @@ test('download', (done) => {
 
     pyYouwol.admin.localCdn
         .download$({
-            packages: [
-                {
-                    packageName: 'lodash',
-                    version: '4.17.15',
-                },
-            ],
-            checkUpdateStatus: true,
+            body: {
+                packages: [
+                    {
+                        packageName: 'lodash',
+                        version: '4.17.15',
+                    },
+                ],
+                checkUpdateStatus: true,
+            },
         })
         .pipe(
             mergeMap(() => {
@@ -112,4 +171,5 @@ test('download', (done) => {
             expectUpdateStatus(respWs.data)
         })
 })
+
 /* eslint-enable jest/no-done-callback -- re-enable */
