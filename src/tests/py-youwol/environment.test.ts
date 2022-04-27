@@ -1,5 +1,5 @@
 import { combineLatest } from 'rxjs'
-import { mergeMap, take } from 'rxjs/operators'
+import { mergeMap, take, tap } from 'rxjs/operators'
 import { onHTTPErrors, raiseHTTPErrors } from '../../lib'
 import { PyYouwolClient } from '../../lib/py-youwol'
 
@@ -76,4 +76,21 @@ test('pyYouwol.admin.environment.reloadConfig', (done) => {
             done()
         })
 })
+
+test('pyYouwol.admin.environment.customDispatches', (done) => {
+    pyYouwol.admin.environment
+        .queryCustomDispatches$()
+        .pipe(
+            raiseHTTPErrors(),
+            tap((resp) => {
+                expectAttributes(resp, ['dispatches'])
+                expectAttributes(resp.dispatches, ['BrotliDecompress'])
+                expect(resp.dispatches.BrotliDecompress).toHaveLength(1)
+            }),
+        )
+        .subscribe(() => {
+            done()
+        })
+})
+
 /* eslint-enable jest/no-done-callback -- re-enable */

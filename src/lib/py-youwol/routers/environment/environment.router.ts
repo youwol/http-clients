@@ -1,7 +1,11 @@
 import { Router } from '../../../router'
 import { CallerRequestOptions, HTTPResponse$ } from '../../../utils'
 import { filterCtxMessage, WebSocketResponse$ } from '../../../ws-utils'
-import { EnvironmentStatusResponse, LoginResponse } from './interfaces'
+import {
+    EnvironmentStatusResponse,
+    LoginResponse,
+    QueryCustomDispatchesResponse,
+} from './interfaces'
 
 class WebSocketAPI {
     constructor(public readonly ws$: () => WebSocketResponse$<unknown>) {}
@@ -84,6 +88,18 @@ export class EnvironmentRouter extends Router {
             nativeRequestOptions: {
                 method: 'POST',
             },
+            callerOptions,
+        })
+    }
+
+    queryCustomDispatches$({
+        callerOptions,
+    }: {
+        callerOptions?: CallerRequestOptions
+    } = {}): HTTPResponse$<QueryCustomDispatchesResponse> {
+        return this.send$({
+            command: 'query',
+            path: `/configuration/custom-dispatches`,
             callerOptions,
         })
     }

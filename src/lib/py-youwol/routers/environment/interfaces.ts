@@ -42,8 +42,34 @@ export interface K8sInstanceInfo {
     k8s_api_proxy: string
 }
 
+export interface DockerRepository {
+    name: string
+    pullSecret: string
+}
+
+export interface K8sDockerRepositories {
+    repositories: DockerRepository[]
+}
+
+export interface OpenIdConnect {
+    authSecret: string
+    host: string
+}
+
 export interface K8sInstance {
     instanceInfo: K8sInstanceInfo
+    configFile: string
+    contextName: string
+    docker: K8sDockerRepositories
+    host: string
+    openIdConnect: OpenIdConnect
+    proxyPort: string
+}
+
+export interface CustomDispatch {
+    name: string
+    type: string
+    listening: boolean
 }
 
 export interface YouwolEnvironment {
@@ -58,7 +84,7 @@ export interface YouwolEnvironment {
     selectedRemote?: string
 
     pathsBook: PathsBook
-
+    customDispatches: CustomDispatch[]
     cache: { [key: string]: unknown }
 
     tokensCache: DeadlinedCache[]
@@ -85,4 +111,13 @@ export interface EnvironmentStatusResponse {
     userInfo: UserInfo
     remoteGateway?: RemoteGatewayInfo
     remotesInfo: RemoteGatewayInfo[]
+}
+
+export interface CustomDispatch {
+    type: string
+    status: { [k: string]: string }
+}
+
+export interface QueryCustomDispatchesResponse {
+    dispatches: { [k: string]: CustomDispatch[] }
 }
