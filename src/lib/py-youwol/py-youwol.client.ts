@@ -3,7 +3,6 @@ import { RootRouter } from '../router'
 import { CallerRequestOptions, HTTPResponse$ } from '../utils'
 import { ContextMessage, HealthzResponse } from './interfaces'
 import { AdminRouter } from './routers/admin.router'
-import { skip } from 'rxjs/operators'
 
 export class PyYouwolClient extends RootRouter {
     public readonly admin: AdminRouter
@@ -44,7 +43,7 @@ export class PyYouwolClient extends RootRouter {
         }
         const path = window.location.host
         PyYouwolClient.ws$ = this.connectWs(`ws://${path}/ws`)
-        return PyYouwolClient.ws$.pipe(skip(1))
+        return PyYouwolClient.ws$
     }
 
     private connectWs(path: string) {
