@@ -103,4 +103,28 @@ export class EnvironmentRouter extends Router {
             callerOptions,
         })
     }
+
+    queryCowSay$({
+        callerOptions,
+    }: {
+        callerOptions?: CallerRequestOptions
+    } = {}): HTTPResponse$<string> {
+        return this.send$({
+            command: 'query',
+            path: `/cow-say`,
+            callerOptions,
+        })
+    }
+
+    getFileContent$({
+        callerOptions,
+    }: {
+        callerOptions?: CallerRequestOptions
+    } = {}): HTTPResponse$<string> {
+        return this.send$({
+            command: 'query',
+            path: `/configuration/config-file`,
+            callerOptions,
+        })
+    }
 }

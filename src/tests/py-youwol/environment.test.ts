@@ -32,11 +32,21 @@ test('pyYouwol.admin.environment.status', (done) => {
         pyYouwol.admin.environment.status$().pipe(raiseHTTPErrors()),
         pyYouwol.admin.environment.webSocket.status$(),
     ])
-        .pipe(take(1))
-        .subscribe(([respHttp, respWs]) => {
-            expectEnvironment(respHttp)
-
-            expect(respHttp).toEqual(respWs.data)
+        .pipe(
+            take(1),
+            tap(([respHttp, respWs]) => {
+                expectEnvironment(respHttp)
+                expect(respHttp).toEqual(respWs.data)
+            }),
+            mergeMap(() => {
+                return pyYouwol.admin.environment.queryCowSay$()
+            }),
+            raiseHTTPErrors(),
+            tap((resp) => {
+                expect(typeof resp).toBe('string')
+            }),
+        )
+        .subscribe(() => {
             done()
         })
 })
@@ -69,10 +79,21 @@ test('pyYouwol.admin.environment.reloadConfig', (done) => {
         pyYouwol.admin.environment.reloadConfig$().pipe(raiseHTTPErrors()),
         pyYouwol.admin.environment.webSocket.status$(),
     ])
-        .pipe(take(1))
-        .subscribe(([respHttp, respWs]) => {
-            expectEnvironment(respHttp)
-            expectEnvironment(respWs.data)
+        .pipe(
+            take(1),
+            tap(([respHttp, respWs]) => {
+                expectEnvironment(respHttp)
+                expectEnvironment(respWs.data)
+            }),
+            mergeMap(() => {
+                return pyYouwol.admin.environment.getFileContent$()
+            }),
+            raiseHTTPErrors(),
+            tap((resp) => {
+                expect(typeof resp).toBe('string')
+            }),
+        )
+        .subscribe(() => {
             done()
         })
 })

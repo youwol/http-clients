@@ -66,12 +66,6 @@ export interface K8sInstance {
     proxyPort: string
 }
 
-export interface CustomDispatch {
-    name: string
-    type: string
-    listening: boolean
-}
-
 export interface YouwolEnvironment {
     availableProfiles: string[]
     httpPort: number
@@ -115,7 +109,9 @@ export interface EnvironmentStatusResponse {
 
 export interface CustomDispatch {
     type: string
-    status: { [k: string]: string }
+    name: string
+    activated?: boolean
+    parameters: { [k: string]: string }
 }
 
 export interface QueryCustomDispatchesResponse {
