@@ -4,6 +4,9 @@ import { PyYouwolClient } from '../../lib/py-youwol'
 import { resetPyYouwolDbs$ } from '../common'
 /* eslint-disable jest/no-done-callback -- eslint-comment Find a good way to work with rxjs in jest */
 import '../mock-requests'
+import { combineLatest } from 'rxjs'
+import { reduce, take, tap } from 'rxjs/operators'
+import { setup$ } from './utils'
 
 const pyYouwol = new PyYouwolClient()
 
@@ -14,13 +17,43 @@ beforeAll(async (done) => {
 })
 
 test('pyYouwol.admin.customCommands.doPost$', (done) => {
-    pyYouwol.admin.customCommands
-        .doPost$('test-cmd-post', {
-            returnObject: { status: 'test-cmd-post ok' },
-        })
-        .pipe(raiseHTTPErrors())
-        .subscribe((resp) => {
-            expect(resp).toEqual({ status: 'test-cmd-post ok' })
+    combineLatest([
+        pyYouwol.admin.customCommands
+            .doPost$('test-cmd-post', {
+                returnObject: { status: 'test-cmd-post ok' },
+            })
+            .pipe(raiseHTTPErrors()),
+        pyYouwol.admin.customCommands.webSocket
+            .log$({
+                commandName: 'test-cmd-post',
+            })
+            .pipe(
+                take(2),
+                reduce((acc, e) => [...acc, e], []),
+            ),
+    ])
+        .pipe(
+            tap(([respHttp, respWs]) => {
+                expect(respHttp).toEqual({ status: 'test-cmd-post ok' })
+                expectAttributes(respWs[0], [
+                    'level',
+                    'attributes',
+                    'labels',
+                    'text',
+                    'contextId',
+                    'parentContextId',
+                ])
+                expect(
+                    respWs[0].labels.includes('Label.END_POINT'),
+                ).toBeTruthy()
+                expect(respWs[0].text).toBe(
+                    'POST: /admin/custom-commands/test-cmd-post',
+                )
+                expect(respWs[1].text).toBe('test message')
+                expect(respWs[1].data.body.returnObject).toEqual(respHttp)
+            }),
+        )
+        .subscribe(() => {
             done()
         })
 })

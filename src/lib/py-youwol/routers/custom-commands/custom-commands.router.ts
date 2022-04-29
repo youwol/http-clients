@@ -1,9 +1,29 @@
 import { Router } from '../../../router'
 import { CallerRequestOptions, HTTPResponse$, Json } from '../../../utils'
+import { filterCtxMessage, WebSocketResponse$ } from '../../../ws-utils'
+
+export type Method = 'GET' | 'POST' | 'PUT' | 'DELETE'
+
+class WebSocketAPI {
+    constructor(public readonly ws$: () => WebSocketResponse$<unknown>) {}
+
+    log$(
+        filters: { commandName?: string; method?: Method } = {},
+    ): WebSocketResponse$<unknown> {
+        return this.ws$().pipe(
+            filterCtxMessage<unknown>({
+                withAttributes: { ...filters, topic: 'commands' },
+            }),
+        )
+    }
+}
 
 export class CustomCommandsRouter extends Router {
-    constructor(parent: Router) {
+    public readonly webSocket: WebSocketAPI
+
+    constructor(parent: Router, ws$: () => WebSocketResponse$<unknown>) {
         super(parent.headers, `${parent.basePath}/custom-commands`)
+        this.webSocket = new WebSocketAPI(ws$)
     }
 
     /**
