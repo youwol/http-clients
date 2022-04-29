@@ -23,7 +23,7 @@ class WebSocketAPI {
 }
 
 export class EnvironmentRouter extends Router {
-    webSocket: WebSocketAPI
+    public readonly webSocket: WebSocketAPI
 
     constructor(parent: Router, ws$: () => WebSocketResponse$<unknown>) {
         super(parent.headers, `${parent.basePath}/environment`)

@@ -80,7 +80,7 @@ class WebSocketAPI {
 }
 
 export class LocalCdnRouter extends Router {
-    webSocket: WebSocketAPI
+    public readonly webSocket: WebSocketAPI
 
     constructor(parent: Router, ws$: () => WebSocketResponse$<unknown>) {
         super(parent.headers, `${parent.basePath}/local-cdn`)

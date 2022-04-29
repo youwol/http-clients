@@ -82,7 +82,7 @@ class WebSocketAPI {
 }
 
 export class ProjectsRouter extends Router {
-    webSocket: WebSocketAPI
+    public readonly webSocket: WebSocketAPI
 
     constructor(parent: Router, ws$: () => WebSocketResponse$<unknown>) {
         super(parent.headers, `${parent.basePath}/projects`)
