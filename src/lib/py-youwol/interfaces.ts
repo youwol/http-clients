@@ -22,6 +22,7 @@ export type Label =
     | 'CdnPackageResponse'
     | 'CheckUpdateResponse'
     | 'CheckUpdatesResponse'
+    | 'DownloadEvent'
     | 'Label.PACKAGE_DOWNLOADING'
     | 'DownloadedPackageResponse'
     | 'PackageEvent'
