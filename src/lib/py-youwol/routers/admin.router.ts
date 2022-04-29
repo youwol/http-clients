@@ -15,10 +15,10 @@ export class AdminRouter extends Router {
 
     constructor(parent: Router, ws$: () => WebSocketResponse$<unknown>) {
         super(parent.headers, `${parent.basePath}/admin`)
-        this.customCommands = new CustomCommandsRouter(this)
+        this.customCommands = new CustomCommandsRouter(this, ws$)
         this.environment = new EnvironmentRouter(this, ws$)
         this.projects = new ProjectsRouter(this, ws$)
-        this.system = new SystemRouter(this)
+        this.system = new SystemRouter(this, ws$)
         this.localCdn = new LocalCdnRouter(this, ws$)
     }
 }
