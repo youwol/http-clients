@@ -11,13 +11,14 @@ import {
 } from '../common'
 /* eslint-disable jest/no-done-callback -- eslint-comment Find a good way to work with rxjs in jest */
 import '../mock-requests'
-import { expectDownloadEvents$, expectUpdateStatus } from './utils'
+import { expectDownloadEvents$, expectUpdateStatus, setup$ } from './utils'
 
 const pyYouwol = new PyYouwolClient()
 
+jest.setTimeout(20 * 1000)
+
 beforeEach(async (done) => {
-    jest.setTimeout(20 * 1000)
-    resetPyYouwolDbs$().subscribe(() => {
+    setup$().subscribe(() => {
         done()
     })
 })

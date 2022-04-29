@@ -1,8 +1,22 @@
 import { combineLatest } from 'rxjs'
-import { map, reduce, take, tap } from 'rxjs/operators'
+import { map, mergeMap, reduce, take, tap } from 'rxjs/operators'
 import { raiseHTTPErrors } from '../../lib'
 import { PyYouwolClient } from '../../lib/py-youwol'
-import { expectAttributes } from '../common'
+import { expectAttributes, resetPyYouwolDbs$ } from '../common'
+import { Client } from '@youwol/cdn-client'
+
+export function setup$(
+    { localOnly }: { localOnly?: boolean } = { localOnly: true },
+) {
+    Client.resetCache()
+    return PyYouwolClient.startWs$().pipe(
+        mergeMap(() => {
+            return resetPyYouwolDbs$({
+                'py-youwol-local-only': localOnly ? 'true' : 'false',
+            })
+        }),
+    )
+}
 
 export function uniqueProjectName(prefix: string) {
     const now = new Date()

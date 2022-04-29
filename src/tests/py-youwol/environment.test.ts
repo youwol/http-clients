@@ -3,15 +3,15 @@ import { mergeMap, take, tap } from 'rxjs/operators'
 import { onHTTPErrors, raiseHTTPErrors } from '../../lib'
 import { PyYouwolClient } from '../../lib/py-youwol'
 
-import { expectAttributes, resetPyYouwolDbs$ } from '../common'
+import { expectAttributes } from '../common'
 /* eslint-disable jest/no-done-callback -- eslint-comment Find a good way to work with rxjs in jest */
 import '../mock-requests'
-import { expectEnvironment } from './utils'
+import { expectEnvironment, setup$ } from './utils'
 
 const pyYouwol = new PyYouwolClient()
 
 beforeAll(async (done) => {
-    resetPyYouwolDbs$().subscribe(() => {
+    setup$().subscribe(() => {
         done()
     })
 })

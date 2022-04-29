@@ -1,7 +1,7 @@
 import { raiseHTTPErrors } from '../../lib'
 import { PyYouwolClient } from '../../lib/py-youwol'
 
-import { resetPyYouwolDbs$ } from '../common'
+import { expectAttributes } from '../common'
 /* eslint-disable jest/no-done-callback -- eslint-comment Find a good way to work with rxjs in jest */
 import '../mock-requests'
 import { combineLatest } from 'rxjs'
@@ -11,7 +11,7 @@ import { setup$ } from './utils'
 const pyYouwol = new PyYouwolClient()
 
 beforeAll(async (done) => {
-    resetPyYouwolDbs$().subscribe(() => {
+    setup$().subscribe(() => {
         done()
     })
 })

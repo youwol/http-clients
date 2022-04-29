@@ -5,7 +5,7 @@ import { raiseHTTPErrors } from '../../lib'
 import { PyYouwolClient } from '../../lib/py-youwol'
 import { PipelineStepStatusResponse } from '../../lib/py-youwol'
 
-import { expectAttributes, resetPyYouwolDbs$ } from '../common'
+import { expectAttributes } from '../common'
 /* eslint-disable jest/no-done-callback -- eslint-comment Find a good way to work with rxjs in jest */
 import '../mock-requests'
 import {
@@ -18,6 +18,7 @@ import {
     expectProjectStatus,
     expectPublishLocal,
     expectPublishRemote,
+    setup$,
     uniqueProjectName,
 } from './utils'
 
@@ -26,18 +27,17 @@ const pyYouwol = new PyYouwolClient()
 let projectName: string
 
 beforeAll(async (done) => {
-    const youwolClient = new PyYouwolClient()
     projectName = uniqueProjectName('todo-app-js')
-    resetPyYouwolDbs$()
+    setup$()
         .pipe(
             mergeMap(() =>
-                youwolClient.admin.customCommands.doPost$('clone-project', {
+                pyYouwol.admin.customCommands.doPost$('clone-project', {
                     url: 'https://github.com/youwol/todo-app-js.git',
                     name: projectName,
                 }),
             ),
             mergeMap(() => {
-                return youwolClient.admin.customCommands.doDelete$(
+                return pyYouwol.admin.customCommands.doDelete$(
                     'purge-downloads',
                 )
             }),
