@@ -52,6 +52,7 @@ export interface DownloadPackagesBody {
 export interface DownloadedPackageResponse {
     packageName: string
     version: string
+    versions: string[]
     fingerprint: string
 }
 
