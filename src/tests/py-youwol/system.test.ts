@@ -1,4 +1,4 @@
-import { mergeMap } from 'rxjs/operators'
+import { mergeMap, tap } from 'rxjs/operators'
 import { raiseHTTPErrors } from '../../lib'
 import { PyYouwolClient } from '../../lib/py-youwol'
 
@@ -52,6 +52,32 @@ test('pyYouwol.admin.system.queryLogs', (done) => {
         .subscribe((resp) => {
             expectAttributes(resp, ['logs'])
             expect(resp.logs.length).toBeGreaterThan(1)
+            done()
+        })
+})
+
+test('pyYouwol.admin.system.clearLogs', (done) => {
+    pyYouwol.admin.system
+        .queryRootLogs$({ fromTimestamp: Date.now(), maxCount: 100 })
+        .pipe(
+            raiseHTTPErrors(),
+            tap((resp) => {
+                expect(resp.logs.length).toBeGreaterThanOrEqual(1)
+            }),
+            mergeMap(({ logs }) => pyYouwol.admin.system.clearLogs$()),
+            raiseHTTPErrors(),
+            mergeMap(() =>
+                pyYouwol.admin.system.queryRootLogs$({
+                    fromTimestamp: Date.now(),
+                    maxCount: 100,
+                }),
+            ),
+            raiseHTTPErrors(),
+            tap((resp) => {
+                expect(resp.logs.length).toBe(0)
+            }),
+        )
+        .subscribe(() => {
             done()
         })
 })
