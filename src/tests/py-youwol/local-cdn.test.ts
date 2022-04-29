@@ -4,11 +4,7 @@ import { mergeMap, reduce, take, tap } from 'rxjs/operators'
 import { raiseHTTPErrors } from '../../lib'
 import { PyYouwolClient } from '../../lib/py-youwol'
 
-import {
-    expectAttributes,
-    getPyYouwolBasePath,
-    resetPyYouwolDbs$,
-} from '../common'
+import { expectAttributes, getPyYouwolBasePath } from '../common'
 /* eslint-disable jest/no-done-callback -- eslint-comment Find a good way to work with rxjs in jest */
 import '../mock-requests'
 import { expectDownloadEvents$, expectUpdateStatus, setup$ } from './utils'
@@ -73,6 +69,12 @@ test('install & pyYouwol.admin.local-cdn.collectUpdates', (done) => {
                 expectAttributes(resp.attributes, [
                     'packageName',
                     'packageVersion',
+                ])
+                expectAttributes(resp.data, [
+                    'packageName',
+                    'versions',
+                    'version',
+                    'fingerprint',
                 ])
             }),
             take(2),
