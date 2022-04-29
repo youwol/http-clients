@@ -1,10 +1,10 @@
 import { Router } from '../../router'
 import { WebSocketResponse$ } from '../../ws-utils'
-import { CustomCommandsRouter } from './custom-commands/custom-commands.router'
-import { EnvironmentRouter } from './environment/environment.router'
-import { LocalCdnRouter } from './local-cdn/local-cdn.router'
-import { ProjectsRouter } from './projects/projects.router'
-import { SystemRouter } from './system/system.router'
+import { CustomCommandsRouter } from './custom-commands'
+import { EnvironmentRouter } from './environment'
+import { LocalCdnRouter } from './local-cdn'
+import { ProjectsRouter } from './projects'
+import { SystemRouter } from './system'
 
 export class AdminRouter extends Router {
     public readonly customCommands: CustomCommandsRouter
