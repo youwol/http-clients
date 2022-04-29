@@ -55,6 +55,14 @@ export interface DownloadedPackageResponse {
     fingerprint: string
 }
 
+export interface ResetCdnBody {
+    keepProjectPackages?: boolean
+}
+
+export interface ResetCdnResponse {
+    deletedPackages: string[]
+}
+
 export interface PackageDownloading {
     packageName: string
     version: string

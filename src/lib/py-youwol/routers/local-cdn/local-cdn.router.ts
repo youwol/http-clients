@@ -10,6 +10,8 @@ import {
     DownloadPackagesBody,
     GetCdnStatusResponse,
     PackageEvent,
+    ResetCdnBody,
+    ResetCdnResponse,
 } from './interfaces'
 
 class WebSocketAPI {
@@ -138,6 +140,24 @@ export class LocalCdnRouter extends Router {
             nativeRequestOptions: {
                 method: 'POST',
                 json: body,
+            },
+            callerOptions,
+        })
+    }
+
+    resetCdn$({
+        callerOptions,
+        body,
+    }: {
+        body?: ResetCdnBody
+        callerOptions?: CallerRequestOptions
+    } = {}): HTTPResponse$<ResetCdnResponse> {
+        return this.send$({
+            command: 'delete',
+            path: `/reset`,
+            nativeRequestOptions: {
+                method: 'POST',
+                json: body || {},
             },
             callerOptions,
         })
