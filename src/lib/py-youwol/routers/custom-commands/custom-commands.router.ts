@@ -32,10 +32,13 @@ export class CustomCommandsRouter extends Router {
      * @param name name of the command
      * @param callerOptions
      */
-    doGet$(
-        name: string,
-        callerOptions: CallerRequestOptions = {},
-    ): HTTPResponse$<unknown> {
+    doGet$({
+        name,
+        callerOptions,
+    }: {
+        name: string
+        callerOptions?: CallerRequestOptions
+    }): HTTPResponse$<unknown> {
         return this.send$({
             command: 'query',
             path: `/${name}`,
@@ -49,11 +52,15 @@ export class CustomCommandsRouter extends Router {
      * @param body body of the request
      * @param callerOptions
      */
-    doPost$(
-        name: string,
-        body: Json,
-        callerOptions: CallerRequestOptions = {},
-    ): HTTPResponse$<unknown> {
+    doPost$({
+        name,
+        body,
+        callerOptions,
+    }: {
+        name: string
+        body: Json
+        callerOptions?: CallerRequestOptions
+    }): HTTPResponse$<unknown> {
         return this.send$({
             command: 'update',
             path: `/${name}`,
@@ -70,11 +77,15 @@ export class CustomCommandsRouter extends Router {
      * @param body body of the request
      * @param callerOptions
      */
-    doPut$(
-        name: string,
-        body: Json,
-        callerOptions: CallerRequestOptions = {},
-    ): HTTPResponse$<unknown> {
+    doPut$({
+        name,
+        body,
+        callerOptions,
+    }: {
+        name: string
+        body: Json
+        callerOptions?: CallerRequestOptions
+    }): HTTPResponse$<unknown> {
         return this.send$({
             command: 'create',
             path: `/${name}`,
@@ -90,10 +101,13 @@ export class CustomCommandsRouter extends Router {
      * @param name name of the command
      * @param callerOptions
      */
-    doDelete$(
-        name: string,
-        callerOptions: CallerRequestOptions = {},
-    ): HTTPResponse$<unknown> {
+    doDelete$({
+        name,
+        callerOptions,
+    }: {
+        name: string
+        callerOptions?: CallerRequestOptions
+    }): HTTPResponse$<unknown> {
         return this.send$({
             command: 'delete',
             path: `/${name}`,

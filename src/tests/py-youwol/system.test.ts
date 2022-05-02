@@ -45,7 +45,9 @@ test('pyYouwol.admin.system.queryLogs', (done) => {
         .pipe(
             raiseHTTPErrors(),
             mergeMap(({ logs }) =>
-                pyYouwol.admin.system.queryLogs$(logs[0].contextId),
+                pyYouwol.admin.system.queryLogs$({
+                    parentId: logs[0].contextId,
+                }),
             ),
             raiseHTTPErrors(),
         )
@@ -84,7 +86,7 @@ test('pyYouwol.admin.system.clearLogs', (done) => {
 
 test('pyYouwol.admin.system.queryFolderContent', (done) => {
     pyYouwol.admin.system
-        .queryFolderContent$('./')
+        .queryFolderContent$({ path: './' })
         .pipe(raiseHTTPErrors())
         .subscribe((resp) => {
             // the folder is py-youwol/youwol
@@ -97,7 +99,7 @@ test('pyYouwol.admin.system.queryFolderContent', (done) => {
 
 test('pyYouwol.admin.system.getFileContent', (done) => {
     pyYouwol.admin.system
-        .getFileContent$('./main.py')
+        .getFileContent$({ path: './main.py' })
         .pipe(raiseHTTPErrors())
         .subscribe((resp) => {
             expect(resp).toBeTruthy()

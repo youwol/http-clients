@@ -1,12 +1,18 @@
 import { Router } from '../../../router'
 import { CallerRequestOptions, HTTPResponse$ } from '../../../utils'
-import { ContextMessage } from '../../interfaces'
+import { ContextMessage, GetFileContentResponse } from '../../interfaces'
 import { filterCtxMessage, WebSocketResponse$ } from '../../../ws-utils'
 import { filter } from 'rxjs/operators'
 import { WsRouter } from '../../py-youwol.client'
 
 export type Kind = 'package' | 'data' | 'flux-project' | 'story'
 export type DownloadEventType = 'enqueued' | 'started' | 'succeeded' | 'failed'
+
+export interface QueryFolderContentResponse {
+    configurations: string[]
+    folders: string[]
+    files: string[]
+}
 
 export interface LogResponse<T = unknown> extends ContextMessage<T> {
     failed?: boolean
@@ -15,6 +21,10 @@ export interface LogResponse<T = unknown> extends ContextMessage<T> {
 export interface LogsResponse {
     logs: LogResponse[]
 }
+
+export interface QueryRootLogsResponse extends LogsResponse {}
+
+export interface QueryLogsResponse extends LogsResponse {}
 
 export interface DownloadEvent {
     kind: string
@@ -54,14 +64,13 @@ export class SystemRouter extends Router {
         this.webSocket = new WebSocketAPI(ws)
     }
 
-    queryFolderContent$(
-        path: string,
-        callerOptions: CallerRequestOptions = {},
-    ): HTTPResponse$<{
-        configurations: string[]
-        folders: string[]
-        files: string[]
-    }> {
+    queryFolderContent$({
+        path,
+        callerOptions,
+    }: {
+        path: string
+        callerOptions?: CallerRequestOptions
+    }): HTTPResponse$<QueryFolderContentResponse> {
         return this.send$({
             command: 'query',
             path: `/folder-content`,
@@ -73,10 +82,13 @@ export class SystemRouter extends Router {
         })
     }
 
-    getFileContent$(
-        path: string,
-        callerOptions: CallerRequestOptions = {},
-    ): HTTPResponse$<string> {
+    getFileContent$({
+        path,
+        callerOptions,
+    }: {
+        path: string
+        callerOptions?: CallerRequestOptions
+    }): HTTPResponse$<GetFileContentResponse> {
         return this.send$({
             command: 'query',
             path: `/file/${path}`,
@@ -93,7 +105,7 @@ export class SystemRouter extends Router {
             maxCount: number
         },
         callerOptions: CallerRequestOptions = {},
-    ): HTTPResponse$<LogsResponse> {
+    ): HTTPResponse$<QueryRootLogsResponse> {
         return this.send$({
             command: 'query',
             path: `/logs/?from-timestamp=${fromTimestamp}&max-count=${maxCount}`,
@@ -101,10 +113,13 @@ export class SystemRouter extends Router {
         })
     }
 
-    queryLogs$(
-        parentId: string,
-        callerOptions: CallerRequestOptions = {},
-    ): HTTPResponse$<LogsResponse> {
+    queryLogs$({
+        parentId,
+        callerOptions,
+    }: {
+        parentId: string
+        callerOptions?: CallerRequestOptions
+    }): HTTPResponse$<QueryLogsResponse> {
         return this.send$({
             command: 'query',
             path: `/logs/${parentId}`,

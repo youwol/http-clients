@@ -19,8 +19,11 @@ beforeAll(async (done) => {
 test('pyYouwol.admin.customCommands.doPost$', (done) => {
     combineLatest([
         pyYouwol.admin.customCommands
-            .doPost$('test-cmd-post', {
-                returnObject: { status: 'test-cmd-post ok' },
+            .doPost$({
+                name: 'test-cmd-post',
+                body: {
+                    returnObject: { status: 'test-cmd-post ok' },
+                },
             })
             .pipe(raiseHTTPErrors()),
         pyYouwol.admin.customCommands.webSocket
@@ -60,8 +63,11 @@ test('pyYouwol.admin.customCommands.doPost$', (done) => {
 
 test('pyYouwol.admin.customCommands.doPut$', (done) => {
     pyYouwol.admin.customCommands
-        .doPut$('test-cmd-put', {
-            returnObject: { status: 'test-cmd-put ok' },
+        .doPut$({
+            name: 'test-cmd-put',
+            body: {
+                returnObject: { status: 'test-cmd-put ok' },
+            },
         })
         .pipe(raiseHTTPErrors())
         .subscribe((resp) => {
@@ -72,7 +78,7 @@ test('pyYouwol.admin.customCommands.doPut$', (done) => {
 
 test('pyYouwol.admin.customCommands.doDelete$', (done) => {
     pyYouwol.admin.customCommands
-        .doDelete$('test-cmd-delete')
+        .doDelete$({ name: 'test-cmd-delete' })
         .pipe(raiseHTTPErrors())
         .subscribe((resp) => {
             expect(resp).toEqual({ status: 'deleted' })

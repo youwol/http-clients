@@ -9,9 +9,11 @@ import {
     DownloadedPackageResponse,
     DownloadPackagesBody,
     GetCdnStatusResponse,
-    PackageEvent,
+    GetPackageResponse,
+    PackageEventResponse,
     ResetCdnBody,
     ResetCdnResponse,
+    TriggerCollectUpdatesResponse,
 } from './interfaces'
 import { WsRouter } from '../../py-youwol.client'
 
@@ -72,10 +74,10 @@ class WebSocketAPI {
 
     packageEvent$(
         filters: { packageName?: string; packageVersion?: string } = {},
-    ): WebSocketResponse$<PackageEvent> {
+    ): WebSocketResponse$<PackageEventResponse> {
         return this.ws.data$.pipe(
-            filterCtxMessage<PackageEvent>({
-                withLabels: ['PackageEvent'],
+            filterCtxMessage<PackageEventResponse>({
+                withLabels: ['PackageEventResponse'],
                 withAttributes: filters,
             }),
         )
@@ -108,7 +110,7 @@ export class LocalCdnRouter extends Router {
     }: {
         packageId: string
         callerOptions?: CallerRequestOptions
-    }): HTTPResponse$<GetCdnStatusResponse> {
+    }): HTTPResponse$<GetPackageResponse> {
         return this.send$({
             command: 'query',
             path: `/packages/${packageId}`,
@@ -120,7 +122,7 @@ export class LocalCdnRouter extends Router {
         callerOptions,
     }: {
         callerOptions?: CallerRequestOptions
-    } = {}): HTTPResponse$<CheckUpdatesResponse> {
+    } = {}): HTTPResponse$<TriggerCollectUpdatesResponse> {
         return this.send$({
             command: 'query',
             path: `/collect-updates`,

@@ -42,7 +42,7 @@ function testInstall(
             }),
             mergeMap(() => pyYouwol.admin.system.webSocket.downloadEvent$()),
             tap((event) => {
-                console.log(event.data)
+                // console.log(event.data)
                 expect(event).toBeTruthy()
             }),
             skipWhile((event) => {

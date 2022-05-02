@@ -31,15 +31,18 @@ beforeAll(async (done) => {
     setup$()
         .pipe(
             mergeMap(() =>
-                pyYouwol.admin.customCommands.doPost$('clone-project', {
-                    url: 'https://github.com/youwol/todo-app-js.git',
-                    name: projectName,
+                pyYouwol.admin.customCommands.doPost$({
+                    name: 'clone-project',
+                    body: {
+                        url: 'https://github.com/youwol/todo-app-js.git',
+                        name: projectName,
+                    },
                 }),
             ),
             mergeMap(() => {
-                return pyYouwol.admin.customCommands.doDelete$(
-                    'purge-downloads',
-                )
+                return pyYouwol.admin.customCommands.doDelete$({
+                    name: 'purge-downloads',
+                })
             }),
         )
         .subscribe(() => {
@@ -105,7 +108,7 @@ function run$(
         pyYouwol.admin.projects
             .runStep$({ projectId: btoa(projectName), flowId: 'prod', stepId })
             .pipe(raiseHTTPErrors()),
-        pyYouwol.admin.projects.webSocket.stepStatus$().pipe(
+        pyYouwol.admin.projects.webSocket.pipelineStepStatus$().pipe(
             map((d) => d.data),
             take(expectedCount),
             reduce((acc, e) => [...acc, e], []),

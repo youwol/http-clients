@@ -18,7 +18,7 @@ beforeAll(async (done) => {
 
 test('pyYouwol.admin.environment.login', (done) => {
     pyYouwol.admin.environment
-        .login$({ email: 'int_tests_yw-users_bis@test-user' })
+        .login$({ body: { email: 'int_tests_yw-users_bis@test-user' } })
         .pipe(raiseHTTPErrors())
         .subscribe((resp) => {
             expectAttributes(resp, ['id', 'name', 'email', 'memberOf'])
@@ -29,7 +29,7 @@ test('pyYouwol.admin.environment.login', (done) => {
 
 test('pyYouwol.admin.environment.status', (done) => {
     combineLatest([
-        pyYouwol.admin.environment.status$().pipe(raiseHTTPErrors()),
+        pyYouwol.admin.environment.getStatus$().pipe(raiseHTTPErrors()),
         pyYouwol.admin.environment.webSocket.status$(),
     ])
         .pipe(
@@ -53,15 +53,19 @@ test('pyYouwol.admin.environment.status', (done) => {
 
 test('pyYouwol.admin.environment.switchProfile', (done) => {
     combineLatest([
-        pyYouwol.admin.environment.switchProfile$({ active: 'default' }).pipe(
-            onHTTPErrors(() => ({})),
-            mergeMap(() =>
-                pyYouwol.admin.environment.switchProfile$({
-                    active: 'profile-1',
-                }),
+        pyYouwol.admin.environment
+            .switchProfile$({ body: { active: 'default' } })
+            .pipe(
+                onHTTPErrors(() => ({})),
+                mergeMap(() =>
+                    pyYouwol.admin.environment.switchProfile$({
+                        body: {
+                            active: 'profile-1',
+                        },
+                    }),
+                ),
+                raiseHTTPErrors(),
             ),
-            raiseHTTPErrors(),
-        ),
         pyYouwol.admin.environment.webSocket.status$({ profile: 'profile-1' }),
     ])
         .pipe(take(1))

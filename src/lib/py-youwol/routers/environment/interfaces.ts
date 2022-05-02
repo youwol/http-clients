@@ -106,6 +106,10 @@ export interface EnvironmentStatusResponse {
     remoteGateway?: RemoteGatewayInfo
     remotesInfo: RemoteGatewayInfo[]
 }
+export interface GetEnvironmentStatusResponse
+    extends EnvironmentStatusResponse {}
+
+export interface SwitchProfileResponse extends EnvironmentStatusResponse {}
 
 export interface CustomDispatch {
     type: string
@@ -117,3 +121,5 @@ export interface CustomDispatch {
 export interface QueryCustomDispatchesResponse {
     dispatches: { [k: string]: CustomDispatch[] }
 }
+
+export type QueryCowSayResponse = string

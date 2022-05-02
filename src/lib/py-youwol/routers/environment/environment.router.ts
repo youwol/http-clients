@@ -3,10 +3,14 @@ import { CallerRequestOptions, HTTPResponse$ } from '../../../utils'
 import { filterCtxMessage, WebSocketResponse$ } from '../../../ws-utils'
 import {
     EnvironmentStatusResponse,
+    GetEnvironmentStatusResponse,
     LoginResponse,
+    QueryCowSayResponse,
     QueryCustomDispatchesResponse,
+    SwitchProfileResponse,
 } from './interfaces'
 import { WsRouter } from '../../py-youwol.client'
+import { GetFileContentResponse } from '../../interfaces'
 
 class WebSocketAPI {
     constructor(public readonly ws: WsRouter) {}
@@ -38,10 +42,13 @@ export class EnvironmentRouter extends Router {
      * @param body.email user's email
      * @param callerOptions
      */
-    login$(
-        body: { email: string },
-        callerOptions: CallerRequestOptions = {},
-    ): HTTPResponse$<LoginResponse> {
+    login$({
+        body,
+        callerOptions,
+    }: {
+        body: { email: string }
+        callerOptions?: CallerRequestOptions
+    }): HTTPResponse$<LoginResponse> {
         return this.send$({
             command: 'upload',
             path: `/login`,
@@ -57,9 +64,11 @@ export class EnvironmentRouter extends Router {
      *
      * @param callerOptions
      */
-    status$(
-        callerOptions: CallerRequestOptions = {},
-    ): HTTPResponse$<EnvironmentStatusResponse> {
+    getStatus$({
+        callerOptions,
+    }: {
+        callerOptions?: CallerRequestOptions
+    } = {}): HTTPResponse$<GetEnvironmentStatusResponse> {
         return this.send$({
             command: 'query',
             path: `/status`,
@@ -67,10 +76,13 @@ export class EnvironmentRouter extends Router {
         })
     }
 
-    switchProfile$(
-        body: { active: string },
-        callerOptions: CallerRequestOptions = {},
-    ): HTTPResponse$<EnvironmentStatusResponse> {
+    switchProfile$({
+        body,
+        callerOptions,
+    }: {
+        body: { active: string }
+        callerOptions?: CallerRequestOptions
+    }): HTTPResponse$<SwitchProfileResponse> {
         return this.send$({
             command: 'update',
             path: `/configuration/profiles/active`,
@@ -82,7 +94,11 @@ export class EnvironmentRouter extends Router {
         })
     }
 
-    reloadConfig$(callerOptions: CallerRequestOptions = {}) {
+    reloadConfig$({
+        callerOptions,
+    }: {
+        callerOptions?: CallerRequestOptions
+    } = {}) {
         return this.send$({
             command: 'update',
             path: `/configuration`,
@@ -109,7 +125,7 @@ export class EnvironmentRouter extends Router {
         callerOptions,
     }: {
         callerOptions?: CallerRequestOptions
-    } = {}): HTTPResponse$<string> {
+    } = {}): HTTPResponse$<QueryCowSayResponse> {
         return this.send$({
             command: 'query',
             path: `/cow-say`,
@@ -121,7 +137,7 @@ export class EnvironmentRouter extends Router {
         callerOptions,
     }: {
         callerOptions?: CallerRequestOptions
-    } = {}): HTTPResponse$<string> {
+    } = {}): HTTPResponse$<GetFileContentResponse> {
         return this.send$({
             command: 'query',
             path: `/configuration/config-file`,

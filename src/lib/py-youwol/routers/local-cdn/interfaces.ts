@@ -26,6 +26,8 @@ export interface CdnStatusResponse {
 }
 export interface GetCdnStatusResponse extends CdnStatusResponse {}
 
+export interface GetPackageResponse extends CdnStatusResponse {}
+
 export interface CdnPackageResponse extends CdnPackage {}
 
 export interface CheckUpdateResponse {
@@ -38,6 +40,8 @@ export interface CheckUpdateResponse {
 export interface CheckUpdatesResponse {
     updates: CheckUpdateResponse[]
 }
+
+export interface TriggerCollectUpdatesResponse extends CheckUpdatesResponse {}
 
 export interface DownloadPackageBody {
     packageName: string
@@ -78,3 +82,5 @@ export interface PackageEvent {
         | 'updateCheckStarted'
         | 'updateCheckDone'
 }
+
+export interface PackageEventResponse extends PackageEvent {}

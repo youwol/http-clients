@@ -15,7 +15,9 @@ export function getPyYouwolBasePath() {
 }
 
 export function resetPyYouwolDbs$(headers: { [k: string]: string } = {}) {
-    return new PyYouwolClient(headers).admin.customCommands.doGet$('reset')
+    return new PyYouwolClient(headers).admin.customCommands.doGet$({
+        name: 'reset',
+    })
 }
 
 export function expectAttributes(

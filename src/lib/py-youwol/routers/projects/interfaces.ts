@@ -53,7 +53,9 @@ export interface Project {
 export interface ProjectsLoadingResults {
     results: (Project | Failure)[]
 }
-export interface GetProjectsLoadingResultsResponse
+export interface GetProjectsStatusResponse extends ProjectsLoadingResults {}
+
+export interface ProjectsLoadingResultsResponse
     extends ProjectsLoadingResults {}
 
 export interface ChildToParentConnections {
@@ -80,11 +82,9 @@ export interface Artifact {
     path: string
     links: Link[]
 }
-export interface GetArtifactResponse extends Artifact {
-    id: string
-    path: string
-    links: Link[]
-}
+export interface ArtifactsResponse extends Artifact {}
+
+export interface GetArtifactResponse extends Artifact {}
 
 export interface Manifest {
     succeeded: boolean
@@ -109,11 +109,19 @@ export interface PipelineStepStatusResponse {
     manifest?: Manifest
     status: 'OK' | 'KO' | 'outdated' | 'none'
 }
+export interface GetPipelineStepStatusResponse
+    extends PipelineStepStatusResponse {}
+
+export interface RunStepResponse extends PipelineStepStatusResponse {}
 
 export interface PipelineStatus {
     projectId: string
     steps: PipelineStepStatusResponse[]
 }
+
+export interface PipelineStatusResponse extends PipelineStatus {}
+
+export interface ProjectStatusResponse extends ProjectStatus {}
 
 export interface GetPipelineStatusResponse extends PipelineStatus {}
 

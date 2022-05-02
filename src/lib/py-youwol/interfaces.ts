@@ -25,7 +25,7 @@ export type Label =
     | 'DownloadEvent'
     | 'Label.PACKAGE_DOWNLOADING'
     | 'DownloadedPackageResponse'
-    | 'PackageEvent'
+    | 'PackageEventResponse'
     | 'ProjectsLoadingResults'
     | 'Label.PIPELINE_STEP_STATUS_PENDING'
     | 'Label.PIPELINE_STEP_RUNNING'
@@ -41,3 +41,5 @@ export interface ContextMessage<T = unknown> {
     data: T
     attributes: { [key: string]: string }
 }
+
+export type GetFileContentResponse = string
