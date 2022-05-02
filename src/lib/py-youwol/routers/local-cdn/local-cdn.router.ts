@@ -13,14 +13,15 @@ import {
     ResetCdnBody,
     ResetCdnResponse,
 } from './interfaces'
+import { WsRouter } from '../../py-youwol.client'
 
 class WebSocketAPI {
-    constructor(public readonly ws$: () => WebSocketResponse$<unknown>) {}
+    constructor(public readonly ws: WsRouter) {}
 
     status$(
         filters: { packageName?: string; packageVersion?: string } = {},
     ): WebSocketResponse$<CdnStatusResponse> {
-        return this.ws$().pipe(
+        return this.ws.data$.pipe(
             filterCtxMessage<CdnStatusResponse>({
                 withLabels: ['CdnStatusResponse'],
                 withAttributes: filters,
@@ -31,7 +32,7 @@ class WebSocketAPI {
     package$(
         filters: { packageId?: string } = {},
     ): WebSocketResponse$<CdnPackageResponse> {
-        return this.ws$().pipe(
+        return this.ws.data$.pipe(
             filterCtxMessage<CdnPackageResponse>({
                 withLabels: ['CdnPackageResponse'],
                 withAttributes: filters,
@@ -42,7 +43,7 @@ class WebSocketAPI {
     updateStatus$(
         filters: { packageName?: string; packageVersion?: string } = {},
     ): WebSocketResponse$<CheckUpdateResponse> {
-        return this.ws$().pipe(
+        return this.ws.data$.pipe(
             filterCtxMessage<CheckUpdateResponse>({
                 withLabels: ['CheckUpdateResponse'],
                 withAttributes: filters,
@@ -51,7 +52,7 @@ class WebSocketAPI {
     }
 
     updatesStatus$(): WebSocketResponse$<CheckUpdatesResponse> {
-        return this.ws$().pipe(
+        return this.ws.data$.pipe(
             filterCtxMessage<CheckUpdatesResponse>({
                 withLabels: ['CheckUpdatesResponse'],
             }),
@@ -61,7 +62,7 @@ class WebSocketAPI {
     downloadedPackage$(
         filters: { packageName?: string; packageVersion?: string } = {},
     ): WebSocketResponse$<DownloadedPackageResponse> {
-        return this.ws$().pipe(
+        return this.ws.data$.pipe(
             filterCtxMessage<DownloadedPackageResponse>({
                 withLabels: ['DownloadedPackageResponse'],
                 withAttributes: filters,
@@ -72,7 +73,7 @@ class WebSocketAPI {
     packageEvent$(
         filters: { packageName?: string; packageVersion?: string } = {},
     ): WebSocketResponse$<PackageEvent> {
-        return this.ws$().pipe(
+        return this.ws.data$.pipe(
             filterCtxMessage<PackageEvent>({
                 withLabels: ['PackageEvent'],
                 withAttributes: filters,
@@ -84,9 +85,9 @@ class WebSocketAPI {
 export class LocalCdnRouter extends Router {
     public readonly webSocket: WebSocketAPI
 
-    constructor(parent: Router, ws$: () => WebSocketResponse$<unknown>) {
+    constructor(parent: Router, ws: WsRouter) {
         super(parent.headers, `${parent.basePath}/local-cdn`)
-        this.webSocket = new WebSocketAPI(ws$)
+        this.webSocket = new WebSocketAPI(ws)
     }
 
     getStatus$({

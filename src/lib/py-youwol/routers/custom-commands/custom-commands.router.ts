@@ -1,16 +1,17 @@
 import { Router } from '../../../router'
 import { CallerRequestOptions, HTTPResponse$, Json } from '../../../utils'
 import { filterCtxMessage, WebSocketResponse$ } from '../../../ws-utils'
+import { WsRouter } from '../../py-youwol.client'
 
 export type Method = 'GET' | 'POST' | 'PUT' | 'DELETE'
 
 class WebSocketAPI {
-    constructor(public readonly ws$: () => WebSocketResponse$<unknown>) {}
+    constructor(public readonly ws: WsRouter) {}
 
     log$(
         filters: { commandName?: string; method?: Method } = {},
     ): WebSocketResponse$<unknown> {
-        return this.ws$().pipe(
+        return this.ws.log$.pipe(
             filterCtxMessage<unknown>({
                 withAttributes: { ...filters, topic: 'commands' },
             }),
@@ -21,9 +22,9 @@ class WebSocketAPI {
 export class CustomCommandsRouter extends Router {
     public readonly webSocket: WebSocketAPI
 
-    constructor(parent: Router, ws$: () => WebSocketResponse$<unknown>) {
+    constructor(parent: Router, ws: WsRouter) {
         super(parent.headers, `${parent.basePath}/custom-commands`)
-        this.webSocket = new WebSocketAPI(ws$)
+        this.webSocket = new WebSocketAPI(ws)
     }
 
     /**

@@ -3,6 +3,7 @@ import { CallerRequestOptions, HTTPResponse$ } from '../../../utils'
 import { ContextMessage } from '../../interfaces'
 import { filterCtxMessage, WebSocketResponse$ } from '../../../ws-utils'
 import { filter } from 'rxjs/operators'
+import { WsRouter } from '../../py-youwol.client'
 
 export type Kind = 'package' | 'data' | 'flux-project' | 'story'
 export type DownloadEventType = 'enqueued' | 'started' | 'succeeded' | 'failed'
@@ -24,12 +25,12 @@ export interface DownloadEvent {
 export interface ClearLogsResponse {}
 
 class WebSocketAPI {
-    constructor(public readonly ws$: () => WebSocketResponse$<unknown>) {}
+    constructor(public readonly ws: WsRouter) {}
 
     downloadEvent$(
         filters: { rawId?: string; kind?: Kind; type?: DownloadEventType } = {},
     ): WebSocketResponse$<DownloadEvent> {
-        return this.ws$().pipe(
+        return this.ws.data$.pipe(
             filterCtxMessage<DownloadEvent>({
                 withLabels: ['DownloadEvent'],
                 withAttributes: filters,
@@ -48,9 +49,9 @@ class WebSocketAPI {
 export class SystemRouter extends Router {
     public readonly webSocket: WebSocketAPI
 
-    constructor(parent: Router, ws$: () => WebSocketResponse$<unknown>) {
+    constructor(parent: Router, ws: WsRouter) {
         super(parent.headers, `${parent.basePath}/system`)
-        this.webSocket = new WebSocketAPI(ws$)
+        this.webSocket = new WebSocketAPI(ws)
     }
 
     queryFolderContent$(

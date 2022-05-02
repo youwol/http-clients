@@ -1,14 +1,75 @@
-import { Subject } from 'rxjs'
+import { combineLatest, Subject } from 'rxjs'
 import { RootRouter } from '../router'
 import { CallerRequestOptions, HTTPResponse$ } from '../utils'
 import { ContextMessage, HealthzResponse } from './interfaces'
 import { AdminRouter } from './routers/admin.router'
 import { take } from 'rxjs/operators'
+import { WebSocketResponse$ } from '../ws-utils'
+
+export class WebSocket$<TMessage> {
+    public readonly message$: Subject<TMessage>
+    public ws: WebSocket
+
+    constructor(public readonly path: string) {
+        this.message$ = new Subject<TMessage>()
+    }
+
+    connectWs() {
+        if (this.ws) {
+            this.ws.close()
+        }
+        this.ws = new WebSocket(this.path)
+        this.ws.onmessage = (event) => {
+            try {
+                const data = JSON.parse(event.data)
+                this.message$.next(data)
+            } catch (e) {
+                console.error('Can not parse data', { error: String(e), event })
+            }
+        }
+        this.ws.onerror = (err) => {
+            console.error(
+                'Socket encountered error: ',
+                String(err),
+                'Closing socket',
+            )
+            console.log('error', err)
+            this.ws.close()
+            console.log('Reconnect will be attempted in 1 second.')
+            setTimeout(() => {
+                this.connectWs()
+            }, 1000)
+        }
+        return this.message$
+    }
+}
+
+export class WsRouter {
+    private readonly _log = new WebSocket$<ContextMessage>(
+        `ws://${window.location.host}/ws-logs`,
+    )
+    private readonly _data = new WebSocket$<ContextMessage>(
+        `ws://${window.location.host}/ws-data`,
+    )
+    startWs$() {
+        return combineLatest(
+            [this._data, this._log].map((channel) => {
+                return channel.connectWs().pipe(take(1))
+            }),
+        )
+    }
+    public get log$(): WebSocketResponse$<unknown> {
+        return this._log.message$
+    }
+    public get data$(): WebSocketResponse$<unknown> {
+        return this._data.message$
+    }
+}
 
 export class PyYouwolClient extends RootRouter {
     public readonly admin: AdminRouter
-    static ws: WebSocket
-    static ws$: Subject<ContextMessage>
+
+    static ws = new WsRouter()
 
     constructor({
         headers,
@@ -19,7 +80,7 @@ export class PyYouwolClient extends RootRouter {
             basePath: '',
             headers,
         })
-        this.admin = new AdminRouter(this, () => PyYouwolClient.webSocket$())
+        this.admin = new AdminRouter(this, PyYouwolClient.ws)
     }
 
     /**
@@ -39,43 +100,6 @@ export class PyYouwolClient extends RootRouter {
     }
 
     static startWs$() {
-        if (PyYouwolClient.ws) {
-            PyYouwolClient.ws.close()
-        }
-        const path = window.location.host
-        PyYouwolClient.ws$ = new Subject<ContextMessage>()
-        PyYouwolClient.connectWs(`ws://${path}/ws`, PyYouwolClient.ws$)
-        return PyYouwolClient.webSocket$().pipe(take(1))
-    }
-
-    static webSocket$() {
-        return PyYouwolClient.ws$
-    }
-
-    static connectWs(path: string, channel$: Subject<ContextMessage>) {
-        PyYouwolClient.ws = new WebSocket(path)
-        PyYouwolClient.ws.onmessage = (event) => {
-            try {
-                const data = JSON.parse(event.data)
-                channel$.next(data)
-            } catch (e) {
-                console.error('Can not parse data', { error: String(e), event })
-            }
-        }
-        PyYouwolClient.ws.onerror = (err) => {
-            console.error(
-                'Socket encountered error: ',
-                String(err),
-                'Closing socket',
-            )
-            console.log('error', err)
-            PyYouwolClient.ws.close()
-            console.log('Reconnect will be attempted in 1 second.')
-            setTimeout(() => {
-                this.connectWs(path, channel$)
-            }, 1000)
-        }
-
-        return channel$
+        return PyYouwolClient.ws.startWs$()
     }
 }

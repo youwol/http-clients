@@ -13,12 +13,13 @@ import {
     PipelineStatus,
     GetArtifactsResponse,
 } from './interfaces'
+import { WsRouter } from '../../py-youwol.client'
 
 class WebSocketAPI {
-    constructor(public readonly ws$: () => WebSocketResponse$<unknown>) {}
+    constructor(public readonly ws: WsRouter) {}
 
     status$(): WebSocketResponse$<ProjectsLoadingResults> {
-        return this.ws$().pipe(
+        return this.ws.data$.pipe(
             filterCtxMessage<ProjectsLoadingResults>({
                 withLabels: ['ProjectsLoadingResults'],
             }),
@@ -28,7 +29,7 @@ class WebSocketAPI {
     projectStatus$(
         filters: { projectId?: string } = {},
     ): WebSocketResponse$<ProjectStatus> {
-        return this.ws$().pipe(
+        return this.ws.data$.pipe(
             filterCtxMessage<GetProjectStatusResponse>({
                 withLabels: ['ProjectStatusResponse'],
                 withAttributes: filters,
@@ -39,7 +40,7 @@ class WebSocketAPI {
     pipelineStatus$(
         filters: { projectId?: string; flowId?: string } = {},
     ): WebSocketResponse$<PipelineStatus> {
-        return this.ws$().pipe(
+        return this.ws.data$.pipe(
             filterCtxMessage<PipelineStatus>({
                 withLabels: ['PipelineStatusResponse'],
                 withAttributes: filters,
@@ -50,7 +51,7 @@ class WebSocketAPI {
     stepStatus$(
         filters: { projectId?: string; flowId?: string; stepId?: string } = {},
     ): WebSocketResponse$<PipelineStepStatusResponse> {
-        return this.ws$().pipe(
+        return this.ws.data$.pipe(
             filterCtxMessage<PipelineStepStatusResponse>({
                 withLabels: ['PipelineStepStatusResponse'],
                 withAttributes: filters,
@@ -61,7 +62,7 @@ class WebSocketAPI {
     artifacts$(
         filters: { projectId?: string; flowId?: string } = {},
     ): WebSocketResponse$<Artifact> {
-        return this.ws$().pipe(
+        return this.ws.data$.pipe(
             filterCtxMessage<Artifact>({
                 withLabels: ['ArtifactsResponse'],
                 withAttributes: filters,
@@ -72,7 +73,7 @@ class WebSocketAPI {
     stepEvent$(
         filters: { packageName?: string; packageVersion?: string } = {},
     ): WebSocketResponse$<PipelineStepEvent> {
-        return this.ws$().pipe(
+        return this.ws.data$.pipe(
             filterCtxMessage<PipelineStepEvent>({
                 withLabels: ['PipelineStepEvent'],
                 withAttributes: filters,
@@ -84,9 +85,9 @@ class WebSocketAPI {
 export class ProjectsRouter extends Router {
     public readonly webSocket: WebSocketAPI
 
-    constructor(parent: Router, ws$: () => WebSocketResponse$<unknown>) {
+    constructor(parent: Router, ws: WsRouter) {
         super(parent.headers, `${parent.basePath}/projects`)
-        this.webSocket = new WebSocketAPI(ws$)
+        this.webSocket = new WebSocketAPI(ws)
     }
 
     /**

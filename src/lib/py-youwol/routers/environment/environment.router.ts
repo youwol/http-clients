@@ -6,14 +6,15 @@ import {
     LoginResponse,
     QueryCustomDispatchesResponse,
 } from './interfaces'
+import { WsRouter } from '../../py-youwol.client'
 
 class WebSocketAPI {
-    constructor(public readonly ws$: () => WebSocketResponse$<unknown>) {}
+    constructor(public readonly ws: WsRouter) {}
 
     status$(
         filters: { profile?: string } = {},
     ): WebSocketResponse$<EnvironmentStatusResponse> {
-        return this.ws$().pipe(
+        return this.ws.data$.pipe(
             filterCtxMessage<EnvironmentStatusResponse>({
                 withLabels: ['EnvironmentStatusResponse'],
                 withAttributes: filters,
@@ -25,9 +26,9 @@ class WebSocketAPI {
 export class EnvironmentRouter extends Router {
     public readonly webSocket: WebSocketAPI
 
-    constructor(parent: Router, ws$: () => WebSocketResponse$<unknown>) {
+    constructor(parent: Router, ws: WsRouter) {
         super(parent.headers, `${parent.basePath}/environment`)
-        this.webSocket = new WebSocketAPI(ws$)
+        this.webSocket = new WebSocketAPI(ws)
     }
 
     /**
