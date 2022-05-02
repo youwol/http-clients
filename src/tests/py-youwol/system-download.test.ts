@@ -94,9 +94,6 @@ test('install package @youwol/logging#0.0.2-next => Failure', (done) => {
 test('install package rxjs + clear + install package rxjs', (done) => {
     of({})
         .pipe(
-            tap(() => {
-                console.log("Let's start it :)")
-            }),
             testInstall(['rxjs']),
             mergeMap(() => pyYouwol.admin.localCdn.resetCdn$()),
             raiseHTTPErrors(),
