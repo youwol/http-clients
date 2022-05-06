@@ -129,18 +129,18 @@ export function expectUpdateStatus(resp) {
 export function expectPipelineStepEvents$(pyYouwol: PyYouwolClient) {
     return pyYouwol.admin.projects.webSocket.stepEvent$().pipe(
         map((ev) => ev.data),
-        take(8),
+        take(18),
         reduce((acc, e) => [...acc, e], []),
         tap((events) => {
-            expect(events).toHaveLength(8)
-            expect(events.filter((ev) => ev.stepId == 'init')).toHaveLength(2)
-            expect(events.filter((ev) => ev.stepId == 'build')).toHaveLength(2)
+            expect(events).toHaveLength(18)
+            expect(events.filter((ev) => ev.stepId == 'init')).toHaveLength(3)
+            expect(events.filter((ev) => ev.stepId == 'build')).toHaveLength(4)
             expect(
                 events.filter((ev) => ev.stepId == 'publish-local'),
-            ).toHaveLength(2)
+            ).toHaveLength(5)
             expect(
                 events.filter((ev) => ev.stepId == 'publish-remote'),
-            ).toHaveLength(2)
+            ).toHaveLength(6)
             expect(
                 events.filter((ev) => ev.event == 'runStarted'),
             ).toHaveLength(4)
