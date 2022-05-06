@@ -3,9 +3,9 @@ import { combineLatest, Observable, of } from 'rxjs'
 import { expand, map, mapTo, mergeMap, reduce, take, tap } from 'rxjs/operators'
 import { raiseHTTPErrors } from '../../lib'
 import { PyYouwolClient } from '../../lib/py-youwol'
-import { PipelineStepStatusResponse } from '../../lib/py-youwol/routers/projects/interfaces'
+import { PipelineStepStatusResponse } from '../../lib/py-youwol'
 
-import { expectAttributes, resetPyYouwolDbs$ } from '../common'
+import { expectAttributes } from '../common'
 /* eslint-disable jest/no-done-callback -- eslint-comment Find a good way to work with rxjs in jest */
 import '../mock-requests'
 import {
@@ -18,6 +18,7 @@ import {
     expectProjectStatus,
     expectPublishLocal,
     expectPublishRemote,
+    setup$,
     uniqueProjectName,
 } from './utils'
 
@@ -26,20 +27,22 @@ const pyYouwol = new PyYouwolClient()
 let projectName: string
 
 beforeAll(async (done) => {
-    const youwolClient = new PyYouwolClient()
     projectName = uniqueProjectName('todo-app-js')
-    resetPyYouwolDbs$()
+    setup$()
         .pipe(
             mergeMap(() =>
-                youwolClient.admin.customCommands.doPost$('clone-project', {
-                    url: 'https://github.com/youwol/todo-app-js.git',
-                    name: projectName,
+                pyYouwol.admin.customCommands.doPost$({
+                    name: 'clone-project',
+                    body: {
+                        url: 'https://github.com/youwol/todo-app-js.git',
+                        name: projectName,
+                    },
                 }),
             ),
             mergeMap(() => {
-                return youwolClient.admin.customCommands.doDelete$(
-                    'purge-downloads',
-                )
+                return pyYouwol.admin.customCommands.doDelete$({
+                    name: 'purge-downloads',
+                })
             }),
         )
         .subscribe(() => {
@@ -67,7 +70,7 @@ test('pyYouwol.admin.projects.projectStatus', (done) => {
 
     combineLatest([
         pyYouwol.admin.projects
-            .getProjectStatus$(projectId)
+            .getProjectStatus$({ projectId })
             .pipe(raiseHTTPErrors()),
         pyYouwol.admin.projects.webSocket.projectStatus$({ projectId }),
     ]).subscribe(([respHttp, respWs]) => {
@@ -81,7 +84,10 @@ test('pyYouwol.admin.projects.projectStatus', (done) => {
 test('pyYouwol.admin.projects.flowStatus', (done) => {
     combineLatest([
         pyYouwol.admin.projects
-            .flowStatus$(btoa(projectName), 'prod')
+            .getPipelineStatus$({
+                projectId: btoa(projectName),
+                flowId: 'prod',
+            })
             .pipe(raiseHTTPErrors()),
         pyYouwol.admin.projects.webSocket.pipelineStatus$(),
     ])
@@ -100,9 +106,9 @@ function run$(
 ): Observable<PipelineStepStatusResponse> {
     return combineLatest([
         pyYouwol.admin.projects
-            .runStep$(btoa(projectName), 'prod', stepId)
+            .runStep$({ projectId: btoa(projectName), flowId: 'prod', stepId })
             .pipe(raiseHTTPErrors()),
-        pyYouwol.admin.projects.webSocket.stepStatus$().pipe(
+        pyYouwol.admin.projects.webSocket.pipelineStepStatus$().pipe(
             map((d) => d.data),
             take(expectedCount),
             reduce((acc, e) => [...acc, e], []),

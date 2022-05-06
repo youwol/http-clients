@@ -1,8 +1,22 @@
 import { combineLatest } from 'rxjs'
-import { map, reduce, take, tap } from 'rxjs/operators'
+import { map, mergeMap, reduce, take, tap } from 'rxjs/operators'
 import { raiseHTTPErrors } from '../../lib'
 import { PyYouwolClient } from '../../lib/py-youwol'
-import { expectAttributes } from '../common'
+import { expectAttributes, resetPyYouwolDbs$ } from '../common'
+import { Client } from '@youwol/cdn-client'
+
+export function setup$(
+    { localOnly }: { localOnly?: boolean } = { localOnly: true },
+) {
+    Client.resetCache()
+    return PyYouwolClient.startWs$().pipe(
+        mergeMap(() => {
+            return resetPyYouwolDbs$({
+                'py-youwol-local-only': localOnly ? 'true' : 'false',
+            })
+        }),
+    )
+}
 
 export function uniqueProjectName(prefix: string) {
     const now = new Date()
@@ -115,18 +129,18 @@ export function expectUpdateStatus(resp) {
 export function expectPipelineStepEvents$(pyYouwol: PyYouwolClient) {
     return pyYouwol.admin.projects.webSocket.stepEvent$().pipe(
         map((ev) => ev.data),
-        take(8),
+        take(18),
         reduce((acc, e) => [...acc, e], []),
         tap((events) => {
-            expect(events).toHaveLength(8)
-            expect(events.filter((ev) => ev.stepId == 'init')).toHaveLength(2)
-            expect(events.filter((ev) => ev.stepId == 'build')).toHaveLength(2)
+            expect(events).toHaveLength(18)
+            expect(events.filter((ev) => ev.stepId == 'init')).toHaveLength(3)
+            expect(events.filter((ev) => ev.stepId == 'build')).toHaveLength(4)
             expect(
                 events.filter((ev) => ev.stepId == 'publish-local'),
-            ).toHaveLength(2)
+            ).toHaveLength(5)
             expect(
                 events.filter((ev) => ev.stepId == 'publish-remote'),
-            ).toHaveLength(2)
+            ).toHaveLength(6)
             expect(
                 events.filter((ev) => ev.event == 'runStarted'),
             ).toHaveLength(4)
@@ -138,7 +152,7 @@ export function expectPipelineStepEvents$(pyYouwol: PyYouwolClient) {
 export function expectArtifacts$(pyYouwol: PyYouwolClient, projectId: string) {
     return combineLatest([
         pyYouwol.admin.projects
-            .getArtifacts$(projectId, 'prod')
+            .getArtifacts$({ projectId, flowId: 'prod' })
             .pipe(raiseHTTPErrors()),
         pyYouwol.admin.projects.webSocket.artifacts$({ projectId }),
     ]).pipe(

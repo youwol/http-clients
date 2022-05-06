@@ -6,9 +6,13 @@ export type WebSocketResponse$<T> = Observable<ContextMessage<T>>
 
 export function filterCtxMessage<T = unknown>({
     withAttributes,
+    withDataAttributes,
     withLabels,
 }: {
     withAttributes?: {
+        [_key: string]: string | ((string) => boolean)
+    }
+    withDataAttributes?: {
         [_key: string]: string | ((string) => boolean)
     }
     withLabels?: Label[]
@@ -38,7 +42,21 @@ export function filterCtxMessage<T = unknown>({
                         true,
                     )
 
-                return attrsOk && labelsOk
+                if (!withDataAttributes) return attrsOk && labelsOk
+
+                const dataAttrsOk =
+                    message.data &&
+                    Object.entries(withDataAttributes).reduce((acc, [k, v]) => {
+                        if (!acc || !message.data[k]) {
+                            return false
+                        }
+                        if (typeof v == 'function') {
+                            return v(message.attributes[k])
+                        }
+                        return message.attributes[k] == v
+                    }, true)
+
+                return attrsOk && labelsOk && dataAttrsOk
             }),
         ) as WebSocketResponse$<T>
 }

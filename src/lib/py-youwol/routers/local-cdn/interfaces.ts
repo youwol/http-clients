@@ -9,6 +9,27 @@ export type UpdateStatus =
     | 'remoteAhead'
     | 'localAhead'
 
+export interface CdnVersion {
+    version: string
+    filesCount: number
+    entryPointSize: number // in bytes
+}
+
+export interface CdnPackage {
+    name: string
+    id: string
+    versions: CdnVersion[]
+}
+
+export interface CdnStatusResponse {
+    packages: CdnPackage[]
+}
+export interface GetCdnStatusResponse extends CdnStatusResponse {}
+
+export interface GetPackageResponse extends CdnStatusResponse {}
+
+export interface CdnPackageResponse extends CdnPackage {}
+
 export interface CheckUpdateResponse {
     status: UpdateStatus
     packageName: string
@@ -19,6 +40,8 @@ export interface CheckUpdateResponse {
 export interface CheckUpdatesResponse {
     updates: CheckUpdateResponse[]
 }
+
+export interface TriggerCollectUpdatesResponse extends CheckUpdatesResponse {}
 
 export interface DownloadPackageBody {
     packageName: string
@@ -33,7 +56,16 @@ export interface DownloadPackagesBody {
 export interface DownloadedPackageResponse {
     packageName: string
     version: string
+    versions: string[]
     fingerprint: string
+}
+
+export interface ResetCdnBody {
+    keepProjectPackages?: boolean
+}
+
+export interface ResetCdnResponse {
+    deletedPackages: string[]
 }
 
 export interface PackageDownloading {
@@ -50,3 +82,5 @@ export interface PackageEvent {
         | 'updateCheckStarted'
         | 'updateCheckDone'
 }
+
+export interface PackageEventResponse extends PackageEvent {}

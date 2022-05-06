@@ -2,20 +2,28 @@ import { Router } from '../../../router'
 import { CallerRequestOptions, HTTPResponse$ } from '../../../utils'
 import { filterCtxMessage, WebSocketResponse$ } from '../../../ws-utils'
 import {
-    ArtifactsResponse,
-    PipelineStatusResponse,
+    GetProjectsStatusResponse,
     PipelineStepEvent,
     PipelineStepStatusResponse,
-    ProjectsLoadingResults,
+    GetProjectStatusResponse,
+    GetPipelineStatusResponse,
+    GetArtifactsResponse,
+    ArtifactsResponse,
     ProjectStatusResponse,
+    PipelineStatusResponse,
+    ProjectsLoadingResultsResponse,
+    GetPipelineStepStatusResponse,
+    RunStepResponse,
+    PipelineStepEventKind,
 } from './interfaces'
+import { WsRouter } from '../../py-youwol.client'
 
 class WebSocketAPI {
-    constructor(public readonly ws$: () => WebSocketResponse$<unknown>) {}
+    constructor(public readonly ws: WsRouter) {}
 
-    status$(): WebSocketResponse$<ProjectsLoadingResults> {
-        return this.ws$().pipe(
-            filterCtxMessage<ProjectsLoadingResults>({
+    status$(): WebSocketResponse$<ProjectsLoadingResultsResponse> {
+        return this.ws.data$.pipe(
+            filterCtxMessage<ProjectsLoadingResultsResponse>({
                 withLabels: ['ProjectsLoadingResults'],
             }),
         )
@@ -24,7 +32,7 @@ class WebSocketAPI {
     projectStatus$(
         filters: { projectId?: string } = {},
     ): WebSocketResponse$<ProjectStatusResponse> {
-        return this.ws$().pipe(
+        return this.ws.data$.pipe(
             filterCtxMessage<ProjectStatusResponse>({
                 withLabels: ['ProjectStatusResponse'],
                 withAttributes: filters,
@@ -35,7 +43,7 @@ class WebSocketAPI {
     pipelineStatus$(
         filters: { projectId?: string; flowId?: string } = {},
     ): WebSocketResponse$<PipelineStatusResponse> {
-        return this.ws$().pipe(
+        return this.ws.data$.pipe(
             filterCtxMessage<PipelineStatusResponse>({
                 withLabels: ['PipelineStatusResponse'],
                 withAttributes: filters,
@@ -43,10 +51,10 @@ class WebSocketAPI {
         )
     }
 
-    stepStatus$(
+    pipelineStepStatus$(
         filters: { projectId?: string; flowId?: string; stepId?: string } = {},
     ): WebSocketResponse$<PipelineStepStatusResponse> {
-        return this.ws$().pipe(
+        return this.ws.data$.pipe(
             filterCtxMessage<PipelineStepStatusResponse>({
                 withLabels: ['PipelineStepStatusResponse'],
                 withAttributes: filters,
@@ -57,8 +65,8 @@ class WebSocketAPI {
     artifacts$(
         filters: { projectId?: string; flowId?: string } = {},
     ): WebSocketResponse$<ArtifactsResponse> {
-        return this.ws$().pipe(
-            filterCtxMessage<PipelineStepStatusResponse>({
+        return this.ws.data$.pipe(
+            filterCtxMessage<ArtifactsResponse>({
                 withLabels: ['ArtifactsResponse'],
                 withAttributes: filters,
             }),
@@ -66,23 +74,28 @@ class WebSocketAPI {
     }
 
     stepEvent$(
-        filters: { packageName?: string; packageVersion?: string } = {},
+        filters: {
+            projectId?: string
+            flowId?: string
+            stepId?: string
+            event?: PipelineStepEventKind
+        } = {},
     ): WebSocketResponse$<PipelineStepEvent> {
-        return this.ws$().pipe(
+        return this.ws.data$.pipe(
             filterCtxMessage<PipelineStepEvent>({
                 withLabels: ['PipelineStepEvent'],
-                withAttributes: filters,
+                withDataAttributes: filters,
             }),
         )
     }
 }
 
 export class ProjectsRouter extends Router {
-    webSocket: WebSocketAPI
+    public readonly webSocket: WebSocketAPI
 
-    constructor(parent: Router, ws$: () => WebSocketResponse$<unknown>) {
+    constructor(parent: Router, ws: WsRouter) {
         super(parent.headers, `${parent.basePath}/projects`)
-        this.webSocket = new WebSocketAPI(ws$)
+        this.webSocket = new WebSocketAPI(ws)
     }
 
     /**
@@ -90,9 +103,11 @@ export class ProjectsRouter extends Router {
      *
      * @param callerOptions
      */
-    status$(
-        callerOptions: CallerRequestOptions = {},
-    ): HTTPResponse$<ProjectsLoadingResults> {
+    status$({
+        callerOptions,
+    }: {
+        callerOptions?: CallerRequestOptions
+    } = {}): HTTPResponse$<GetProjectsStatusResponse> {
         return this.send$({
             command: 'query',
             path: `/status`,
@@ -100,10 +115,13 @@ export class ProjectsRouter extends Router {
         })
     }
 
-    getProjectStatus$(
-        projectId: string,
-        callerOptions: CallerRequestOptions = {},
-    ): HTTPResponse$<ProjectStatusResponse> {
+    getProjectStatus$({
+        projectId,
+        callerOptions,
+    }: {
+        projectId: string
+        callerOptions?: CallerRequestOptions
+    }): HTTPResponse$<GetProjectStatusResponse> {
         return this.send$({
             command: 'query',
             path: `/${projectId}`,
@@ -111,14 +129,41 @@ export class ProjectsRouter extends Router {
         })
     }
 
-    getArtifacts$(
-        projectId: string,
-        flowId: string,
-        callerOptions: CallerRequestOptions = {},
-    ): HTTPResponse$<ArtifactsResponse> {
+    getArtifacts$({
+        projectId,
+        flowId,
+        callerOptions,
+    }: {
+        projectId: string
+        flowId: string
+        callerOptions?: CallerRequestOptions
+    }): HTTPResponse$<GetArtifactsResponse> {
         return this.send$({
             command: 'query',
             path: `/${projectId}/flows/${flowId}/artifacts`,
+            callerOptions,
+        })
+    }
+
+    /**
+     * Pipeline status
+     *
+     * @param projectId
+     * @param flowId
+     * @param callerOptions
+     */
+    getPipelineStatus$({
+        projectId,
+        flowId,
+        callerOptions,
+    }: {
+        projectId: string
+        flowId: string
+        callerOptions?: CallerRequestOptions
+    }): HTTPResponse$<GetPipelineStatusResponse> {
+        return this.send$({
+            command: 'query',
+            path: `/${projectId}/flows/${flowId}`,
             callerOptions,
         })
     }
@@ -128,16 +173,23 @@ export class ProjectsRouter extends Router {
      *
      * @param projectId
      * @param flowId
+     * @param stepId
      * @param callerOptions
      */
-    flowStatus$(
-        projectId: string,
-        flowId: string,
-        callerOptions: CallerRequestOptions = {},
-    ): HTTPResponse$<PipelineStatusResponse> {
+    getPipelineStepStatus$({
+        projectId,
+        flowId,
+        stepId,
+        callerOptions,
+    }: {
+        projectId: string
+        flowId: string
+        stepId: string
+        callerOptions?: CallerRequestOptions
+    }): HTTPResponse$<GetPipelineStepStatusResponse> {
         return this.send$({
             command: 'query',
-            path: `/${projectId}/flows/${flowId}`,
+            path: `/${projectId}/flows/${flowId}/steps/${stepId}`,
             callerOptions,
         })
     }
@@ -150,12 +202,17 @@ export class ProjectsRouter extends Router {
      * @param stepId
      * @param callerOptions
      */
-    runStep$(
-        projectId: string,
-        flowId: string,
-        stepId: string,
-        callerOptions: CallerRequestOptions = {},
-    ): HTTPResponse$<PipelineStatusResponse> {
+    runStep$({
+        projectId,
+        flowId,
+        stepId,
+        callerOptions,
+    }: {
+        projectId: string
+        flowId: string
+        stepId: string
+        callerOptions?: CallerRequestOptions
+    }): HTTPResponse$<RunStepResponse> {
         return this.send$({
             command: 'update',
             path: `/${projectId}/flows/${flowId}/steps/${stepId}/run`,

@@ -1,4 +1,4 @@
-interface Failure {
+export interface Failure {
     path: string
     failure: string
     message: string
@@ -53,6 +53,10 @@ export interface Project {
 export interface ProjectsLoadingResults {
     results: (Project | Failure)[]
 }
+export interface GetProjectsStatusResponse extends ProjectsLoadingResults {}
+
+export interface ProjectsLoadingResultsResponse
+    extends ProjectsLoadingResults {}
 
 export interface ChildToParentConnections {
     id: string
@@ -66,17 +70,21 @@ export interface DependenciesResponse {
     simpleDag: ChildToParentConnections[]
 }
 
-export interface ProjectStatusResponse {
+export interface ProjectStatus {
     projectId: string
     projectName: string
     workspaceDependencies: DependenciesResponse[]
 }
+export interface GetProjectStatusResponse extends ProjectStatus {}
 
-export interface ArtifactResponse {
+export interface Artifact {
     id: string
     path: string
     links: Link[]
 }
+export interface ArtifactsResponse extends Artifact {}
+
+export interface GetArtifactResponse extends Artifact {}
 
 export interface Manifest {
     succeeded: boolean
@@ -97,23 +105,38 @@ export interface PipelineStepStatusResponse {
     flowId: string
     stepId: string
     artifactFolder: string
-    artifacts: ArtifactResponse[]
+    artifacts: Artifact[]
     manifest?: Manifest
     status: 'OK' | 'KO' | 'outdated' | 'none'
 }
+export interface GetPipelineStepStatusResponse
+    extends PipelineStepStatusResponse {}
 
-export interface PipelineStatusResponse {
+export interface RunStepResponse extends PipelineStepStatusResponse {}
+
+export interface PipelineStatus {
     projectId: string
     steps: PipelineStepStatusResponse[]
 }
 
-export interface ArtifactsResponse {
-    artifacts: ArtifactResponse[]
+export interface PipelineStatusResponse extends PipelineStatus {}
+
+export interface ProjectStatusResponse extends ProjectStatus {}
+
+export interface GetPipelineStatusResponse extends PipelineStatus {}
+
+export interface GetArtifactsResponse {
+    artifacts: Artifact[]
 }
+
+export type PipelineStepEventKind =
+    | 'runStarted'
+    | 'runDone'
+    | 'statusCheckStarted'
 
 export interface PipelineStepEvent {
     projectId: string
     flowId: string
     stepId: string
-    event: 'runStarted' | 'runDone' | 'statusCheckStarted' | 'statusCheckDone'
+    event: PipelineStepEventKind
 }

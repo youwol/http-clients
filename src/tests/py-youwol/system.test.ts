@@ -1,15 +1,16 @@
-import { mergeMap } from 'rxjs/operators'
+import { mergeMap, tap } from 'rxjs/operators'
 import { raiseHTTPErrors } from '../../lib'
 import { PyYouwolClient } from '../../lib/py-youwol'
 
-import { expectAttributes, resetPyYouwolDbs$ } from '../common'
+import { expectAttributes } from '../common'
 /* eslint-disable jest/no-done-callback -- eslint-comment Find a good way to work with rxjs in jest */
 import '../mock-requests'
+import { setup$ } from './utils'
 
 const pyYouwol = new PyYouwolClient()
 
 beforeAll(async (done) => {
-    resetPyYouwolDbs$().subscribe(() => {
+    setup$().subscribe(() => {
         done()
     })
 })
@@ -44,7 +45,9 @@ test('pyYouwol.admin.system.queryLogs', (done) => {
         .pipe(
             raiseHTTPErrors(),
             mergeMap(({ logs }) =>
-                pyYouwol.admin.system.queryLogs$(logs[0].contextId),
+                pyYouwol.admin.system.queryLogs$({
+                    parentId: logs[0].contextId,
+                }),
             ),
             raiseHTTPErrors(),
         )
@@ -55,9 +58,35 @@ test('pyYouwol.admin.system.queryLogs', (done) => {
         })
 })
 
+test('pyYouwol.admin.system.clearLogs', (done) => {
+    pyYouwol.admin.system
+        .queryRootLogs$({ fromTimestamp: Date.now(), maxCount: 100 })
+        .pipe(
+            raiseHTTPErrors(),
+            tap((resp) => {
+                expect(resp.logs.length).toBeGreaterThanOrEqual(1)
+            }),
+            mergeMap(({ logs }) => pyYouwol.admin.system.clearLogs$()),
+            raiseHTTPErrors(),
+            mergeMap(() =>
+                pyYouwol.admin.system.queryRootLogs$({
+                    fromTimestamp: Date.now(),
+                    maxCount: 100,
+                }),
+            ),
+            raiseHTTPErrors(),
+            tap((resp) => {
+                expect(resp.logs.length).toBe(0)
+            }),
+        )
+        .subscribe(() => {
+            done()
+        })
+})
+
 test('pyYouwol.admin.system.queryFolderContent', (done) => {
     pyYouwol.admin.system
-        .queryFolderContent$('./')
+        .queryFolderContent$({ path: './' })
         .pipe(raiseHTTPErrors())
         .subscribe((resp) => {
             // the folder is py-youwol/youwol
@@ -70,7 +99,7 @@ test('pyYouwol.admin.system.queryFolderContent', (done) => {
 
 test('pyYouwol.admin.system.getFileContent', (done) => {
     pyYouwol.admin.system
-        .getFileContent$('./main.py')
+        .getFileContent$({ path: './main.py' })
         .pipe(raiseHTTPErrors())
         .subscribe((resp) => {
             expect(resp).toBeTruthy()

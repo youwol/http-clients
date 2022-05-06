@@ -25,7 +25,7 @@ test('query healthz', (done) => {
 
 test('pyYouwol.admin.environment.login', (done) => {
     pyYouwol.admin.environment
-        .login$({ email: 'int_tests_yw-users_bis@test-user' })
+        .login$({ body: { email: 'int_tests_yw-users_bis@test-user' } })
         .pipe(raiseHTTPErrors())
         .subscribe((resp) => {
             expectAttributes(resp, ['id', 'name', 'email', 'memberOf'])
@@ -36,8 +36,11 @@ test('pyYouwol.admin.environment.login', (done) => {
 
 test('pyYouwol.admin.customCommands.doPost$', (done) => {
     pyYouwol.admin.customCommands
-        .doPost$('test-cmd-post', {
-            returnObject: { status: 'test-cmd-post ok' },
+        .doPost$({
+            name: 'test-cmd-post',
+            body: {
+                returnObject: { status: 'test-cmd-post ok' },
+            },
         })
         .subscribe((resp) => {
             expect(resp).toEqual({ status: 'test-cmd-post ok' })
@@ -47,8 +50,11 @@ test('pyYouwol.admin.customCommands.doPost$', (done) => {
 
 test('pyYouwol.admin.customCommands.doPut$', (done) => {
     pyYouwol.admin.customCommands
-        .doPut$('test-cmd-put', {
-            returnObject: { status: 'test-cmd-put ok' },
+        .doPut$({
+            name: 'test-cmd-put',
+            body: {
+                returnObject: { status: 'test-cmd-put ok' },
+            },
         })
         .subscribe((resp) => {
             expect(resp).toEqual({ status: 'test-cmd-put ok' })
@@ -58,7 +64,7 @@ test('pyYouwol.admin.customCommands.doPut$', (done) => {
 
 test('pyYouwol.admin.customCommands.doDelete$', (done) => {
     pyYouwol.admin.customCommands
-        .doDelete$('test-cmd-delete')
+        .doDelete$({ name: 'test-cmd-delete' })
         .subscribe((resp) => {
             expect(resp).toEqual({ status: 'deleted' })
             done()
