@@ -14,6 +14,7 @@ import {
     ProjectsLoadingResultsResponse,
     GetPipelineStepStatusResponse,
     RunStepResponse,
+    PipelineStepEventKind,
 } from './interfaces'
 import { WsRouter } from '../../py-youwol.client'
 
@@ -73,12 +74,17 @@ class WebSocketAPI {
     }
 
     stepEvent$(
-        filters: { packageName?: string; packageVersion?: string } = {},
+        filters: {
+            projectId?: string
+            flowId?: string
+            stepId?: string
+            event?: PipelineStepEventKind
+        } = {},
     ): WebSocketResponse$<PipelineStepEvent> {
         return this.ws.data$.pipe(
             filterCtxMessage<PipelineStepEvent>({
                 withLabels: ['PipelineStepEvent'],
-                withAttributes: filters,
+                withDataAttributes: filters,
             }),
         )
     }
