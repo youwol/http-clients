@@ -329,8 +329,9 @@ function instrumentXHR(
         (xhr.onloadstart = (event) => follower && follower.start(event.total))
 
     follower &&
-        (xhr.upload.onprogress = (event) =>
-            follower && follower.progressTo(event.loaded))
+        (xhr.upload.onprogress = (event) => {
+            follower && follower.progressTo(event.loaded, event.total)
+        })
 
     xhr.onload = () => {
         if (xhr.readyState === 4) {
@@ -376,8 +377,10 @@ export function sendFormData({
     const params = queryParametersToUrlSuffix(queryParameters || {})
     url = queryParameters ? `${url}?${params}` : url
     xhr.open(method, url, true)
-
-    setHeadersXHR(xhr, { ...headers, ...(callerOptions.headers || {}) })
+    setHeadersXHR(xhr, {
+        ...headers,
+        ...(callerOptions.headers || {}),
+    })
 
     instrumentXHR(xhr, response, follower)
     xhr.send(formData)
