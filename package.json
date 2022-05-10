@@ -1,6 +1,6 @@
 {
     "name": "@youwol/http-clients",
-    "version": "0.1.6",
+    "version": "0.1.7-wip",
     "description": "Youwol HTTP clients",
     "author": "greinisch@youwol.com",
     "keywords": [
