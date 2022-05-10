@@ -5,6 +5,7 @@ import { resetPyYouwolDbs$ } from '../common'
 import '../mock-requests'
 import { shell$ } from '../common'
 import {
+    accessInfo,
     addImage,
     createAsset,
     deleteAccessPolicy,
@@ -18,7 +19,7 @@ import {
     updateAsset,
     upsertAccessPolicy,
 } from './shell'
-import { AssetBase } from '../../lib/assets-backend'
+import { AssetBase, QueryAccessInfoResponse } from '../../lib/assets-backend'
 import path from 'path'
 import { HTTPError } from '../../lib'
 
@@ -49,6 +50,8 @@ test('happy path', (done) => {
             name: 'test asset',
             description: 'an asset for test',
             tags: ['test', 'assets-backend'],
+            images: [],
+            thumbnails: [],
             groupId: '',
         }
         public readonly newName = 'test asset renamed'
@@ -257,4 +260,75 @@ test('happy path', (done) => {
         .subscribe(() => {
             done()
         })
+})
+
+test('access-info', (done) => {
+    class Context {
+        public readonly asset = {
+            assetId: 'test-asset-id',
+            relatedId: 'test-related-id',
+            kind: 'test-kind',
+            name: 'test asset',
+            description: 'an asset for test',
+            tags: ['test', 'assets-backend'],
+            images: [],
+            thumbnails: [],
+            groupId: '',
+        }
+        public readonly publicGroup = 'L3lvdXdvbC11c2Vycw=='
+
+        constructor(params: { asset? } = {}) {
+            Object.assign(this, params)
+        }
+    }
+
+    shell$<Context>(new Context())
+        .pipe(
+            createAsset({
+                inputs: (shell) => ({
+                    body: shell.context.asset,
+                }),
+            }),
+            accessInfo({
+                inputs: (shell) => ({
+                    assetId: shell.context.asset.assetId,
+                }),
+                sideEffects: (resp: QueryAccessInfoResponse) => {
+                    expect(resp.owningGroup.name).toBe('private')
+                    expect(resp.ownerInfo.exposingGroups).toHaveLength(0)
+                    expect(resp.ownerInfo.defaultAccess.read).toBe('forbidden')
+                    expect(resp.ownerInfo.defaultAccess.share).toBe('forbidden')
+                    expect(resp.consumerInfo.permissions).toEqual({
+                        write: true,
+                        read: true,
+                        share: true,
+                        expiration: null,
+                    })
+                },
+            }),
+            upsertAccessPolicy({
+                inputs: (shell) => ({
+                    assetId: shell.context.asset.assetId,
+                    groupId: shell.context.publicGroup,
+                    body: { read: 'authorized', share: 'forbidden' },
+                }),
+            }),
+            accessInfo({
+                inputs: (shell) => ({
+                    assetId: shell.context.asset.assetId,
+                }),
+                sideEffects: (resp: QueryAccessInfoResponse) => {
+                    expect(resp.ownerInfo.exposingGroups).toHaveLength(1)
+                    expect(resp.ownerInfo.exposingGroups[0].name).toBe(
+                        '/youwol-users',
+                    )
+                    expect(resp.ownerInfo.exposingGroups[0].access).toEqual({
+                        share: 'forbidden',
+                        read: 'authorized',
+                        expiration: null,
+                    })
+                },
+            }),
+        )
+        .subscribe(() => done())
 })

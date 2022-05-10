@@ -10,6 +10,7 @@ import {
     GetAssetResponse,
     GetHealthzResponse,
     GetPermissionsResponse,
+    QueryAccessInfoResponse,
     RemoveImageResponse,
     UpdateAssetBody,
     UpdateAssetResponse,
@@ -80,6 +81,49 @@ export function createAsset<TContext>({
         authorizedErrors,
         sideEffects: (resp, shell) => {
             expectAsset(resp)
+            sideEffects && sideEffects(resp, shell)
+        },
+        newShell: (shell, resp) => newShellFromContext(shell, resp, newContext),
+    })
+}
+
+export function accessInfo<TContext>({
+    inputs,
+    authorizedErrors,
+    newContext,
+    sideEffects,
+}: {
+    inputs: (shell: Shell<TContext>) => { assetId: string }
+    authorizedErrors?: (resp: HTTPError) => boolean
+    sideEffects?: (resp, shell: Shell<TContext>) => void
+    newContext?: (
+        shell: Shell<TContext>,
+        resp: QueryAccessInfoResponse,
+    ) => TContext
+}) {
+    return wrap<Shell<TContext>, QueryAccessInfoResponse, TContext>({
+        observable: (shell: Shell<TContext>) =>
+            shell.assetsGtw.assets.queryAccessInfo$(inputs(shell)),
+        authorizedErrors,
+        sideEffects: (resp, shell) => {
+            expectAttributes(resp, ['owningGroup', 'consumerInfo'])
+            expectAttributes(resp.owningGroup, ['name', 'groupId'])
+            expectAttributes(resp.consumerInfo, ['permissions'])
+            expectAttributes(resp.consumerInfo.permissions, [
+                'write',
+                'read',
+                'share',
+            ])
+            if (resp.ownerInfo) {
+                expectAttributes(resp.ownerInfo, [
+                    'exposingGroups',
+                    'defaultAccess',
+                ])
+                expectAttributes(resp.ownerInfo.defaultAccess, [
+                    'read',
+                    'share',
+                ])
+            }
             sideEffects && sideEffects(resp, shell)
         },
         newShell: (shell, resp) => newShellFromContext(shell, resp, newContext),
