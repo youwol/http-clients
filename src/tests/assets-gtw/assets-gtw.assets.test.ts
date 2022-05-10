@@ -230,16 +230,16 @@ test('assetsGtw.assetsDeprecated.addPicture$', (done) => {
                 },
                 {
                     requestId: 'add-image',
-                    step: 'transferring',
+                    step: 'processing',
                     transferredCount: 5468,
-                    totalCount: 0,
+                    totalCount: 5468,
                     commandType: 'upload',
                 },
                 {
                     requestId: 'add-image',
                     step: 'finished',
-                    transferredCount: 0,
-                    totalCount: 0,
+                    transferredCount: 5468,
+                    totalCount: 5468,
                     commandType: 'upload',
                 },
             ])
