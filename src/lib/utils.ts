@@ -334,7 +334,7 @@ function instrumentXHR(
 
     xhr.onload = () => {
         if (xhr.readyState === 4) {
-            if (xhr.statusText === 'OK') {
+            if (xhr.status < 400) {
                 follower && follower.end()
                 response.next(JSON.parse(xhr.responseText))
             } else {
