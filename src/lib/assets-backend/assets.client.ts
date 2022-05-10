@@ -15,6 +15,7 @@ import {
     CreateAssetBody,
     RemoveImageResponse,
     AddImageBody,
+    QueryAccessInfoResponse,
 } from './interfaces'
 import { RootRouter } from '../router'
 
@@ -236,6 +237,26 @@ export class AssetsClient extends RootRouter {
     }
 
     /**
+     * Gather permissions related to the asset
+     *
+     * @param assetId
+     * @param callerOptions
+     */
+    queryAccessInfo$({
+        assetId,
+        callerOptions,
+    }: {
+        assetId: string
+        callerOptions?: CallerRequestOptions
+    }): HTTPResponse$<QueryAccessInfoResponse> {
+        return this.send$({
+            command: 'query',
+            path: `/assets/${assetId}/access-info`,
+            callerOptions,
+        })
+    }
+
+    /**
      * Add an image
      *
      * @param assetId
@@ -270,7 +291,7 @@ export class AssetsClient extends RootRouter {
             path: `/assets/${assetId}/images/${filename}`,
             formData: formData,
             callerOptions,
-        })
+        }) as HTTPResponse$<AddImageResponse>
     }
 
     /**

@@ -37,6 +37,8 @@ export interface AssetBase {
     groupId: string
     name: string
     description: string
+    images: string[]
+    thumbnails: string[]
     tags: string[]
     defaultAccessPolicy?: AccessPolicy
 }
@@ -70,5 +72,40 @@ export interface GetPermissionsResponse {
 }
 
 export interface DeleteAssetResponse {}
-export interface AddImageResponse {}
-export interface RemoveImageResponse {}
+export interface AddImageResponse extends AssetBase {}
+export interface RemoveImageResponse extends AssetBase {}
+
+export interface GroupAccess {
+    read: 'forbidden' | 'authorized' | 'owning' | 'expiration-date'
+    share: 'forbidden' | 'authorized'
+    parameters: { [key: string]: unknown }
+    expiration: number | null
+}
+
+export interface ExposingGroup {
+    name: string
+    groupId: string
+    access: GroupAccess
+}
+
+export interface OwnerInfo {
+    exposingGroups: Array<ExposingGroup>
+    defaultAccess: GroupAccess
+}
+
+export interface PermissionsResp {
+    write: boolean
+    read: boolean
+    share: boolean
+    expiration?: boolean
+}
+
+export interface ConsumerInfo {
+    permissions: PermissionsResp
+}
+
+export interface QueryAccessInfoResponse {
+    owningGroup: { name: string; groupId: string }
+    consumerInfo: ConsumerInfo
+    ownerInfo?: OwnerInfo
+}
