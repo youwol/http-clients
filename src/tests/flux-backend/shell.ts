@@ -220,3 +220,28 @@ export function updateMetadata<T>(
         )
     }
 }
+
+export function duplicate<T>(
+    input: (shell: Shell<T>) => {
+        projectId: string
+        folderId: string
+    },
+    cb?: (shell: Shell<T>, resp) => T,
+) {
+    return (source$: Observable<Shell<T>>) => {
+        return source$.pipe(
+            mergeMap((shell) => {
+                const { projectId, folderId } = input(shell)
+                return shell.assetsGtw.flux
+                    .duplicate$({ projectId, queryParameters: { folderId } })
+                    .pipe(
+                        raiseHTTPErrors(),
+                        tap((resp) => {
+                            expect(resp).toBeTruthy()
+                        }),
+                        mapToShell(shell, cb),
+                    )
+            }),
+        )
+    }
+}

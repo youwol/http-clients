@@ -15,6 +15,7 @@ import {
     UpdateMetadataResponse,
     UploadResponse,
     UploadBody,
+    DuplicateResponse,
 } from './interfaces'
 import { RootRouter } from '../router'
 import { Observable } from 'rxjs'
@@ -231,6 +232,35 @@ export class FluxClient extends RootRouter {
             nativeRequestOptions: {
                 json: body,
             },
+            callerOptions,
+        })
+    }
+
+    /**
+     * duplicate a project
+     *
+     * @param projectId
+     * @param queryParameters
+     * @param queryParameters.folderId define the parent item in explorer (required if used through AssetsGatewayClient)
+     * @param callerOptions
+     */
+    duplicate$({
+        projectId,
+        queryParameters,
+        callerOptions,
+    }: {
+        projectId: string
+        queryParameters?: { folderId?: string }
+        callerOptions?: CallerRequestOptions
+    }): HTTPResponse$<NewAssetResponse<DuplicateResponse> | DuplicateResponse> {
+        const suffix =
+            queryParameters && queryParameters.folderId
+                ? `?folder-id=${queryParameters.folderId}`
+                : ''
+
+        return this.send$({
+            command: 'update',
+            path: `/projects/${projectId}/duplicate${suffix}`,
             callerOptions,
         })
     }

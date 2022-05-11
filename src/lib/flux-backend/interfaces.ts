@@ -124,3 +124,4 @@ export interface UpdateMetadataBody {
 }
 
 export interface UpdateMetadataResponse {}
+export interface DuplicateResponse extends NewProjectResponse {}

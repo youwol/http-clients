@@ -7,6 +7,7 @@ import { shell$ } from '../common'
 import {
     deleteProject,
     downloadZip,
+    duplicate,
     getProject,
     newProject,
     updateMetadata,
@@ -228,6 +229,71 @@ test('update metadata', (done) => {
                         resp.requirements.loadingGraph.definition,
                     ).toHaveLength(3)
                     return shell.context
+                },
+            ),
+        )
+        .subscribe(() => done())
+})
+
+test('duplicate project', (done) => {
+    const testDataDir = __dirname + '/test-data'
+
+    class Context {
+        projectId = 'test-project-id'
+        duplicatedId = ''
+        zipFile = `${testDataDir}/project-dependencies.zip`
+        packages = [
+            `root.zip`,
+            `a_0.0.1.zip`,
+            `a_0.0.2.zip`,
+            `b_0.0.1.zip`,
+        ].map((name) => `${testDataDir}/packages/${name}`)
+
+        project: GetProjectResponse
+
+        constructor(params: {
+            project?: GetProjectResponse
+            duplicatedId?: string
+        }) {
+            Object.assign(this, params)
+        }
+    }
+
+    shell$(new Context({}))
+        .pipe(
+            upload((shell) => ({
+                zipFile: shell.context.zipFile,
+                projectId: shell.context.projectId,
+                folderId: shell.homeFolderId,
+            })),
+            uploadPackages((shell) => ({
+                filePaths: shell.context.packages,
+            })),
+            getProject(
+                (shell) => ({ projectId: shell.context.projectId }),
+                (shell, resp) => {
+                    expect(resp.workflow.modules).toHaveLength(1)
+                    return new Context({ ...shell.context, project: resp })
+                },
+            ),
+            duplicate(
+                (shell) => ({
+                    projectId: shell.context.projectId,
+                    folderId: shell.homeFolderId,
+                }),
+                (shell, resp) => {
+                    expect(resp.name).toBe('new flux-project (copy)')
+                    return new Context({
+                        ...shell.context,
+                        duplicatedId: resp.rawId,
+                    })
+                },
+            ),
+            getProject(
+                (shell) => ({ projectId: shell.context.duplicatedId }),
+                (shell, resp) => {
+                    expect(resp.workflow.modules).toHaveLength(1)
+                    return new Context({ ...shell.context, project: resp })
                 },
             ),
         )
