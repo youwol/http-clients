@@ -142,7 +142,7 @@ export class CdnClient extends RootRouter {
      * @param restOfPath
      * @param callerOptions
      */
-    getResource$({
+    getResource$<TResp = Blob>({
         libraryId,
         version,
         callerOptions,
@@ -152,7 +152,7 @@ export class CdnClient extends RootRouter {
         version: string
         restOfPath: string
         callerOptions?: CallerRequestOptions
-    }): HTTPResponse$<Blob> {
+    }): HTTPResponse$<TResp> {
         return this.send$({
             command: 'query',
             path: `/resources/${libraryId}/${version}/${restOfPath}`,
