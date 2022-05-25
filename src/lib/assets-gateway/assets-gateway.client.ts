@@ -1,7 +1,7 @@
 import { RootRouter } from '../router'
 import { CallerRequestOptions, HTTPResponse$ } from '../utils'
 import { GroupsResponse, HealthzResponse, UserInfoResponse } from './interfaces'
-import { AssetsRouter, ExplorerRouter, RawRouter, MiscRouter } from './routers'
+import { MiscRouter } from './routers'
 import { CdnClient } from '../cdn-backend'
 import { StoriesClient } from '../stories-backend'
 import { FilesClient } from '../files-backend'
@@ -10,10 +10,6 @@ import { TreedbClient } from '../treedb-backend'
 import { AssetsClient } from '../assets-backend'
 
 export class AssetsGatewayClient extends RootRouter {
-    public readonly explorerDeprecated: ExplorerRouter
-    public readonly assetsDeprecated: AssetsRouter
-    public readonly rawDeprecated: RawRouter
-
     public readonly misc: MiscRouter
     public readonly cdn: CdnClient
     public readonly stories: StoriesClient
@@ -31,9 +27,6 @@ export class AssetsGatewayClient extends RootRouter {
             basePath: '/api/assets-gateway',
             headers,
         })
-        this.explorerDeprecated = new ExplorerRouter(this)
-        this.assetsDeprecated = new AssetsRouter(this)
-        this.rawDeprecated = new RawRouter(this)
         this.misc = new MiscRouter(this)
         this.cdn = new CdnClient({
             headers,
