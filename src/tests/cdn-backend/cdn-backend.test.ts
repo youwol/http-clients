@@ -2,7 +2,6 @@
 /* eslint-disable jest/no-done-callback -- eslint-comment It is required because */
 
 import path from 'path'
-import { Asset, MetadataResponse } from '../../lib/assets-gateway'
 import { expectAttributes, resetPyYouwolDbs$, shell$ } from '../common'
 import '../mock-requests'
 import {
@@ -18,6 +17,8 @@ import {
 import { tap } from 'rxjs/operators'
 import { readFileSync } from 'fs'
 import { onHTTPErrors } from '../../lib'
+import { GetAssetResponse } from '../../lib/assets-backend'
+import { GetLibraryInfoResponse } from '../../lib/cdn-backend'
 
 jest.setTimeout(90 * 1000)
 
@@ -28,13 +29,13 @@ beforeAll(async (done) => {
 })
 
 class TestData {
-    public readonly asset?: Asset
-    public readonly metadata?: MetadataResponse
+    public readonly asset?: GetAssetResponse
+    public readonly metadata?: GetLibraryInfoResponse
     public readonly downloaded?: Blob
 
     constructor(params: {
-        asset?: Asset
-        metadata?: MetadataResponse
+        asset?: GetAssetResponse
+        metadata?: GetLibraryInfoResponse
         downloaded?: Blob
     }) {
         Object.assign(this, params)

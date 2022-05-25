@@ -1,11 +1,9 @@
 import { HTTPError, HTTPResponse$, raiseHTTPErrors, RootRouter } from '../lib'
 import { PyYouwolClient } from '../lib/py-youwol'
-import {
-    AssetsGatewayClient,
-    DefaultDriveResponse,
-} from '../lib/assets-gateway'
+import { AssetsGatewayClient } from '../lib/assets-gateway'
 import { filter, map, mergeMap, shareReplay, take, tap } from 'rxjs/operators'
 import { merge, Observable, OperatorFunction } from 'rxjs'
+import { GetDefaultDriveResponse } from '../lib/explorer-backend'
 
 RootRouter.HostName = getPyYouwolBasePath()
 RootRouter.Headers = { 'py-youwol-local-only': 'true' }
@@ -76,9 +74,9 @@ export class Shell<T> {
 
 export function shell$<T>(context?: T) {
     const assetsGtw = new AssetsGatewayClient()
-    return assetsGtw.explorerDeprecated.getDefaultUserDrive$().pipe(
+    return assetsGtw.explorer.getDefaultUserDrive$().pipe(
         raiseHTTPErrors(),
-        map((resp: DefaultDriveResponse) => {
+        map((resp: GetDefaultDriveResponse) => {
             expect(resp.driveName).toBe('Default drive')
             return new Shell<T>({
                 homeFolderId: resp.homeFolderId,

@@ -2,7 +2,7 @@
 /* eslint-disable jest/no-done-callback -- eslint-comment It is required because */
 
 import path from 'path'
-import { Asset, MetadataResponse } from '../../lib/assets-gateway'
+
 import { getPyYouwolBasePath, resetPyYouwolDbs$, shell$ } from '../common'
 import '../mock-requests'
 import { get, getInfo, remove, updateMetadata, upload } from './shell'
@@ -10,6 +10,8 @@ import { readFileSync } from 'fs'
 import { from } from 'rxjs'
 import { mapTo, mergeMap, reduce, take, tap } from 'rxjs/operators'
 import { onHTTPErrors } from '../../lib'
+import { GetInfoResponse } from '../../lib/files-backend'
+import { GetAssetResponse } from '../../lib/assets-backend'
 
 jest.setTimeout(90 * 1000)
 beforeAll(async (done) => {
@@ -20,14 +22,14 @@ beforeAll(async (done) => {
 
 class TestData {
     public readonly fileName?: string
-    public readonly asset?: Asset
-    public readonly metadata?: MetadataResponse
+    public readonly asset?: GetAssetResponse
+    public readonly metadata?: GetInfoResponse
     public readonly downloaded?: Blob
     public readonly thumbnailUrl?: string
 
     constructor(params: {
-        asset?: Asset
-        metadata?: MetadataResponse
+        asset?: GetAssetResponse
+        metadata?: GetInfoResponse
         downloaded?: Blob
         fileName?: string
         thumbnailUrl?: string

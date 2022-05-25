@@ -45,7 +45,7 @@ test('happy path', (done) => {
     class Context {
         public readonly asset = {
             assetId: 'test-asset-id',
-            relatedId: 'test-related-id',
+            rawId: 'test-related-id',
             kind: 'test-kind',
             name: 'test asset',
             description: 'an asset for test',
@@ -62,7 +62,7 @@ test('happy path', (done) => {
     }
     function expectAsset(resp: AssetBase, target: AssetBase) {
         expect(resp.name).toBe(target.name)
-        expect(resp.relatedId).toBe(target.relatedId)
+        expect(resp.rawId).toBe(target.rawId)
         expect(resp.assetId).toBe(target.assetId)
         expect(resp.description).toBe(target.description)
         expect(resp.tags).toEqual(target.tags)
@@ -266,7 +266,7 @@ test('access-info', (done) => {
     class Context {
         public readonly asset = {
             assetId: 'test-asset-id',
-            relatedId: 'test-related-id',
+            rawId: 'test-related-id',
             kind: 'test-kind',
             name: 'test asset',
             description: 'an asset for test',

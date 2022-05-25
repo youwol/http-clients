@@ -33,7 +33,7 @@ function expectAsset(resp: unknown) {
     expectAttributes(resp, [
         'assetId',
         'kind',
-        'relatedId',
+        'rawId',
         'name',
         'images',
         'thumbnails',
