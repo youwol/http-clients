@@ -5,10 +5,13 @@ import { resetPyYouwolDbs$, Shell } from '../common'
 import '../mock-requests'
 import { shell$ } from '../common'
 import {
+    borrow,
     createDrive,
     createFolder,
     createItem,
     deleteDrive,
+    getDefaultDrive,
+    getDefaultUserDrive,
     getDrive,
     getEntity,
     getFolder,
@@ -21,7 +24,7 @@ import {
     queryChildren,
     queryDeleted,
     queryDrives,
-    queryItemsByRelatedId,
+    queryItemsByAssetId,
     trashFolder,
     trashItem,
     updateDrive,
@@ -32,9 +35,10 @@ import {
     FolderBase,
     GetDriveResponse,
     ItemBase,
-} from '../../lib/treedb-backend'
+} from '../../lib/explorer-backend'
+import { createAsset } from '../assets-backend/shell'
 
-beforeAll(async (done) => {
+beforeEach(async (done) => {
     resetPyYouwolDbs$().subscribe(() => {
         done()
     })
@@ -301,9 +305,9 @@ test('happy path items', (done) => {
     class Context {
         public readonly item = {
             itemId: 'test-item-id',
-            relatedId: 'test-item-related-id',
+            assetId: btoa('test-item-raw-id'),
             name: 'test item',
-            type: 'flux-project',
+            kind: 'flux-project',
         }
         public readonly updatedItemName = 'updated item name'
     }
@@ -317,7 +321,7 @@ test('happy path items', (done) => {
         expect(resp.name).toBe(name)
         expect(resp.driveId).toBe(shell.defaultDriveId)
         expect(resp.folderId).toBe(shell.homeFolderId)
-        expect(resp.type).toBe(shell.context.item.type)
+        expect(resp.kind).toBe(shell.context.item.kind)
         return shell.context
     }
     shell$<Context>(new Context())
@@ -394,9 +398,9 @@ test('happy path items', (done) => {
                     return shell.context
                 },
             ),
-            queryItemsByRelatedId(
+            queryItemsByAssetId(
                 (shell) => ({
-                    relatedId: shell.context.item.relatedId,
+                    assetId: shell.context.item.assetId,
                 }),
                 (shell, resp) => {
                     expect(resp.items).toHaveLength(1)
@@ -451,9 +455,9 @@ test('happy path move', (done) => {
     class Context {
         public readonly item = {
             itemId: 'test-item-id',
-            relatedId: 'test-item-related-id',
+            assetId: btoa('test-item-raw-id'),
             name: 'test item',
-            type: 'flux-project',
+            kind: 'flux-project',
         }
         public readonly folder = {
             folderId: 'test-folder-id',
@@ -553,6 +557,104 @@ test('happy path move', (done) => {
                     return shell.context
                 },
             ),
+        )
+        .subscribe(() => {
+            done()
+        })
+})
+
+test('borrow item happy path', (done) => {
+    class Context {
+        public readonly item = {
+            itemId: 'test-item-id',
+            assetId: btoa('test-item-raw-id'),
+            name: 'test item',
+            kind: 'flux-project',
+        }
+        // To test 'borrow item' through assets-gtw an asset needs to be created (for permissions purpose)
+        public readonly asset = {
+            assetId: btoa('test-item-raw-id'),
+            rawId: 'test-item-raw-id',
+            kind: 'test-kind',
+            name: 'test asset',
+            description: 'an asset for test',
+            tags: [],
+            images: [],
+            thumbnails: [],
+            groupId: '',
+        }
+        public readonly folder = {
+            folderId: 'test-folder-id',
+            name: 'test folder',
+        }
+    }
+    shell$<Context>(new Context())
+        .pipe(
+            createFolder((shell) => ({
+                parentFolderId: shell.homeFolderId,
+                body: shell.context.folder,
+            })),
+            createItem((shell) => ({
+                folderId: shell.context.folder.folderId,
+                body: shell.context.item,
+            })),
+            queryChildren(
+                (shell) => ({
+                    parentId: shell.context.folder.folderId,
+                }),
+                (shell, resp) => {
+                    expect(resp.folders).toHaveLength(0)
+                    expect(resp.items).toHaveLength(1)
+                    return shell.context
+                },
+            ),
+            createAsset({
+                inputs: (shell) => ({
+                    body: shell.context.asset,
+                }),
+                newContext: (shell) => {
+                    return shell.context
+                },
+            }),
+            borrow((shell) => ({
+                itemId: shell.context.item.itemId,
+                body: {
+                    destinationFolderId: shell.context.folder.folderId,
+                },
+            })),
+            queryChildren(
+                (shell) => ({
+                    parentId: shell.context.folder.folderId,
+                }),
+                (shell, resp) => {
+                    expect(resp.folders).toHaveLength(0)
+                    expect(resp.items).toHaveLength(2)
+                    return shell.context
+                },
+            ),
+            queryItemsByAssetId(
+                (shell) => ({
+                    assetId: shell.context.item.assetId,
+                }),
+                (shell, resp) => {
+                    expect(resp.items).toHaveLength(2)
+                    return shell.context
+                },
+            ),
+        )
+        .subscribe(() => {
+            done()
+        })
+})
+
+test('default drive', (done) => {
+    class Context {}
+    shell$<Context>(new Context())
+        .pipe(
+            getDefaultUserDrive(),
+            getDefaultDrive((shell) => ({
+                groupId: shell.privateGroupId,
+            })),
         )
         .subscribe(() => {
             done()

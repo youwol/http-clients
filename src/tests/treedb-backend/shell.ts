@@ -11,7 +11,7 @@ import {
     GetEntityResponse,
     GetFolderResponse,
     GetItemResponse,
-    QueryItemsByRelatedIdResponse,
+    QueryItemsByAssetIdResponse,
     GetPathFolderResponse,
     GetPathResponse,
     UpdateDriveBody,
@@ -28,11 +28,28 @@ import {
     CreateFolderBody,
     CreateFolderResponse,
     CreateItemBody,
-    CreatetemResponse,
-} from '../../lib/treedb-backend'
+    CreateItemResponse,
+    PostBorrowBody,
+} from '../../lib/explorer-backend'
 
 export function expectDrive(drive: unknown) {
     expectAttributes(drive, ['driveId', 'groupId', 'name', 'metadata'])
+}
+
+export function expectDefaultDrive(drive: unknown) {
+    expectAttributes(drive, [
+        'driveId',
+        'groupId',
+        'driveName',
+        'downloadFolderId',
+        'downloadFolderName',
+        'homeFolderId',
+        'homeFolderName',
+        'systemFolderId',
+        'systemFolderName',
+        'systemPackagesFolderId',
+        'systemPackagesFolderName',
+    ])
 }
 
 export function expectFolder(folder: unknown) {
@@ -42,7 +59,7 @@ export function expectFolder(folder: unknown) {
         'driveId',
         'groupId',
         'name',
-        'type',
+        'kind',
         'metadata',
     ])
 }
@@ -50,13 +67,15 @@ export function expectFolder(folder: unknown) {
 export function expectItem(item: unknown) {
     expectAttributes(item, [
         'itemId',
-        'relatedId',
+        'assetId',
+        'rawId',
         'folderId',
         'driveId',
         'groupId',
         'name',
-        'type',
+        'kind',
         'metadata',
+        'borrowed',
     ])
 }
 
@@ -64,7 +83,7 @@ export function healthz<T>() {
     return (source$: Observable<Shell<T>>) => {
         return source$.pipe(
             mergeMap((shell) => {
-                return shell.assetsGtw.treedb.getHealthz$().pipe(
+                return shell.assetsGtw.explorer.getHealthz$().pipe(
                     raiseHTTPErrors(),
                     tap((resp) => {
                         expect(resp.status).toBe('treedb-backend ok')
@@ -86,7 +105,7 @@ export function createDrive<T>(
     return (source$: Observable<Shell<T>>) => {
         return source$.pipe(
             mergeMap((shell) => {
-                return shell.assetsGtw.treedb.createDrive$(input(shell)).pipe(
+                return shell.assetsGtw.explorer.createDrive$(input(shell)).pipe(
                     raiseHTTPErrors(),
                     tap((resp) => {
                         expectDrive(resp)
@@ -107,7 +126,7 @@ export function queryDrives<T>(
     return (source$: Observable<Shell<T>>) => {
         return source$.pipe(
             mergeMap((shell) => {
-                return shell.assetsGtw.treedb.queryDrives$(input(shell)).pipe(
+                return shell.assetsGtw.explorer.queryDrives$(input(shell)).pipe(
                     raiseHTTPErrors(),
                     tap((resp) => {
                         expectAttributes(resp, ['drives'])
@@ -117,6 +136,47 @@ export function queryDrives<T>(
                     }),
                     mapToShell(shell, cb),
                 )
+            }),
+        )
+    }
+}
+
+export function getDefaultUserDrive<T>(
+    cb?: (shell: Shell<T>, resp: QueryDrivesResponse) => T,
+) {
+    return (source$: Observable<Shell<T>>) => {
+        return source$.pipe(
+            mergeMap((shell) => {
+                return shell.assetsGtw.explorer.getDefaultUserDrive$().pipe(
+                    raiseHTTPErrors(),
+                    tap((resp) => {
+                        expectDefaultDrive(resp)
+                    }),
+                    mapToShell(shell, cb),
+                )
+            }),
+        )
+    }
+}
+
+export function getDefaultDrive<T>(
+    input: (shell: Shell<T>) => {
+        groupId: string
+    },
+    cb?: (shell: Shell<T>, resp: QueryDrivesResponse) => T,
+) {
+    return (source$: Observable<Shell<T>>) => {
+        return source$.pipe(
+            mergeMap((shell) => {
+                return shell.assetsGtw.explorer
+                    .getDefaultDrive$(input(shell))
+                    .pipe(
+                        raiseHTTPErrors(),
+                        tap((resp) => {
+                            expectDefaultDrive(resp)
+                        }),
+                        mapToShell(shell, cb),
+                    )
             }),
         )
     }
@@ -132,7 +192,7 @@ export function updateDrive<T>(
     return (source$: Observable<Shell<T>>) => {
         return source$.pipe(
             mergeMap((shell) => {
-                return shell.assetsGtw.treedb.updateDrive$(input(shell)).pipe(
+                return shell.assetsGtw.explorer.updateDrive$(input(shell)).pipe(
                     raiseHTTPErrors(),
                     tap((resp) => {
                         expectDrive(resp)
@@ -153,7 +213,7 @@ export function getDrive<T>(
     return (source$: Observable<Shell<T>>) => {
         return source$.pipe(
             mergeMap((shell) => {
-                return shell.assetsGtw.treedb.getDrive$(input(shell)).pipe(
+                return shell.assetsGtw.explorer.getDrive$(input(shell)).pipe(
                     raiseHTTPErrors(),
                     tap((resp) => {
                         expectDrive(resp)
@@ -175,13 +235,15 @@ export function createFolder<T>(
     return (source$: Observable<Shell<T>>) => {
         return source$.pipe(
             mergeMap((shell) => {
-                return shell.assetsGtw.treedb.createFolder$(input(shell)).pipe(
-                    raiseHTTPErrors(),
-                    tap((resp) => {
-                        expectFolder(resp)
-                    }),
-                    mapToShell(shell, cb),
-                )
+                return shell.assetsGtw.explorer
+                    .createFolder$(input(shell))
+                    .pipe(
+                        raiseHTTPErrors(),
+                        tap((resp) => {
+                            expectFolder(resp)
+                        }),
+                        mapToShell(shell, cb),
+                    )
             }),
         )
     }
@@ -197,13 +259,15 @@ export function updateFolder<T>(
     return (source$: Observable<Shell<T>>) => {
         return source$.pipe(
             mergeMap((shell) => {
-                return shell.assetsGtw.treedb.updateFolder$(input(shell)).pipe(
-                    raiseHTTPErrors(),
-                    tap((resp) => {
-                        expectFolder(resp)
-                    }),
-                    mapToShell(shell, cb),
-                )
+                return shell.assetsGtw.explorer
+                    .updateFolder$(input(shell))
+                    .pipe(
+                        raiseHTTPErrors(),
+                        tap((resp) => {
+                            expectFolder(resp)
+                        }),
+                        mapToShell(shell, cb),
+                    )
             }),
         )
     }
@@ -218,7 +282,7 @@ export function getFolder<T>(
     return (source$: Observable<Shell<T>>) => {
         return source$.pipe(
             mergeMap((shell) => {
-                return shell.assetsGtw.treedb.getFolder$(input(shell)).pipe(
+                return shell.assetsGtw.explorer.getFolder$(input(shell)).pipe(
                     raiseHTTPErrors(),
                     tap((resp) => {
                         expectFolder(resp)
@@ -235,12 +299,12 @@ export function createItem<T>(
         folderId: string
         body: CreateItemBody
     },
-    cb?: (shell: Shell<T>, resp: CreatetemResponse) => T,
+    cb?: (shell: Shell<T>, resp: CreateItemResponse) => T,
 ) {
     return (source$: Observable<Shell<T>>) => {
         return source$.pipe(
             mergeMap((shell) => {
-                return shell.assetsGtw.treedb.createItem$(input(shell)).pipe(
+                return shell.assetsGtw.explorer.createItem$(input(shell)).pipe(
                     raiseHTTPErrors(),
                     tap((resp) => {
                         expectItem(resp)
@@ -262,7 +326,7 @@ export function updateItem<T>(
     return (source$: Observable<Shell<T>>) => {
         return source$.pipe(
             mergeMap((shell) => {
-                return shell.assetsGtw.treedb.updateItem$(input(shell)).pipe(
+                return shell.assetsGtw.explorer.updateItem$(input(shell)).pipe(
                     raiseHTTPErrors(),
                     tap((resp) => {
                         expectItem(resp)
@@ -283,7 +347,7 @@ export function getItem<T>(
     return (source$: Observable<Shell<T>>) => {
         return source$.pipe(
             mergeMap((shell) => {
-                return shell.assetsGtw.treedb.getItem$(input(shell)).pipe(
+                return shell.assetsGtw.explorer.getItem$(input(shell)).pipe(
                     raiseHTTPErrors(),
                     tap((resp) => {
                         expectItem(resp)
@@ -295,17 +359,17 @@ export function getItem<T>(
     }
 }
 
-export function queryItemsByRelatedId<T>(
+export function queryItemsByAssetId<T>(
     input: (shell: Shell<T>) => {
-        relatedId: string
+        assetId: string
     },
-    cb?: (shell: Shell<T>, resp: QueryItemsByRelatedIdResponse) => T,
+    cb?: (shell: Shell<T>, resp: QueryItemsByAssetIdResponse) => T,
 ) {
     return (source$: Observable<Shell<T>>) => {
         return source$.pipe(
             mergeMap((shell) => {
-                return shell.assetsGtw.treedb
-                    .queryItemsByRelatedId$(input(shell))
+                return shell.assetsGtw.explorer
+                    .queryItemsByAssetId$(input(shell))
                     .pipe(
                         raiseHTTPErrors(),
                         tap((resp) => {
@@ -330,7 +394,7 @@ export function getPath<T>(
     return (source$: Observable<Shell<T>>) => {
         return source$.pipe(
             mergeMap((shell) => {
-                return shell.assetsGtw.treedb.getPath$(input(shell)).pipe(
+                return shell.assetsGtw.explorer.getPath$(input(shell)).pipe(
                     raiseHTTPErrors(),
                     tap((resp) => {
                         expectAttributes(resp, ['item', 'folders', 'drive'])
@@ -351,13 +415,15 @@ export function getFolderPath<T>(
     return (source$: Observable<Shell<T>>) => {
         return source$.pipe(
             mergeMap((shell) => {
-                return shell.assetsGtw.treedb.getPathFolder$(input(shell)).pipe(
-                    raiseHTTPErrors(),
-                    tap((resp) => {
-                        expectAttributes(resp, ['folders', 'drive'])
-                    }),
-                    mapToShell(shell, cb),
-                )
+                return shell.assetsGtw.explorer
+                    .getPathFolder$(input(shell))
+                    .pipe(
+                        raiseHTTPErrors(),
+                        tap((resp) => {
+                            expectAttributes(resp, ['folders', 'drive'])
+                        }),
+                        mapToShell(shell, cb),
+                    )
             }),
         )
     }
@@ -372,10 +438,32 @@ export function move<T>(
     return (source$: Observable<Shell<T>>) => {
         return source$.pipe(
             mergeMap((shell) => {
-                return shell.assetsGtw.treedb.move$(input(shell)).pipe(
+                return shell.assetsGtw.explorer.move$(input(shell)).pipe(
                     raiseHTTPErrors(),
                     tap((resp) => {
                         expectAttributes(resp, ['foldersCount', 'items'])
+                    }),
+                    mapToShell(shell, cb),
+                )
+            }),
+        )
+    }
+}
+
+export function borrow<T>(
+    input: (shell: Shell<T>) => {
+        itemId: string
+        body: PostBorrowBody
+    },
+    cb?: (shell: Shell<T>, resp: MoveResponse) => T,
+) {
+    return (source$: Observable<Shell<T>>) => {
+        return source$.pipe(
+            mergeMap((shell) => {
+                return shell.assetsGtw.explorer.borrow$(input(shell)).pipe(
+                    raiseHTTPErrors(),
+                    tap((resp) => {
+                        expectItem(resp)
                     }),
                     mapToShell(shell, cb),
                 )
@@ -393,7 +481,7 @@ export function getEntity<T>(
     return (source$: Observable<Shell<T>>) => {
         return source$.pipe(
             mergeMap((shell) => {
-                return shell.assetsGtw.treedb.getEntity$(input(shell)).pipe(
+                return shell.assetsGtw.explorer.getEntity$(input(shell)).pipe(
                     raiseHTTPErrors(),
                     tap((resp) => {
                         expectAttributes(resp, ['entityType', 'entity'])
@@ -420,13 +508,15 @@ export function queryChildren<T>(
     return (source$: Observable<Shell<T>>) => {
         return source$.pipe(
             mergeMap((shell) => {
-                return shell.assetsGtw.treedb.queryChildren$(input(shell)).pipe(
-                    raiseHTTPErrors(),
-                    tap((resp) => {
-                        expectChildren(resp)
-                    }),
-                    mapToShell(shell, cb),
-                )
+                return shell.assetsGtw.explorer
+                    .queryChildren$(input(shell))
+                    .pipe(
+                        raiseHTTPErrors(),
+                        tap((resp) => {
+                            expectChildren(resp)
+                        }),
+                        mapToShell(shell, cb),
+                    )
             }),
         )
     }
@@ -441,13 +531,15 @@ export function queryDeleted<T>(
     return (source$: Observable<Shell<T>>) => {
         return source$.pipe(
             mergeMap((shell) => {
-                return shell.assetsGtw.treedb.queryDeleted$(input(shell)).pipe(
-                    raiseHTTPErrors(),
-                    tap((resp) => {
-                        expectChildren(resp)
-                    }),
-                    mapToShell(shell, cb),
-                )
+                return shell.assetsGtw.explorer
+                    .queryDeleted$(input(shell))
+                    .pipe(
+                        raiseHTTPErrors(),
+                        tap((resp) => {
+                            expectChildren(resp)
+                        }),
+                        mapToShell(shell, cb),
+                    )
             }),
         )
     }
@@ -462,7 +554,7 @@ export function trashItem<T>(
     return (source$: Observable<Shell<T>>) => {
         return source$.pipe(
             mergeMap((shell) => {
-                return shell.assetsGtw.treedb
+                return shell.assetsGtw.explorer
                     .trashItem$(input(shell))
                     .pipe(raiseHTTPErrors(), mapToShell(shell, cb))
             }),
@@ -479,7 +571,7 @@ export function trashFolder<T>(
     return (source$: Observable<Shell<T>>) => {
         return source$.pipe(
             mergeMap((shell) => {
-                return shell.assetsGtw.treedb
+                return shell.assetsGtw.explorer
                     .trashFolder$(input(shell))
                     .pipe(raiseHTTPErrors(), mapToShell(shell, cb))
             }),
@@ -496,7 +588,7 @@ export function purgeDrive<T>(
     return (source$: Observable<Shell<T>>) => {
         return source$.pipe(
             mergeMap((shell) => {
-                return shell.assetsGtw.treedb.purgeDrive$(input(shell)).pipe(
+                return shell.assetsGtw.explorer.purgeDrive$(input(shell)).pipe(
                     raiseHTTPErrors(),
                     tap((resp) => {
                         expectAttributes(resp, [
@@ -521,7 +613,7 @@ export function deleteDrive<T>(
     return (source$: Observable<Shell<T>>) => {
         return source$.pipe(
             mergeMap((shell) => {
-                return shell.assetsGtw.treedb
+                return shell.assetsGtw.explorer
                     .deleteDrive$(input(shell))
                     .pipe(raiseHTTPErrors(), mapToShell(shell, cb))
             }),
