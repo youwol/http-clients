@@ -21,7 +21,7 @@ export interface AddImageBody {
 
 export interface CreateAssetBody {
     assetId?: string
-    relatedId: string
+    rawId: string
     kind: string
     groupId?: string
     name: string
@@ -32,7 +32,7 @@ export interface CreateAssetBody {
 
 export interface AssetBase {
     assetId: string
-    relatedId: string
+    rawId: string
     kind: string
     groupId: string
     name: string
