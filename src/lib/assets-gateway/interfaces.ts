@@ -1,3 +1,5 @@
+import { GetAssetResponse } from '../assets-backend'
+
 export type Json = Record<string, never>
 export type RawId = string
 
@@ -17,4 +19,8 @@ export interface GroupResponse {
 
 export interface GroupsResponse {
     groups: Array<GroupResponse>
+}
+
+export interface NewAssetResponse<T> extends GetAssetResponse {
+    readonly rawResponse: T
 }

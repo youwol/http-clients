@@ -1,4 +1,10 @@
-import { LoadingGraph } from '../assets-gateway'
+type Url = string
+
+export interface LoadingGraph {
+    graphType: string
+    lock: { id: string; name: string; version: string }[]
+    definition: [string, Url][][]
+}
 
 export interface AuthorResponse {
     authorId: string

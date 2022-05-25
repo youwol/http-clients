@@ -1,4 +1,8 @@
-import { ReleaseResponse } from '../assets-gateway'
+export interface Release {
+    version: string
+    version_number: number
+    fingerprint: string
+}
 
 export interface GetHealthzResponse {
     status: 'cdn-backend ok'
@@ -41,7 +45,7 @@ export interface GetVersionInfoResponse {
     versions: string[]
     namespace: string
     id: string
-    release: ReleaseResponse[]
+    release: Release[]
 }
 
 export interface GetLibraryInfoResponse {
@@ -49,7 +53,7 @@ export interface GetLibraryInfoResponse {
     versions: string[]
     namespace: string
     id: string
-    release: ReleaseResponse[]
+    release: Release[]
 }
 
 export interface DeleteLibraryResponse {
