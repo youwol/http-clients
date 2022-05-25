@@ -15,10 +15,10 @@ import {
     GetFolderResponse,
     UpdateFolderResponse,
     CreateFolderResponse,
-    CreatetemResponse,
+    CreateItemResponse,
     UpdateItemResponse,
     GetItemResponse,
-    QueryItemsByRelatedIdResponse,
+    QueryItemsByAssetIdResponse,
     GetPathResponse,
     GetPathFolderResponse,
     MoveResponse,
@@ -29,10 +29,13 @@ import {
     TrashFolderResponse,
     PurgeDriveResponse,
     DeleteDriveResponse,
+    PostBorrowBody,
+    BorrowResponse,
+    GetDefaultDriveResponse,
 } from './interfaces'
 import { RootRouter } from '../router'
 
-export class TreedbClient extends RootRouter {
+export class ExplorerClient extends RootRouter {
     constructor({
         headers,
         basePath,
@@ -159,6 +162,46 @@ export class TreedbClient extends RootRouter {
     }
 
     /**
+     * Default drive of a particular group
+     *
+     * @param groupId group's id
+     * @param callerOptions
+     * @returns response
+     */
+    getDefaultDrive$({
+        groupId,
+        callerOptions,
+    }: {
+        groupId: string
+        callerOptions?: CallerRequestOptions
+    }): HTTPResponse$<GetDefaultDriveResponse> {
+        return this.send$({
+            command: 'query',
+            path: `/groups/${groupId}/default-drive`,
+            callerOptions,
+        })
+    }
+
+    /**
+     * Default drive of a particular group
+     *
+     * @param groupId group's id
+     * @param callerOptions
+     * @returns response
+     */
+    getDefaultUserDrive$({
+        callerOptions,
+    }: {
+        callerOptions?: CallerRequestOptions
+    } = {}): HTTPResponse$<GetDefaultDriveResponse> {
+        return this.send$({
+            command: 'query',
+            path: `/default-drive`,
+            callerOptions,
+        })
+    }
+
+    /**
      * Create a folder.
      *
      * @param parentFolderId
@@ -246,7 +289,7 @@ export class TreedbClient extends RootRouter {
         folderId: string
         body: CreateItemBody
         callerOptions?: CallerRequestOptions
-    }): HTTPResponse$<CreatetemResponse> {
+    }): HTTPResponse$<CreateItemResponse> {
         return this.send$({
             command: 'create',
             path: `/folders/${folderId}/items`,
@@ -305,21 +348,21 @@ export class TreedbClient extends RootRouter {
     }
 
     /**
-     * Retrieve items related to a particular 'relatedId' (i.e. assetId)
+     * Retrieve items related to a particular asset
      *
-     * @param relatedId
+     * @param assetId
      * @param callerOptions
      */
-    queryItemsByRelatedId$({
-        relatedId,
+    queryItemsByAssetId$({
+        assetId,
         callerOptions,
     }: {
-        relatedId: string
+        assetId: string
         callerOptions?: CallerRequestOptions
-    }): HTTPResponse$<QueryItemsByRelatedIdResponse> {
+    }): HTTPResponse$<QueryItemsByAssetIdResponse> {
         return this.send$({
             command: 'query',
-            path: `/items/from-related/${relatedId}`,
+            path: `/items/from-asset/${assetId}`,
             callerOptions,
         })
     }
@@ -379,6 +422,32 @@ export class TreedbClient extends RootRouter {
         return this.send$({
             command: 'update',
             path: `/move`,
+            nativeRequestOptions: {
+                json: body,
+            },
+            callerOptions,
+        })
+    }
+
+    /**
+     * Borrow an item in a different location
+     *
+     * @param itemId id of the item to borrow
+     * @param body
+     * @param callerOptions
+     */
+    borrow$({
+        itemId,
+        body,
+        callerOptions,
+    }: {
+        itemId: string
+        body: PostBorrowBody
+        callerOptions?: CallerRequestOptions
+    }): HTTPResponse$<BorrowResponse> {
+        return this.send$({
+            command: 'update',
+            path: `/items/${itemId}/borrow`,
             nativeRequestOptions: {
                 json: body,
             },

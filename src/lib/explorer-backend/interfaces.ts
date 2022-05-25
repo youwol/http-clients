@@ -14,9 +14,28 @@ export interface BaseDrive {
     metadata: string
 }
 
+export interface GetGroupResponse {
+    id: string
+    path: string
+}
+
 export interface CreateDriveResponse extends BaseDrive {}
 
 export interface GetDriveResponse extends BaseDrive {}
+
+export interface GetDefaultDriveResponse {
+    driveId: string
+    driveName: string
+    downloadFolderId: string
+    downloadFolderName: string
+    homeFolderId: string
+    homeFolderName: string
+    systemFolderId: string
+    systemFolderName: string
+    systemPackageFolderId: string
+    systemPackageFolderName: string
+    groupId: string
+}
 
 export interface QueryDrivesResponse {
     drives: GetDriveResponse[]
@@ -34,7 +53,7 @@ export interface FolderBase {
     driveId: string
     groupId: string
     name: string
-    type: string
+    kind: string
     metadata: string
 }
 
@@ -42,7 +61,7 @@ export interface GetFolderResponse extends FolderBase {}
 
 export interface CreateFolderBody {
     name: string
-    type?: string
+    kind?: string
     metadata?: string
     folderId?: string
 }
@@ -56,24 +75,27 @@ export interface CreateFolderResponse extends FolderBase {}
 
 export interface ItemBase {
     itemId: string
-    relatedId: string
+    assetId: string
+    rawId: string
     folderId: string
     driveId: string
     groupId: string
     name: string
-    type: string
+    kind: string
+    borrowed: boolean
     metadata: string
 }
 
 export interface CreateItemBody {
     name: string
-    type?: string
+    kind?: string
     metadata?: string
     itemId?: string
-    relatedId: string
+    assetId: string
+    borrowed?: boolean
 }
 
-export interface CreatetemResponse extends ItemBase {}
+export interface CreateItemResponse extends ItemBase {}
 
 export interface UpdateItemBody {
     name: string
@@ -86,12 +108,17 @@ export interface PostMoveBody {
     destinationFolderId: string
 }
 
+export interface PostBorrowBody {
+    targetId?: string
+    destinationFolderId: string
+}
+
 export interface GetItemResponse extends ItemBase {}
 
 export interface ItemsBase {
     items: ItemBase[]
 }
-export interface QueryItemsByRelatedIdResponse extends ItemsBase {}
+export interface QueryItemsByAssetIdResponse extends ItemsBase {}
 
 export interface PathBase {
     item?: ItemBase
@@ -106,6 +133,8 @@ export interface MoveResponse {
     foldersCount: number
     items: ItemBase[]
 }
+
+export interface BorrowResponse extends GetItemResponse {}
 
 export interface GetEntityResponse {
     entityType: string
@@ -130,4 +159,32 @@ export interface PurgeDriveResponse {
     foldersCount: number
     itemsCount: number
     items: ItemBase[]
+}
+
+export function isInstanceOfItemResponse(
+    node: unknown,
+): node is GetItemResponse {
+    return (
+        (node as GetItemResponse).assetId != undefined &&
+        (node as GetItemResponse).rawId != undefined &&
+        (node as GetItemResponse).itemId != undefined
+    )
+}
+
+export function isInstanceOfFolderResponse(
+    node: unknown,
+): node is GetFolderResponse {
+    return (
+        (node as GetFolderResponse).parentFolderId != undefined &&
+        (node as GetFolderResponse).folderId != undefined
+    )
+}
+
+export function isInstanceOfGroupResponse(
+    node: unknown,
+): node is GetGroupResponse {
+    return (
+        (node as GetGroupResponse).path != undefined &&
+        (node as GetGroupResponse).id != undefined
+    )
 }

@@ -6,7 +6,7 @@ import { CdnClient } from '../cdn-backend'
 import { StoriesClient } from '../stories-backend'
 import { FilesClient } from '../files-backend'
 import { FluxClient } from '../flux-backend'
-import { TreedbClient } from '../treedb-backend'
+import { ExplorerClient } from '../explorer-backend'
 import { AssetsClient } from '../assets-backend'
 
 export class AssetsGatewayClient extends RootRouter {
@@ -15,7 +15,7 @@ export class AssetsGatewayClient extends RootRouter {
     public readonly stories: StoriesClient
     public readonly files: FilesClient
     public readonly flux: FluxClient
-    public readonly treedb: TreedbClient
+    public readonly explorer: ExplorerClient
     public readonly assets: AssetsClient
 
     constructor({
@@ -44,7 +44,7 @@ export class AssetsGatewayClient extends RootRouter {
             headers,
             basePath: `/api/assets-gateway/flux-backend`,
         })
-        this.treedb = new TreedbClient({
+        this.explorer = new ExplorerClient({
             headers,
             basePath: `/api/assets-gateway/treedb-backend`,
         })
