@@ -464,6 +464,7 @@ export function borrow<T>(
                     raiseHTTPErrors(),
                     tap((resp) => {
                         expectItem(resp)
+                        expect(resp.borrowed).toBeTruthy()
                     }),
                     mapToShell(shell, cb),
                 )

@@ -36,7 +36,7 @@ import {
     GetDriveResponse,
     ItemBase,
 } from '../../lib/explorer-backend'
-import { createAsset } from '../assets-backend/shell'
+import { createAsset, getAsset } from '../assets-backend/shell'
 
 beforeEach(async (done) => {
     resetPyYouwolDbs$().subscribe(() => {
@@ -566,7 +566,7 @@ test('happy path move', (done) => {
 test('borrow item happy path', (done) => {
     class Context {
         public readonly item = {
-            itemId: 'test-item-id',
+            itemId: btoa('test-item-raw-id'),
             assetId: btoa('test-item-raw-id'),
             name: 'test item',
             kind: 'flux-project',
@@ -629,6 +629,12 @@ test('borrow item happy path', (done) => {
                 (shell, resp) => {
                     expect(resp.folders).toHaveLength(0)
                     expect(resp.items).toHaveLength(2)
+                    const original = resp.items[0]
+                    const borrowed = resp.items[1]
+                    expect(original.assetId).toEqual(original.itemId)
+                    expect(original.borrowed).toBeFalsy()
+                    expect(borrowed.borrowed).toBeTruthy()
+                    expect(borrowed.assetId == borrowed.itemId).toBeFalsy()
                     return shell.context
                 },
             ),
@@ -641,6 +647,20 @@ test('borrow item happy path', (done) => {
                     return shell.context
                 },
             ),
+        )
+        .subscribe(() => {
+            done()
+        })
+})
+
+test('default drive', (done) => {
+    class Context {}
+    shell$<Context>(new Context())
+        .pipe(
+            getDefaultUserDrive(),
+            getDefaultDrive((shell) => ({
+                groupId: shell.privateGroupId,
+            })),
         )
         .subscribe(() => {
             done()
