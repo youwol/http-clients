@@ -168,7 +168,7 @@ export class CdnClient extends RootRouter {
      * @param callerOptions
      * @return blob of the library's zip file
      */
-    downloadLibrary({
+    downloadLibrary$({
         libraryId,
         version,
         callerOptions,
