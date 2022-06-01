@@ -587,6 +587,7 @@ test('borrow item happy path', (done) => {
             folderId: 'test-folder-id',
             name: 'test folder',
         }
+        public readonly updatedName: string = 'renamed test asset'
     }
     shell$<Context>(new Context())
         .pipe(
@@ -647,6 +648,23 @@ test('borrow item happy path', (done) => {
                     return shell.context
                 },
             ),
+            updateItem((shell) => ({
+                itemId: shell.context.item.itemId,
+                body: {
+                    name: shell.context.updatedName,
+                },
+            })),
+            /*
+            Make sure renaming the 'reference' item of an asset also renames the asset
+             */
+            getAsset({
+                inputs: (shell) => {
+                    return { assetId: shell.context.asset.assetId }
+                },
+                sideEffects: (response, shell) => {
+                    expect(response.name).toBe(shell.context.updatedName)
+                },
+            }),
         )
         .subscribe(() => {
             done()
