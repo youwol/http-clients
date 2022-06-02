@@ -1,7 +1,7 @@
 // eslint-disable-next-line eslint-comments/disable-enable-pair -- to not have problem
 /* eslint-disable jest/no-done-callback -- eslint-comment It is required because */
 
-import { resetPyYouwolDbs$, Shell } from '../common'
+import { Shell } from '../common'
 import '../mock-requests'
 import { shell$ } from '../common'
 import {
@@ -36,10 +36,14 @@ import {
     GetDriveResponse,
     ItemBase,
 } from '../../lib/explorer-backend'
-import { createAsset } from '../assets-backend/shell'
+import { createAsset, getAsset } from '../assets-backend/shell'
+import { setup$ } from '../py-youwol/utils'
 
 beforeEach(async (done) => {
-    resetPyYouwolDbs$().subscribe(() => {
+    setup$({
+        localOnly: true,
+        email: 'int_tests_yw-users@test-user',
+    }).subscribe(() => {
         done()
     })
 })
@@ -566,7 +570,7 @@ test('happy path move', (done) => {
 test('borrow item happy path', (done) => {
     class Context {
         public readonly item = {
-            itemId: 'test-item-id',
+            itemId: btoa('test-item-raw-id'),
             assetId: btoa('test-item-raw-id'),
             name: 'test item',
             kind: 'flux-project',
@@ -587,6 +591,7 @@ test('borrow item happy path', (done) => {
             folderId: 'test-folder-id',
             name: 'test folder',
         }
+        public readonly updatedName: string = 'renamed test asset'
     }
     shell$<Context>(new Context())
         .pipe(
@@ -629,6 +634,12 @@ test('borrow item happy path', (done) => {
                 (shell, resp) => {
                     expect(resp.folders).toHaveLength(0)
                     expect(resp.items).toHaveLength(2)
+                    const original = resp.items[0]
+                    const borrowed = resp.items[1]
+                    expect(original.assetId).toEqual(original.itemId)
+                    expect(original.borrowed).toBeFalsy()
+                    expect(borrowed.borrowed).toBeTruthy()
+                    expect(borrowed.assetId == borrowed.itemId).toBeFalsy()
                     return shell.context
                 },
             ),
@@ -641,6 +652,37 @@ test('borrow item happy path', (done) => {
                     return shell.context
                 },
             ),
+            updateItem((shell) => ({
+                itemId: shell.context.item.itemId,
+                body: {
+                    name: shell.context.updatedName,
+                },
+            })),
+            /*
+            Make sure renaming the 'reference' item of an asset also renames the asset
+             */
+            getAsset({
+                inputs: (shell) => {
+                    return { assetId: shell.context.asset.assetId }
+                },
+                sideEffects: (response, shell) => {
+                    expect(response.name).toBe(shell.context.updatedName)
+                },
+            }),
+        )
+        .subscribe(() => {
+            done()
+        })
+})
+
+test('default drive', (done) => {
+    class Context {}
+    shell$<Context>(new Context())
+        .pipe(
+            getDefaultUserDrive(),
+            getDefaultDrive((shell) => ({
+                groupId: shell.privateGroupId,
+            })),
         )
         .subscribe(() => {
             done()

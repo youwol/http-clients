@@ -1,12 +1,15 @@
 // eslint-disable-next-line eslint-comments/disable-enable-pair -- to not have problem
 /* eslint-disable jest/no-done-callback -- eslint-comment Find a good way to work with rxjs in jest */
 
-import { resetPyYouwolDbs$ } from '../common'
 import '../mock-requests'
 import { getData, postData, shell$, healthz } from './shell'
+import { setup$ } from '../py-youwol/utils'
 
 beforeAll(async (done) => {
-    resetPyYouwolDbs$().subscribe(() => {
+    setup$({
+        localOnly: true,
+        email: 'int_tests_yw-users@test-user',
+    }).subscribe(() => {
         done()
     })
 })

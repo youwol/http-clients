@@ -1,6 +1,10 @@
 import { RootRouter } from '../router'
 import { CallerRequestOptions, HTTPResponse$ } from '../utils'
-import { GroupsResponse, HealthzResponse, UserInfoResponse } from './interfaces'
+import {
+    GetHealthzResponse,
+    QueryGroupsResponse,
+    GetUserInfoResponse,
+} from './interfaces'
 import { MiscRouter } from './routers'
 import { CdnClient } from '../cdn-backend'
 import { StoriesClient } from '../stories-backend'
@@ -62,7 +66,7 @@ export class AssetsGatewayClient extends RootRouter {
      */
     getHealthz$(
         callerOptions: CallerRequestOptions = {},
-    ): HTTPResponse$<HealthzResponse> {
+    ): HTTPResponse$<GetHealthzResponse> {
         return this.send$({
             command: 'query',
             path: `/healthz`,
@@ -78,7 +82,7 @@ export class AssetsGatewayClient extends RootRouter {
      */
     getUserInfo$(
         callerOptions: CallerRequestOptions = {},
-    ): HTTPResponse$<UserInfoResponse> {
+    ): HTTPResponse$<GetUserInfoResponse> {
         return this.send$({
             command: 'query',
             path: `/user-info`,
@@ -91,9 +95,9 @@ export class AssetsGatewayClient extends RootRouter {
      * @param callerOptions
      * @returns response
      */
-    queryGroups(
+    queryGroups$(
         callerOptions: CallerRequestOptions = {},
-    ): HTTPResponse$<GroupsResponse> {
+    ): HTTPResponse$<QueryGroupsResponse> {
         return this.send$({
             command: 'query',
             path: `/groups`,

@@ -2,7 +2,7 @@
 /* eslint-disable jest/no-done-callback -- eslint-comment It is required because */
 
 import path from 'path'
-import { expectAttributes, resetPyYouwolDbs$, shell$ } from '../common'
+import { expectAttributes, shell$ } from '../common'
 import '../mock-requests'
 import {
     getPackageFolderContent,
@@ -19,11 +19,13 @@ import { readFileSync } from 'fs'
 import { onHTTPErrors } from '../../lib'
 import { GetAssetResponse } from '../../lib/assets-backend'
 import { GetLibraryInfoResponse } from '../../lib/cdn-backend'
-
-jest.setTimeout(90 * 1000)
+import { setup$ } from '../py-youwol/utils'
 
 beforeAll(async (done) => {
-    resetPyYouwolDbs$().subscribe(() => {
+    setup$({
+        localOnly: true,
+        email: 'int_tests_yw-users@test-user',
+    }).subscribe(() => {
         done()
     })
 })

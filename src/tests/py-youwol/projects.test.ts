@@ -28,7 +28,10 @@ let projectName: string
 
 beforeAll(async (done) => {
     projectName = uniqueProjectName('todo-app-js')
-    setup$()
+    setup$({
+        localOnly: true,
+        email: 'int_tests_yw-users@test-user',
+    })
         .pipe(
             mergeMap(() =>
                 pyYouwol.admin.customCommands.doPost$({

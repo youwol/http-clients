@@ -318,7 +318,7 @@ export function addImage<TContext>({
             const { path } = inputs(shell)
             const buffer = readFileSync(path)
             const content = new Blob([Uint8Array.from(buffer).buffer])
-            return shell.assetsGtw.assets.addImage({
+            return shell.assetsGtw.assets.addImage$({
                 ...inputs(shell),
                 body: {
                     content,
@@ -349,7 +349,7 @@ export function removeImage<TContext>({
 }) {
     return wrap<Shell<TContext>, RemoveImageResponse, TContext>({
         observable: (shell: Shell<TContext>) =>
-            shell.assetsGtw.assets.removeImage(inputs(shell)),
+            shell.assetsGtw.assets.removeImage$(inputs(shell)),
         authorizedErrors,
         sideEffects: (resp, shell) => {
             sideEffects && sideEffects(resp, shell)

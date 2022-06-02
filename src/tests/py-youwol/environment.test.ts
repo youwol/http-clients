@@ -11,7 +11,10 @@ import { expectEnvironment, setup$ } from './utils'
 const pyYouwol = new PyYouwolClient()
 
 beforeAll(async (done) => {
-    setup$().subscribe(() => {
+    setup$({
+        localOnly: true,
+        email: 'int_tests_yw-users@test-user',
+    }).subscribe(() => {
         done()
     })
 })

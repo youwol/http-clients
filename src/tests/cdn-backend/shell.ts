@@ -50,7 +50,7 @@ export function downloadPackage<T>(
     return (source$: Observable<Shell<T>>) => {
         return source$.pipe(
             mergeMap((shell) => {
-                return shell.assetsGtw.cdn.downloadLibrary(input(shell)).pipe(
+                return shell.assetsGtw.cdn.downloadLibrary$(input(shell)).pipe(
                     raiseHTTPErrors(),
                     tap((resp) => {
                         expect(resp).toBeInstanceOf(Blob)

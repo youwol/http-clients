@@ -1,7 +1,6 @@
 // eslint-disable-next-line eslint-comments/disable-enable-pair -- to not have problem
 /* eslint-disable jest/no-done-callback -- eslint-comment It is required because */
 
-import { resetPyYouwolDbs$ } from '../common'
 import '../mock-requests'
 import { shell$ } from '../common'
 import {
@@ -22,11 +21,13 @@ import {
 import { AssetBase, QueryAccessInfoResponse } from '../../lib/assets-backend'
 import path from 'path'
 import { HTTPError } from '../../lib'
+import { setup$ } from '../py-youwol/utils'
 
-jest.setTimeout(90 * 1000)
-
-beforeAll(async (done) => {
-    resetPyYouwolDbs$().subscribe(() => {
+beforeEach(async (done) => {
+    setup$({
+        localOnly: true,
+        email: 'int_tests_yw-users@test-user',
+    }).subscribe(() => {
         done()
     })
 })

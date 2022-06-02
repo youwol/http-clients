@@ -265,7 +265,7 @@ export class AssetsClient extends RootRouter {
      * @param content
      * @param callerOptions
      */
-    addImage({
+    addImage$({
         assetId,
         filename,
         body,
@@ -301,7 +301,7 @@ export class AssetsClient extends RootRouter {
      * @param imageId
      * @param callerOptions
      */
-    removeImage({
+    removeImage$({
         assetId,
         filename,
         callerOptions,
