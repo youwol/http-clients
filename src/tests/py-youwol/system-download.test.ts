@@ -19,10 +19,13 @@ const pyYouwol = new PyYouwolClient()
 
 Client.HostName = getPyYouwolBasePath()
 
-jest.setTimeout(90 * 1000)
+jest.setTimeout(10 * 1000)
 
 beforeEach(async (done) => {
-    setup$({ localOnly: false }).subscribe(() => {
+    setup$({
+        localOnly: false,
+        email: 'int_tests_yw-users@test-user',
+    }).subscribe(() => {
         done()
     })
 })

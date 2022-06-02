@@ -3,7 +3,7 @@
 
 import path from 'path'
 
-import { getPyYouwolBasePath, resetPyYouwolDbs$, shell$ } from '../common'
+import { getPyYouwolBasePath, shell$ } from '../common'
 import '../mock-requests'
 import { get, getInfo, remove, updateMetadata, upload } from './shell'
 import { readFileSync } from 'fs'
@@ -12,10 +12,13 @@ import { mapTo, mergeMap, reduce, take, tap } from 'rxjs/operators'
 import { onHTTPErrors } from '../../lib'
 import { GetInfoResponse } from '../../lib/files-backend'
 import { GetAssetResponse } from '../../lib/assets-backend'
+import { setup$ } from '../py-youwol/utils'
 
-jest.setTimeout(90 * 1000)
 beforeAll(async (done) => {
-    resetPyYouwolDbs$().subscribe(() => {
+    setup$({
+        localOnly: true,
+        email: 'int_tests_yw-users@test-user',
+    }).subscribe(() => {
         done()
     })
 })

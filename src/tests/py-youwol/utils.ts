@@ -1,19 +1,31 @@
 import { combineLatest } from 'rxjs'
 import { map, mergeMap, reduce, take, tap } from 'rxjs/operators'
-import { raiseHTTPErrors } from '../../lib'
+import { raiseHTTPErrors, RootRouter } from '../../lib'
 import { PyYouwolClient } from '../../lib/py-youwol'
 import { expectAttributes, resetPyYouwolDbs$ } from '../common'
 import { Client } from '@youwol/cdn-client'
 
 export function setup$(
-    { localOnly }: { localOnly?: boolean } = { localOnly: true },
+    { localOnly, email }: { localOnly?: boolean; email?: string } = {
+        localOnly: true,
+        email: 'int_tests_yw-users@test-user',
+    },
 ) {
     Client.resetCache()
+    const headers = {
+        'py-youwol-local-only': localOnly ? 'true' : 'false',
+    }
     return PyYouwolClient.startWs$().pipe(
+        mergeMap(() =>
+            new PyYouwolClient().admin.environment.login$({
+                body: { email },
+            }),
+        ),
         mergeMap(() => {
-            return resetPyYouwolDbs$({
-                'py-youwol-local-only': localOnly ? 'true' : 'false',
-            })
+            return resetPyYouwolDbs$(headers)
+        }),
+        tap(() => {
+            RootRouter.Headers = headers
         }),
     )
 }

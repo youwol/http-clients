@@ -20,7 +20,6 @@ import {
 import {
     expectAssetAttributes,
     expectAttributes,
-    resetPyYouwolDbs$,
     Shell,
     shell$,
 } from '../common'
@@ -28,10 +27,13 @@ import { GetDocumentResponse } from '../../lib/stories-backend'
 import { onHTTPErrors } from '../../lib'
 import { readFileSync } from 'fs'
 import path from 'path'
+import { setup$ } from '../py-youwol/utils'
 
-jest.setTimeout(30 * 1000)
 beforeAll(async (done) => {
-    resetPyYouwolDbs$().subscribe(() => {
+    setup$({
+        localOnly: true,
+        email: 'int_tests_yw-users@test-user',
+    }).subscribe(() => {
         done()
     })
 })

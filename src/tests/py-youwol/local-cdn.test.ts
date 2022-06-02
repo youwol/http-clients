@@ -14,7 +14,10 @@ const pyYouwol = new PyYouwolClient()
 jest.setTimeout(20 * 1000)
 
 beforeEach(async (done) => {
-    setup$().subscribe(() => {
+    setup$({
+        localOnly: true,
+        email: 'int_tests_yw-users@test-user',
+    }).subscribe(() => {
         done()
     })
 })
