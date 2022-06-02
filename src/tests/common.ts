@@ -1,4 +1,13 @@
-import { HTTPError, HTTPResponse$, raiseHTTPErrors, RootRouter } from '../lib'
+import {
+    CommandType,
+    HTTPError,
+    HTTPResponse$,
+    NativeRequestOptions,
+    raiseHTTPErrors,
+    RequestMonitoring,
+    RootRouter,
+    send$,
+} from '../lib'
 import { PyYouwolClient } from '../lib/py-youwol'
 import { AssetsGatewayClient } from '../lib/assets-gateway'
 import { filter, map, mergeMap, shareReplay, take, tap } from 'rxjs/operators'
@@ -186,4 +195,44 @@ export function wrap<TShell, TResp, TContext>({
             }),
         )
     }
+}
+
+function newShellFromContext<TContext, TResp>(
+    shell: Shell<TContext>,
+    resp: TResp,
+    newContext?: (s: Shell<TContext>, r: TResp) => TContext,
+) {
+    return newContext
+        ? new Shell({ ...shell, context: newContext(shell, resp) })
+        : shell
+}
+
+export function send<TResp, TContext>({
+    inputs,
+    authorizedErrors,
+    newContext,
+    sideEffects,
+}: {
+    inputs: (shell: Shell<TContext>) => {
+        commandType: CommandType
+        path: string
+        nativeOptions?: NativeRequestOptions
+        monitoring?: RequestMonitoring
+    }
+    authorizedErrors?: (resp: HTTPError) => boolean
+    sideEffects?: (resp, shell: Shell<TContext>) => void
+    newContext?: (shell: Shell<TContext>, resp: TResp) => TContext
+}) {
+    return wrap<Shell<TContext>, TResp, TContext>({
+        observable: (shell: Shell<TContext>) => {
+            const { commandType, path, nativeOptions, monitoring } =
+                inputs(shell)
+            return send$(commandType, path, nativeOptions, monitoring)
+        },
+        authorizedErrors,
+        sideEffects: (resp, shell) => {
+            sideEffects && sideEffects(resp, shell)
+        },
+        newShell: (shell, resp) => newShellFromContext(shell, resp, newContext),
+    })
 }
