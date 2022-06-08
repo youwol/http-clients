@@ -15,18 +15,28 @@ export interface CdnVersion {
     entryPointSize: number // in bytes
 }
 
+export interface CdnVersionLight {
+    version: string
+}
+
 export interface CdnPackage {
     name: string
     id: string
     versions: CdnVersion[]
 }
 
+export interface CdnPackageLight {
+    name: string
+    id: string
+    versions: CdnVersionLight[]
+}
+
 export interface CdnStatusResponse {
-    packages: CdnPackage[]
+    packages: CdnPackageLight[]
 }
 export interface GetCdnStatusResponse extends CdnStatusResponse {}
 
-export interface GetPackageResponse extends CdnStatusResponse {}
+export interface GetPackageResponse extends CdnPackage {}
 
 export interface CdnPackageResponse extends CdnPackage {}
 
