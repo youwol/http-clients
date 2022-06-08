@@ -30,6 +30,8 @@ export interface GetDefaultDriveResponse {
     downloadFolderName: string
     homeFolderId: string
     homeFolderName: string
+    tmpFolderId: string
+    tmpFolderName: string
     systemFolderId: string
     systemFolderName: string
     systemPackageFolderId: string

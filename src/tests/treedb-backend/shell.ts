@@ -45,6 +45,8 @@ export function expectDefaultDrive(drive: unknown) {
         'downloadFolderName',
         'homeFolderId',
         'homeFolderName',
+        'tmpFolderId',
+        'tmpFolderName',
         'systemFolderId',
         'systemFolderName',
         'systemPackagesFolderId',
