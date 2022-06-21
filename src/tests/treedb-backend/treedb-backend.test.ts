@@ -309,6 +309,7 @@ test('happy path items', (done) => {
     class Context {
         public readonly item = {
             itemId: 'test-item-id',
+            rawId: 'test-item-raw-id',
             assetId: btoa('test-item-raw-id'),
             name: 'test item',
             kind: 'flux-project',
@@ -443,9 +444,17 @@ test('happy path items', (done) => {
                 (shell) => ({
                     driveId: shell.defaultDriveId,
                 }),
-                (shell, resp) => {
+                (shell: Shell<Context>, resp) => {
                     expect(resp.foldersCount).toBe(0)
                     expect(resp.itemsCount).toBe(1)
+                    expect(resp.errorsAssetDeletion).toHaveLength(1)
+                    expect(resp.errorsAssetDeletion[0]).toBe(
+                        shell.context.item.assetId,
+                    )
+                    expect(resp.errorsRawDeletion).toHaveLength(1)
+                    expect(resp.errorsRawDeletion[0]).toBe(
+                        shell.context.item.rawId,
+                    )
                     return shell.context
                 },
             ),

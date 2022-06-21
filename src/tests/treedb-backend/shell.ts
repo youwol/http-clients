@@ -22,7 +22,6 @@ import {
     UpdateItemResponse,
     PostMoveBody,
     MoveResponse,
-    PurgeDriveResponse,
     CreateDriveBody,
     CreateDriveResponse,
     CreateFolderBody,
@@ -31,6 +30,7 @@ import {
     CreateItemResponse,
     PostBorrowBody,
 } from '../../lib/explorer-backend'
+import { AssetsGtwPurgeResponse } from '../../lib/assets-gateway'
 
 export function expectDrive(drive: unknown) {
     expectAttributes(drive, ['driveId', 'groupId', 'name', 'metadata'])
@@ -586,7 +586,7 @@ export function purgeDrive<T>(
     input: (shell: Shell<T>) => {
         driveId: string
     },
-    cb?: (shell: Shell<T>, resp: PurgeDriveResponse) => T,
+    cb?: (shell: Shell<T>, resp: AssetsGtwPurgeResponse) => T,
 ) {
     return (source$: Observable<Shell<T>>) => {
         return source$.pipe(
