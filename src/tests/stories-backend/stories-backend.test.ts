@@ -3,19 +3,19 @@ import {
     healthz,
     addDocuments,
     addPlugin,
-    createStory,
     deleteDocument,
     deleteStory,
     downloadZip,
     getContent,
     getGlobalContents,
-    getStory,
     moveDocument,
     publish,
     queryDocuments,
     updateContent,
     updateDocument,
     updateGlobalContents,
+    createStory,
+    getStory,
 } from './shell.operators'
 import {
     expectAssetAttributes,
@@ -23,11 +23,17 @@ import {
     Shell,
     shell$,
 } from '../common'
-import { GetDocumentResponse } from '../../lib/stories-backend'
-import { onHTTPErrors } from '../../lib'
+import {
+    CreateStoryResponse,
+    GetDocumentResponse,
+} from '../../lib/stories-backend'
+
 import { readFileSync } from 'fs'
 import path from 'path'
 import { setup$ } from '../py-youwol/utils'
+import { NewAssetResponse } from '../../lib/assets-gateway'
+import { purgeDrive, trashItem } from '../treedb-backend/shell'
+import { getAsset } from '../assets-backend/shell'
 
 beforeAll(async (done) => {
     setup$({
@@ -508,6 +514,59 @@ test('publish story', (done) => {
                 sideEffects: (resp) => {
                     expect(resp.storyId).toBe(storyId)
                     expect(resp.requirements.plugins.length).toEqual(1)
+                },
+            }),
+        )
+        .subscribe(() => {
+            done()
+        })
+})
+
+test('new story, delete from explorer (purge)', (done) => {
+    class Context {
+        public readonly title = 'test story: play with content'
+        public readonly storyId = 'test-story-play-with-content'
+        public readonly itemId: string
+        public readonly assetId: string
+        constructor(params: { itemId?: string; assetId?: string } = {}) {
+            Object.assign(this, params)
+        }
+    }
+    shell$<Context>(new Context())
+        .pipe(
+            createStory({
+                inputs: (shell) => ({
+                    body: {
+                        storyId: shell.context.storyId,
+                        title: shell.context.title,
+                    },
+                    queryParameters: { folderId: shell.homeFolderId },
+                }),
+                newContext: (
+                    shell,
+                    resp: NewAssetResponse<CreateStoryResponse>,
+                ) => {
+                    return new Context({
+                        ...shell.context,
+                        itemId: resp.itemId,
+                        assetId: resp.assetId,
+                    })
+                },
+            }),
+            trashItem((shell) => ({ itemId: shell.context.itemId })),
+            purgeDrive((shell) => ({ driveId: shell.defaultDriveId })),
+            getStory({
+                inputs: (shell) => ({ storyId: shell.context.storyId }),
+                authorizedErrors: (resp) => {
+                    expect(resp.status).toBe(404)
+                    return true
+                },
+            }),
+            getAsset({
+                inputs: (shell) => ({ assetId: shell.context.assetId }),
+                authorizedErrors: (resp) => {
+                    expect(resp.status).toBe(404)
+                    return true
                 },
             }),
         )

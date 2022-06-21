@@ -13,6 +13,10 @@ import { onHTTPErrors } from '../../lib'
 import { GetInfoResponse } from '../../lib/files-backend'
 import { GetAssetResponse } from '../../lib/assets-backend'
 import { setup$ } from '../py-youwol/utils'
+import { NewAssetResponse } from '../../lib/assets-gateway'
+import { purgeDrive, trashItem } from '../treedb-backend/shell'
+import { getAsset } from '../assets-backend/shell'
+import { UploadResponse } from '../../lib/flux-backend'
 
 beforeAll(async (done) => {
     setup$({
@@ -25,7 +29,7 @@ beforeAll(async (done) => {
 
 class TestData {
     public readonly fileName?: string
-    public readonly asset?: GetAssetResponse
+    public readonly asset?: NewAssetResponse<UploadResponse>
     public readonly metadata?: GetInfoResponse
     public readonly downloaded?: Blob
     public readonly thumbnailUrl?: string
@@ -235,6 +239,45 @@ test('upload file, update metadata', (done) => {
                     return shell.context
                 },
             ),
+        )
+        .subscribe(() => {
+            done()
+        })
+})
+
+test('upload data, delete from explorer (purge)', (done) => {
+    const testDataDir = __dirname + '/test-data'
+
+    shell$<TestData>({ fileName: 'package.json' })
+        .pipe(
+            upload(
+                (shell) => ({
+                    fileName: shell.context.fileName,
+                    fileId: shell.context.fileName,
+                    path: path.resolve(testDataDir, shell.context.fileName),
+                }),
+                (shell, resp) => {
+                    return new TestData({
+                        ...shell.context,
+                        asset: resp,
+                    })
+                },
+            ),
+            trashItem((shell) => ({ itemId: shell.context.asset.itemId })),
+            purgeDrive((shell) => ({ driveId: shell.defaultDriveId })),
+            get({
+                inputs: (shell) => {
+                    return { fileId: shell.context.asset.rawId }
+                },
+                authorizedErrors: (resp) => resp.status == 404,
+            }),
+            getAsset({
+                inputs: (shell) => ({ assetId: shell.context.asset.assetId }),
+                authorizedErrors: (resp) => {
+                    expect(resp.status).toBe(404)
+                    return true
+                },
+            }),
         )
         .subscribe(() => {
             done()

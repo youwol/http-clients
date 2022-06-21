@@ -21,6 +21,8 @@ import path from 'path'
 import { Subject } from 'rxjs'
 import * as fs from 'fs'
 import { setup$ } from '../py-youwol/utils'
+import { purgeDrive, trashItem } from '../treedb-backend/shell'
+import { getAsset } from '../assets-backend/shell'
 
 beforeAll(async (done) => {
     setup$({
@@ -94,6 +96,53 @@ test('new project, update project, delete', (done) => {
                     return 'ManagedError'
                 }),
             ),
+        )
+        .subscribe(() => {
+            done()
+        })
+})
+
+test('new project, delete from explorer (purge)', (done) => {
+    class Context {
+        itemId: string
+        projectId: string
+        assetId: string
+        constructor(params: { itemId?: string; projectId?: string }) {
+            Object.assign(this, params)
+        }
+    }
+    shell$<Context>()
+        .pipe(
+            newProject(
+                (shell) => ({ folderId: shell.homeFolderId }),
+                (shell, resp) => {
+                    return new Context({
+                        ...shell.context,
+                        itemId: resp.itemId,
+                        projectId: resp.rawId,
+                    })
+                },
+            ),
+            trashItem((shell) => ({ itemId: shell.context.itemId })),
+            purgeDrive((shell) => ({ driveId: shell.defaultDriveId })),
+            getProject(
+                (shell) => ({ projectId: shell.context.projectId }),
+                (shell, resp: GetProjectResponse | string) => {
+                    if (resp != 'ManagedError') expect(false).toBeTruthy()
+                    return shell.context
+                },
+                onHTTPErrors((resp) => {
+                    expect(resp.status).toBe(404)
+                    return 'ManagedError'
+                }),
+            ),
+            getAsset({
+                inputs: (shell) => ({ assetId: shell.context.projectId }),
+                authorizedErrors: (resp) => {
+                    expect(resp.status).toBe(404)
+                    return true
+                },
+            }),
         )
         .subscribe(() => {
             done()
