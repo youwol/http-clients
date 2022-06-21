@@ -27,6 +27,7 @@ export interface GroupsResponse {
 export interface QueryGroupsResponse extends GroupsResponse {}
 
 export interface NewAssetResponse<T> extends GetAssetResponse {
+    readonly itemId: string
     readonly rawResponse: T
 }
 
