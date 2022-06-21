@@ -9,7 +9,9 @@ import {
     expectAttributes,
     ManagedError,
     mapToShell,
+    newShellFromContext,
     Shell,
+    wrap,
 } from '../common'
 import {
     UploadResponse,
@@ -109,24 +111,29 @@ export function updateMetadata<T>(
     }
 }
 
-export function get<T>(
-    input: (shell: Shell<T>) => { fileId: string },
-    cb: (shell: Shell<T>, resp: Blob) => T,
-) {
-    return (source$: Observable<Shell<T>>) => {
-        return source$.pipe(
-            mergeMap((shell) => {
-                const { fileId } = input(shell)
-                return shell.assetsGtw.files.get$({ fileId }).pipe(
-                    raiseHTTPErrors(),
-                    tap((resp) => {
-                        expect(resp).toBeInstanceOf(Blob)
-                    }),
-                    mapToShell(shell, cb),
-                )
-            }),
-        )
+export function get<TContext>({
+    inputs,
+    authorizedErrors,
+    newContext,
+    sideEffects,
+}: {
+    inputs: (shell: Shell<TContext>) => {
+        fileId: string
     }
+    authorizedErrors?: (resp: HTTPError) => boolean
+    sideEffects?: (resp, shell: Shell<TContext>) => void
+    newContext?: (shell: Shell<TContext>, resp: Blob) => TContext
+}) {
+    return wrap<Shell<TContext>, Blob, TContext>({
+        observable: (shell: Shell<TContext>) =>
+            shell.assetsGtw.files.get$(inputs(shell)),
+        authorizedErrors,
+        sideEffects: (resp, shell) => {
+            expect(resp).toBeInstanceOf(Blob)
+            sideEffects && sideEffects(resp, shell)
+        },
+        newShell: (shell, resp) => newShellFromContext(shell, resp, newContext),
+    })
 }
 
 export function remove<T>(

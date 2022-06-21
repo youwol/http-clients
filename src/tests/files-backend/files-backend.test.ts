@@ -99,14 +99,13 @@ test('upload files, get stats & get content', (done) => {
                     return new TestData(shell.context)
                 },
             ),
-            get(
-                (shell) => {
+            get({
+                inputs: (shell) => {
                     return { fileId: shell.context.asset.rawId }
                 },
-                (shell, resp: Blob) => {
-                    return new TestData({ ...shell.context, downloaded: resp })
-                },
-            ),
+                newContext: (shell, resp) =>
+                    new TestData({ ...shell.context, downloaded: resp }),
+            }),
             mergeMap((shell) => {
                 const promise = new Promise((resolve) => {
                     const fileReader = new FileReader()
