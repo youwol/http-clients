@@ -8,6 +8,7 @@ import {
     QueryCowSayResponse,
     QueryCustomDispatchesResponse,
     SwitchProfileResponse,
+    UploadAssetResponse,
 } from './interfaces'
 import { WsRouter } from '../../py-youwol.client'
 import { GetFileContentResponse } from '../../interfaces'
@@ -141,6 +142,20 @@ export class EnvironmentRouter extends Router {
         return this.send$({
             command: 'query',
             path: `/configuration/config-file`,
+            callerOptions,
+        })
+    }
+
+    uploadAsset$({
+        assetId,
+        callerOptions,
+    }: {
+        assetId: string
+        callerOptions?: CallerRequestOptions
+    }): HTTPResponse$<UploadAssetResponse> {
+        return this.send$({
+            command: 'update',
+            path: `/upload/${assetId}`,
             callerOptions,
         })
     }
