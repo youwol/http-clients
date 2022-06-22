@@ -553,8 +553,12 @@ test('new story, delete from explorer (purge)', (done) => {
                     })
                 },
             }),
-            trashItem((shell) => ({ itemId: shell.context.itemId })),
-            purgeDrive((shell) => ({ driveId: shell.defaultDriveId })),
+            trashItem({
+                inputs: (shell) => ({ itemId: shell.context.itemId }),
+            }),
+            purgeDrive({
+                inputs: (shell) => ({ driveId: shell.defaultDriveId }),
+            }),
             getStory({
                 inputs: (shell) => ({ storyId: shell.context.storyId }),
                 authorizedErrors: (resp) => {

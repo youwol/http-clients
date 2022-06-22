@@ -1,8 +1,14 @@
 import '../mock-requests'
-import { expectAttributes, mapToShell, Shell } from '../common'
+import {
+    expectAttributes,
+    mapToShell,
+    newShellFromContext,
+    Shell,
+    wrap,
+} from '../common'
 import { Observable } from 'rxjs'
 import { mergeMap, tap } from 'rxjs/operators'
-import { raiseHTTPErrors } from '../../lib'
+import { HTTPError, raiseHTTPErrors } from '../../lib'
 import {
     QueryChildrenResponse,
     QueryDeletedResponse,
@@ -29,9 +35,10 @@ import {
     CreateItemBody,
     CreateItemResponse,
     PostBorrowBody,
+    TrashItemResponse,
+    PurgeDriveResponse,
 } from '../../lib/explorer-backend'
 import { AssetsGtwPurgeResponse } from '../../lib/assets-gateway'
-
 export function expectDrive(drive: unknown) {
     expectAttributes(drive, ['driveId', 'groupId', 'name', 'metadata'])
 }
@@ -502,27 +509,32 @@ function expectChildren(resp: { items: unknown[]; folders: unknown[] }) {
     resp.folders.forEach((folder) => expectFolder(folder))
 }
 
-export function queryChildren<T>(
-    input: (shell: Shell<T>) => {
+export function queryChildren<TContext>({
+    inputs,
+    authorizedErrors,
+    newContext,
+    sideEffects,
+}: {
+    inputs: (shell: Shell<TContext>) => {
         parentId: string
-    },
-    cb?: (shell: Shell<T>, resp: QueryChildrenResponse) => T,
-) {
-    return (source$: Observable<Shell<T>>) => {
-        return source$.pipe(
-            mergeMap((shell) => {
-                return shell.assetsGtw.explorer
-                    .queryChildren$(input(shell))
-                    .pipe(
-                        raiseHTTPErrors(),
-                        tap((resp) => {
-                            expectChildren(resp)
-                        }),
-                        mapToShell(shell, cb),
-                    )
-            }),
-        )
     }
+    authorizedErrors?: (resp: HTTPError) => boolean
+    sideEffects?: (resp, shell: Shell<TContext>) => void
+    newContext?: (
+        shell: Shell<TContext>,
+        resp: QueryChildrenResponse,
+    ) => TContext
+}) {
+    return wrap<Shell<TContext>, QueryChildrenResponse, TContext>({
+        observable: (shell: Shell<TContext>) =>
+            shell.assetsGtw.explorer.queryChildren$(inputs(shell)),
+        authorizedErrors,
+        sideEffects: (resp, shell) => {
+            expectChildren(resp)
+            sideEffects && sideEffects(resp, shell)
+        },
+        newShell: (shell, resp) => newShellFromContext(shell, resp, newContext),
+    })
 }
 
 export function queryDeleted<T>(
@@ -548,21 +560,28 @@ export function queryDeleted<T>(
     }
 }
 
-export function trashItem<T>(
-    input: (shell: Shell<T>) => {
+export function trashItem<TContext>({
+    inputs,
+    authorizedErrors,
+    newContext,
+    sideEffects,
+}: {
+    inputs: (shell: Shell<TContext>) => {
         itemId: string
-    },
-    cb?: (shell: Shell<T>, resp: null) => T,
-) {
-    return (source$: Observable<Shell<T>>) => {
-        return source$.pipe(
-            mergeMap((shell) => {
-                return shell.assetsGtw.explorer
-                    .trashItem$(input(shell))
-                    .pipe(raiseHTTPErrors(), mapToShell(shell, cb))
-            }),
-        )
     }
+    authorizedErrors?: (resp: HTTPError) => boolean
+    sideEffects?: (resp, shell: Shell<TContext>) => void
+    newContext?: (shell: Shell<TContext>, resp: TrashItemResponse) => TContext
+}) {
+    return wrap<Shell<TContext>, TrashItemResponse, TContext>({
+        observable: (shell: Shell<TContext>) =>
+            shell.assetsGtw.explorer.trashItem$(inputs(shell)),
+        authorizedErrors,
+        sideEffects: (resp, shell) => {
+            sideEffects && sideEffects(resp, shell)
+        },
+        newShell: (shell, resp) => newShellFromContext(shell, resp, newContext),
+    })
 }
 
 export function trashFolder<T>(
@@ -582,29 +601,35 @@ export function trashFolder<T>(
     }
 }
 
-export function purgeDrive<T>(
-    input: (shell: Shell<T>) => {
+export function purgeDrive<TContext>({
+    inputs,
+    authorizedErrors,
+    newContext,
+    sideEffects,
+}: {
+    inputs: (shell: Shell<TContext>) => {
         driveId: string
-    },
-    cb?: (shell: Shell<T>, resp: AssetsGtwPurgeResponse) => T,
-) {
-    return (source$: Observable<Shell<T>>) => {
-        return source$.pipe(
-            mergeMap((shell) => {
-                return shell.assetsGtw.explorer.purgeDrive$(input(shell)).pipe(
-                    raiseHTTPErrors(),
-                    tap((resp) => {
-                        expectAttributes(resp, [
-                            'foldersCount',
-                            'itemsCount',
-                            'items',
-                        ])
-                    }),
-                    mapToShell(shell, cb),
-                )
-            }),
-        )
     }
+    authorizedErrors?: (resp: HTTPError) => boolean
+    sideEffects?: (resp, shell: Shell<TContext>) => void
+    newContext?: (
+        shell: Shell<TContext>,
+        resp: PurgeDriveResponse | AssetsGtwPurgeResponse,
+    ) => TContext
+}) {
+    return wrap<
+        Shell<TContext>,
+        PurgeDriveResponse | AssetsGtwPurgeResponse,
+        TContext
+    >({
+        observable: (shell: Shell<TContext>) =>
+            shell.assetsGtw.explorer.purgeDrive$(inputs(shell)),
+        authorizedErrors,
+        sideEffects: (resp, shell) => {
+            sideEffects && sideEffects(resp, shell)
+        },
+        newShell: (shell, resp) => newShellFromContext(shell, resp, newContext),
+    })
 }
 
 export function deleteDrive<T>(

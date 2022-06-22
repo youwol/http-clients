@@ -263,8 +263,12 @@ test('upload data, delete from explorer (purge)', (done) => {
                     })
                 },
             ),
-            trashItem((shell) => ({ itemId: shell.context.asset.itemId })),
-            purgeDrive((shell) => ({ driveId: shell.defaultDriveId })),
+            trashItem({
+                inputs: (shell) => ({ itemId: shell.context.asset.itemId }),
+            }),
+            purgeDrive({
+                inputs: (shell) => ({ driveId: shell.defaultDriveId }),
+            }),
             get({
                 inputs: (shell) => {
                     return { fileId: shell.context.asset.rawId }

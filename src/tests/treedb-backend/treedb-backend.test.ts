@@ -229,27 +229,24 @@ test('happy path folders', (done) => {
                     return shell.context
                 },
             ),
-            queryChildren(
-                (shell) => ({
+            queryChildren({
+                inputs: (shell) => ({
                     parentId: shell.homeFolderId,
                 }),
-                (shell, resp) => {
+                sideEffects: (resp) => {
                     expect(resp.folders).toHaveLength(1)
                     expect(resp.items).toHaveLength(0)
-                    return shell.context
                 },
-            ),
-            queryChildren(
-                (shell) => ({
+            }),
+            queryChildren({
+                inputs: (shell) => ({
                     parentId: shell.context.folder.folderId,
                 }),
-                (shell, resp) => {
-                    // There is the default drive in it
+                sideEffects: (resp) => {
                     expect(resp.folders).toHaveLength(0)
                     expect(resp.items).toHaveLength(0)
-                    return shell.context
                 },
-            ),
+            }),
             getFolderPath(
                 (shell) => ({
                     folderId: shell.context.folder.folderId,
@@ -269,16 +266,15 @@ test('happy path folders', (done) => {
             trashFolder((shell) => ({
                 folderId: shell.context.folder.folderId,
             })),
-            queryChildren(
-                (shell) => ({
+            queryChildren({
+                inputs: (shell) => ({
                     parentId: shell.homeFolderId,
                 }),
-                (shell, resp) => {
+                sideEffects: (resp) => {
                     expect(resp.folders).toHaveLength(0)
                     expect(resp.items).toHaveLength(0)
-                    return shell.context
                 },
-            ),
+            }),
             queryDeleted(
                 (shell) => ({
                     driveId: shell.defaultDriveId,
@@ -289,16 +285,15 @@ test('happy path folders', (done) => {
                     return shell.context
                 },
             ),
-            purgeDrive(
-                (shell) => ({
+            purgeDrive({
+                inputs: (shell) => ({
                     driveId: shell.defaultDriveId,
                 }),
-                (shell, resp) => {
+                sideEffects: (resp) => {
                     expect(resp.foldersCount).toBe(1)
                     expect(resp.itemsCount).toBe(0)
-                    return shell.context
                 },
-            ),
+            }),
         )
         .subscribe(() => {
             done()
@@ -376,11 +371,11 @@ test('happy path items', (done) => {
                     return shell.context
                 },
             ),
-            queryChildren(
-                (shell) => ({
+            queryChildren({
+                inputs: (shell) => ({
                     parentId: shell.homeFolderId,
                 }),
-                (shell, resp) => {
+                sideEffects: (resp, shell) => {
                     expect(resp.folders).toHaveLength(0)
                     expect(resp.items).toHaveLength(1)
                     expectItem(
@@ -388,9 +383,8 @@ test('happy path items', (done) => {
                         shell,
                         shell.context.updatedItemName,
                     )
-                    return shell.context
                 },
-            ),
+            }),
             getPath(
                 (shell) => ({
                     itemId: shell.context.item.itemId,
@@ -417,19 +411,18 @@ test('happy path items', (done) => {
                     return shell.context
                 },
             ),
-            trashItem((shell) => ({
-                itemId: shell.context.item.itemId,
-            })),
-            queryChildren(
-                (shell) => ({
+            trashItem({
+                inputs: (shell) => ({ itemId: shell.context.item.itemId }),
+            }),
+            queryChildren({
+                inputs: (shell) => ({
                     parentId: shell.homeFolderId,
                 }),
-                (shell, resp) => {
+                sideEffects: (resp) => {
                     expect(resp.folders).toHaveLength(0)
                     expect(resp.items).toHaveLength(0)
-                    return shell.context
                 },
-            ),
+            }),
             queryDeleted(
                 (shell) => ({
                     driveId: shell.defaultDriveId,
@@ -440,7 +433,22 @@ test('happy path items', (done) => {
                     return shell.context
                 },
             ),
-            purgeDrive(
+            purgeDrive<Context>({
+                inputs: (shell) => ({ driveId: shell.defaultDriveId }),
+                sideEffects: (resp, shell) => {
+                    expect(resp.foldersCount).toBe(0)
+                    expect(resp.itemsCount).toBe(1)
+                    expect(resp.errorsAssetDeletion).toHaveLength(1)
+                    expect(resp.errorsAssetDeletion[0]).toBe(
+                        shell.context.item.assetId,
+                    )
+                    expect(resp.errorsRawDeletion).toHaveLength(1)
+                    expect(resp.errorsRawDeletion[0]).toBe(
+                        shell.context.item.rawId,
+                    )
+                },
+            }),
+            /*purgeDrive(
                 (shell) => ({
                     driveId: shell.defaultDriveId,
                 }),
@@ -457,7 +465,7 @@ test('happy path items', (done) => {
                     )
                     return shell.context
                 },
-            ),
+            ),*/
         )
         .subscribe(() => {
             done()
@@ -491,16 +499,15 @@ test('happy path move', (done) => {
                 folderId: shell.context.folder.folderId,
                 body: shell.context.item,
             })),
-            queryChildren(
-                (shell) => ({
-                    parentId: shell.context.folder.folderId,
+            queryChildren({
+                inputs: (shell) => ({
+                    parentId: shell.homeFolderId,
                 }),
-                (shell, resp) => {
-                    expect(resp.folders).toHaveLength(0)
-                    expect(resp.items).toHaveLength(1)
-                    return shell.context
+                sideEffects: (resp) => {
+                    expect(resp.folders).toHaveLength(1)
+                    expect(resp.items).toHaveLength(0)
                 },
-            ),
+            }),
             move(
                 (shell) => ({
                     body: {
@@ -514,26 +521,24 @@ test('happy path move', (done) => {
                     return shell.context
                 },
             ),
-            queryChildren(
-                (shell) => ({
+            queryChildren({
+                inputs: (shell) => ({
                     parentId: shell.context.folder.folderId,
                 }),
-                (shell, resp) => {
+                sideEffects: (resp) => {
                     expect(resp.folders).toHaveLength(0)
                     expect(resp.items).toHaveLength(0)
-                    return shell.context
                 },
-            ),
-            queryChildren(
-                (shell) => ({
+            }),
+            queryChildren({
+                inputs: (shell) => ({
                     parentId: shell.homeFolderId,
                 }),
-                (shell, resp) => {
+                sideEffects: (resp) => {
                     expect(resp.folders).toHaveLength(1)
                     expect(resp.items).toHaveLength(1)
-                    return shell.context
                 },
-            ),
+            }),
             createFolder((shell) => ({
                 parentFolderId: shell.homeFolderId,
                 body: shell.context.folder2,
@@ -550,26 +555,24 @@ test('happy path move', (done) => {
                     destinationFolderId: shell.context.folder.folderId,
                 },
             })),
-            queryChildren(
-                (shell: Shell<Context>) => ({
+            queryChildren<Context>({
+                inputs: (shell) => ({
                     parentId: shell.context.folder.folderId,
                 }),
-                (shell, resp) => {
+                sideEffects: (resp) => {
                     expect(resp.folders).toHaveLength(1)
                     expect(resp.items).toHaveLength(0)
-                    return shell.context
                 },
-            ),
-            queryChildren(
-                (shell: Shell<Context>) => ({
+            }),
+            queryChildren<Context>({
+                inputs: (shell) => ({
                     parentId: shell.context.folder2.folderId,
                 }),
-                (shell, resp) => {
+                sideEffects: (resp) => {
                     expect(resp.folders).toHaveLength(0)
                     expect(resp.items).toHaveLength(1)
-                    return shell.context
                 },
-            ),
+            }),
         )
         .subscribe(() => {
             done()
@@ -612,16 +615,15 @@ test('borrow item happy path', (done) => {
                 folderId: shell.context.folder.folderId,
                 body: shell.context.item,
             })),
-            queryChildren(
-                (shell) => ({
+            queryChildren<Context>({
+                inputs: (shell) => ({
                     parentId: shell.context.folder.folderId,
                 }),
-                (shell, resp) => {
+                sideEffects: (resp) => {
                     expect(resp.folders).toHaveLength(0)
                     expect(resp.items).toHaveLength(1)
-                    return shell.context
                 },
-            ),
+            }),
             createAsset({
                 inputs: (shell) => ({
                     body: shell.context.asset,
@@ -636,11 +638,11 @@ test('borrow item happy path', (done) => {
                     destinationFolderId: shell.context.folder.folderId,
                 },
             })),
-            queryChildren(
-                (shell) => ({
+            queryChildren<Context>({
+                inputs: (shell) => ({
                     parentId: shell.context.folder.folderId,
                 }),
-                (shell, resp) => {
+                sideEffects: (resp) => {
                     expect(resp.folders).toHaveLength(0)
                     expect(resp.items).toHaveLength(2)
                     const original = resp.items[0]
@@ -649,9 +651,8 @@ test('borrow item happy path', (done) => {
                     expect(original.borrowed).toBeFalsy()
                     expect(borrowed.borrowed).toBeTruthy()
                     expect(borrowed.assetId == borrowed.itemId).toBeFalsy()
-                    return shell.context
                 },
-            ),
+            }),
             queryItemsByAssetId(
                 (shell) => ({
                     assetId: shell.context.item.assetId,
