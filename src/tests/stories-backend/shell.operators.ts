@@ -22,6 +22,7 @@ import {
     UpdateDocumentBody,
     CreateStoryResponse,
     GetStoryResponse,
+    CreateBody,
 } from '../../lib/stories-backend'
 import { NewAssetResponse } from '../../lib/assets-gateway'
 
@@ -48,8 +49,8 @@ export function createStory<TContext>({
     sideEffects,
 }: {
     inputs: (shell: Shell<TContext>) => {
-        body
-        queryParameters
+        body: CreateBody
+        queryParameters?: { folderId?: string }
     }
     authorizedErrors?: (resp: HTTPError) => boolean
     sideEffects?: (resp, shell: Shell<TContext>) => void
