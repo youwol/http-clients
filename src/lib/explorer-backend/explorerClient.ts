@@ -40,13 +40,16 @@ export class ExplorerClient extends RootRouter {
     constructor({
         headers,
         basePath,
+        hostName,
     }: {
         headers?: { [_key: string]: string }
         basePath?: string
+        hostName?: string
     } = {}) {
         super({
             basePath: basePath || '/api/treedb-backend',
             headers,
+            hostName,
         })
     }
 

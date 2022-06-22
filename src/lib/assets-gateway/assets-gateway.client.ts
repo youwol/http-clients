@@ -24,37 +24,46 @@ export class AssetsGatewayClient extends RootRouter {
 
     constructor({
         headers,
+        hostName,
     }: {
         headers?: { [_key: string]: string }
+        hostName?: string
     } = {}) {
         super({
             basePath: '/api/assets-gateway',
             headers,
+            hostName,
         })
         this.misc = new MiscRouter(this)
         this.cdn = new CdnClient({
             headers,
             basePath: `/api/assets-gateway/cdn-backend`,
+            hostName,
         })
         this.stories = new StoriesClient({
             headers,
             basePath: `/api/assets-gateway/stories-backend`,
+            hostName,
         })
         this.files = new FilesClient({
             headers,
             basePath: `/api/assets-gateway/files-backend`,
+            hostName,
         })
         this.flux = new FluxClient({
             headers,
             basePath: `/api/assets-gateway/flux-backend`,
+            hostName,
         })
         this.explorer = new ExplorerClient({
             headers,
             basePath: `/api/assets-gateway/treedb-backend`,
+            hostName,
         })
         this.assets = new AssetsClient({
             headers,
             basePath: `/api/assets-gateway/assets-backend`,
+            hostName,
         })
     }
 

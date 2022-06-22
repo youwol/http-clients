@@ -23,13 +23,16 @@ export class AssetsClient extends RootRouter {
     constructor({
         headers,
         basePath,
+        hostName,
     }: {
         headers?: { [_key: string]: string }
         basePath?: string
+        hostName?: string
     } = {}) {
         super({
             basePath: basePath || '/api/assets-backend',
             headers,
+            hostName,
         })
     }
 
