@@ -9,6 +9,8 @@ import { uploadAsset, switchToRemoteShell } from './shell'
 import { purgeDrive, queryChildren, trashItem } from '../treedb-backend/shell'
 import { getAsset } from '../assets-backend/shell'
 import { Observable } from 'rxjs'
+import { CreateStoryResponse } from '../../lib/stories-backend'
+import { createStory, getStory } from '../stories-backend/shell.operators'
 
 jest.setTimeout(10 * 1000)
 beforeAll(async (done) => {
@@ -116,6 +118,52 @@ test('upload flux project', (done) => {
                     inputs: (shell) => {
                         return {
                             projectId: shell.context.asset.rawId,
+                        }
+                    },
+                    sideEffects: (resp) => {
+                        expect(resp).toBeTruthy()
+                    },
+                }),
+            }),
+        )
+        .subscribe(() => {
+            done()
+        })
+})
+
+test('upload story', (done) => {
+    class Context implements UploadContext {
+        public readonly storyName = 'test-upload-story (auto-generated)'
+        asset: NewAssetResponse<CreateStoryResponse>
+
+        constructor(
+            params: { asset?: NewAssetResponse<CreateStoryResponse> } = {},
+        ) {
+            Object.assign(this, params)
+        }
+    }
+    shell$(new Context())
+        .pipe(
+            uploadTest({
+                createOperator: createStory<Context>({
+                    inputs: (shell) => ({
+                        queryParameters: { folderId: shell.homeFolderId },
+                        body: { title: shell.context.storyName },
+                    }),
+                    newContext: (
+                        shell,
+                        resp: NewAssetResponse<CreateStoryResponse>,
+                    ) => {
+                        return new Context({
+                            ...shell.context,
+                            asset: resp,
+                        })
+                    },
+                }),
+                getRawOperator: getStory<Context>({
+                    inputs: (shell) => {
+                        return {
+                            storyId: shell.context.asset.rawId,
                         }
                     },
                     sideEffects: (resp) => {
