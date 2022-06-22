@@ -1,13 +1,12 @@
 import '../mock-requests'
 import { HTTPError, raiseHTTPErrors } from '../../lib'
 import { NewAssetResponse } from '../../lib/assets-gateway'
-import { map, mergeMap, tap } from 'rxjs/operators'
-import { Observable, OperatorFunction } from 'rxjs'
+import { mergeMap } from 'rxjs/operators'
+import { Observable } from 'rxjs'
 import { readFileSync } from 'fs'
 import {
     expectAssetAttributes,
     expectAttributes,
-    ManagedError,
     mapToShell,
     newShellFromContext,
     Shell,
@@ -20,76 +19,79 @@ import {
     GetInfoResponse,
 } from '../../lib/files-backend'
 
-export function upload<T>(
-    input: (shell: Shell<T>) => {
-        fileId: string
-        fileName: string
-        path: string
-    },
-    cb: (shell: Shell<T>, resp: NewAssetResponse<UploadResponse>) => T,
-) {
-    return (source$: Observable<Shell<T>>) => {
-        return source$.pipe(
-            mergeMap((shell) => {
-                const { fileId, fileName, path } = input(shell)
-                const buffer = readFileSync(path)
-                const blob = new Blob([Uint8Array.from(buffer).buffer])
-                return shell.assetsGtw.files
-                    .upload$({
-                        body: { fileId, fileName, content: blob },
-                        queryParameters: { folderId: shell.homeFolderId },
-                    })
-                    .pipe(
-                        raiseHTTPErrors(),
-                        tap((resp: NewAssetResponse<UploadResponse>) => {
-                            expectAssetAttributes(resp)
-                            expectAttributes(resp.rawResponse, [
-                                'fileId',
-                                'fileName',
-                                'contentType',
-                                'contentEncoding',
-                            ])
-                        }),
-                        mapToShell(shell, cb),
-                    )
-            }),
-        )
+export function upload<TContext>({
+    inputs,
+    authorizedErrors,
+    newContext,
+    sideEffects,
+}: {
+    inputs: (shell: Shell<TContext>) => {
+        body: {
+            fileId?: string
+            fileName: string
+            path: string
+        }
+        queryParameters: { folderId: string }
     }
+    authorizedErrors?: (resp: HTTPError) => boolean
+    sideEffects?: (resp, shell: Shell<TContext>) => void
+    newContext?: (
+        shell: Shell<TContext>,
+        resp: NewAssetResponse<UploadResponse> | UploadResponse,
+    ) => TContext
+}) {
+    return wrap<
+        Shell<TContext>,
+        NewAssetResponse<UploadResponse> | UploadResponse,
+        TContext
+    >({
+        observable: (shell: Shell<TContext>) => {
+            const buffer = readFileSync(inputs(shell).body.path)
+            const blob = new Blob([Uint8Array.from(buffer).buffer])
+            return shell.assetsGtw.files.upload$({
+                body: { ...inputs(shell).body, content: blob },
+                queryParameters: inputs(shell).queryParameters,
+            })
+        },
+        authorizedErrors,
+        sideEffects: (resp: NewAssetResponse<UploadResponse>, shell) => {
+            expectAssetAttributes(resp)
+            expectAttributes(resp.rawResponse, [
+                'fileId',
+                'fileName',
+                'contentType',
+                'contentEncoding',
+            ])
+            sideEffects && sideEffects(resp, shell)
+        },
+        newShell: (shell, resp) => newShellFromContext(shell, resp, newContext),
+    })
 }
 
-export function getInfo<T>(
-    input: (shell: Shell<T>) => { fileId: string },
-    cb: (shell: Shell<T>, resp: GetInfoResponse) => T,
-    onError: OperatorFunction<
-        GetInfoResponse | HTTPError,
-        GetInfoResponse | ManagedError
-    > = raiseHTTPErrors(),
-) {
-    return (source$: Observable<Shell<T>>) => {
-        return source$.pipe(
-            mergeMap((shell) => {
-                const { fileId } = input(shell)
-                return shell.assetsGtw.files.getInfo$({ fileId }).pipe(
-                    onError,
-                    map((resp) => {
-                        if (resp == 'ManagedError') {
-                            return shell
-                        }
-                        expectAttributes(resp, ['metadata'])
-                        expectAttributes(resp.metadata, [
-                            'contentType',
-                            'contentEncoding',
-                        ])
-                        const context = cb(shell, resp)
-                        return new Shell({
-                            ...shell,
-                            context,
-                        })
-                    }),
-                )
-            }),
-        )
+export function getInfo<TContext>({
+    inputs,
+    authorizedErrors,
+    newContext,
+    sideEffects,
+}: {
+    inputs: (shell: Shell<TContext>) => {
+        fileId: string
     }
+    authorizedErrors?: (resp: HTTPError) => boolean
+    sideEffects?: (resp, shell: Shell<TContext>) => void
+    newContext?: (shell: Shell<TContext>, resp: GetInfoResponse) => TContext
+}) {
+    return wrap<Shell<TContext>, GetInfoResponse, TContext>({
+        observable: (shell: Shell<TContext>) =>
+            shell.assetsGtw.files.getInfo$(inputs(shell)),
+        authorizedErrors,
+        sideEffects: (resp: GetInfoResponse, shell) => {
+            expectAttributes(resp, ['metadata'])
+            expectAttributes(resp.metadata, ['contentType', 'contentEncoding'])
+            sideEffects && sideEffects(resp, shell)
+        },
+        newShell: (shell, resp) => newShellFromContext(shell, resp, newContext),
+    })
 }
 
 export function updateMetadata<T>(

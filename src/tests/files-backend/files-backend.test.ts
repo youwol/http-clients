@@ -9,14 +9,13 @@ import { get, getInfo, remove, updateMetadata, upload } from './shell'
 import { readFileSync } from 'fs'
 import { from } from 'rxjs'
 import { mapTo, mergeMap, reduce, take, tap } from 'rxjs/operators'
-import { onHTTPErrors } from '../../lib'
 import { GetInfoResponse } from '../../lib/files-backend'
 import { GetAssetResponse } from '../../lib/assets-backend'
 import { setup$ } from '../py-youwol/utils'
 import { NewAssetResponse } from '../../lib/assets-gateway'
 import { purgeDrive, trashItem } from '../treedb-backend/shell'
 import { getAsset } from '../assets-backend/shell'
-import { UploadResponse } from '../../lib/flux-backend'
+import { UploadResponse } from '../../lib/files-backend'
 
 beforeAll(async (done) => {
     setup$({
@@ -71,13 +70,16 @@ test('upload files, get stats & get content', (done) => {
             mergeMap((file) => {
                 return shell$<TestData>({ fileName: file })
             }),
-            upload(
-                (shell) => ({
-                    fileName: shell.context.fileName,
-                    fileId: shell.context.fileName,
-                    path: path.resolve(testDataDir, shell.context.fileName),
+            upload<TestData>({
+                inputs: (shell) => ({
+                    body: {
+                        fileName: shell.context.fileName,
+                        fileId: shell.context.fileName,
+                        path: path.resolve(testDataDir, shell.context.fileName),
+                    },
+                    queryParameters: { folderId: shell.homeFolderId },
                 }),
-                (shell, resp) => {
+                sideEffects: (resp, shell) => {
                     expect(resp.name).toBe(shell.context.fileName)
                     expect(resp.rawResponse.fileName).toBe(
                         shell.context.fileName,
@@ -88,21 +90,26 @@ test('upload files, get stats & get content', (done) => {
                     expect(resp.rawResponse.contentEncoding).toBe(
                         expectedContentEncodings[resp.name],
                     )
-                    return new TestData({ ...shell.context, asset: resp })
                 },
-            ),
-            getInfo(
-                (shell) => ({ fileId: shell.context.asset.rawId }),
-                (shell, resp) => {
+                newContext: (shell, resp: NewAssetResponse<UploadResponse>) => {
+                    return new TestData({
+                        ...shell.context,
+                        asset: resp as NewAssetResponse<UploadResponse>,
+                        thumbnailUrl: resp.images[0],
+                    })
+                },
+            }),
+            getInfo({
+                inputs: (shell) => ({ fileId: shell.context.asset.rawId }),
+                sideEffects: (resp, shell) => {
                     expect(resp.metadata.contentType).toBe(
                         expectedContentTypes[shell.context.fileName],
                     )
                     expect(resp.metadata.contentEncoding).toBe(
                         expectedContentEncodings[shell.context.fileName],
                     )
-                    return new TestData(shell.context)
                 },
-            ),
+            }),
             get({
                 inputs: (shell) => {
                     return { fileId: shell.context.asset.rawId }
@@ -143,21 +150,26 @@ test('upload image file, check thumbnails & delete', (done) => {
 
     shell$<TestData>({ fileName: 'logo_YouWol_2020.png' })
         .pipe(
-            upload(
-                (shell) => ({
-                    fileName: shell.context.fileName,
-                    fileId: shell.context.fileName,
-                    path: path.resolve(testDataDir, shell.context.fileName),
+            upload<TestData>({
+                inputs: (shell) => ({
+                    body: {
+                        fileName: shell.context.fileName,
+                        fileId: shell.context.fileName,
+                        path: path.resolve(testDataDir, shell.context.fileName),
+                    },
+                    queryParameters: { folderId: shell.homeFolderId },
                 }),
-                (shell, resp) => {
+                sideEffects: (resp) => {
                     expect(resp.images).toHaveLength(1)
+                },
+                newContext: (shell, resp: NewAssetResponse<UploadResponse>) => {
                     return new TestData({
                         ...shell.context,
-                        asset: resp,
+                        asset: resp as NewAssetResponse<UploadResponse>,
                         thumbnailUrl: resp.images[0],
                     })
                 },
-            ),
+            }),
             mergeMap((shell) => {
                 const request = new Request(
                     `${getPyYouwolBasePath()}${shell.context.thumbnailUrl}`,
@@ -181,17 +193,10 @@ test('upload image file, check thumbnails & delete', (done) => {
                     return shell.context
                 },
             ),
-            getInfo(
-                (shell) => ({ fileId: shell.context.asset.rawId }),
-                (shell) => {
-                    expect(false).toBeTruthy()
-                    return shell.context
-                },
-                onHTTPErrors((resp) => {
-                    expect(resp.status).toBe(404)
-                    return 'ManagedError'
-                }),
-            ),
+            getInfo({
+                inputs: (shell) => ({ fileId: shell.context.asset.rawId }),
+                authorizedErrors: (resp) => resp.status == 404,
+            }),
         )
         .subscribe(() => {
             done()
@@ -203,19 +208,22 @@ test('upload file, update metadata', (done) => {
 
     shell$<TestData>({ fileName: 'package.json' })
         .pipe(
-            upload(
-                (shell) => ({
-                    fileName: shell.context.fileName,
-                    fileId: shell.context.fileName,
-                    path: path.resolve(testDataDir, shell.context.fileName),
+            upload<TestData>({
+                inputs: (shell) => ({
+                    body: {
+                        fileName: shell.context.fileName,
+                        fileId: shell.context.fileName,
+                        path: path.resolve(testDataDir, shell.context.fileName),
+                    },
+                    queryParameters: { folderId: shell.homeFolderId },
                 }),
-                (shell, resp) => {
+                newContext: (shell, resp: NewAssetResponse<UploadResponse>) => {
                     return new TestData({
                         ...shell.context,
                         asset: resp,
                     })
                 },
-            ),
+            }),
             updateMetadata(
                 (shell) => ({
                     fileId: shell.context.asset.rawId,
@@ -228,17 +236,16 @@ test('upload file, update metadata', (done) => {
                     return shell.context
                 },
             ),
-            getInfo(
-                (shell) => ({ fileId: shell.context.asset.rawId }),
-                (shell, resp) => {
+            getInfo({
+                inputs: (shell) => ({ fileId: shell.context.asset.rawId }),
+                sideEffects: (resp, shell) => {
                     expect(resp.metadata.fileName).toBe(
                         shell.context.asset.name,
                     )
                     expect(resp.metadata.contentType).toBe('tutu')
                     expect(resp.metadata.contentEncoding).toBe('tata')
-                    return shell.context
                 },
-            ),
+            }),
         )
         .subscribe(() => {
             done()
@@ -250,19 +257,22 @@ test('upload data, delete from explorer (purge)', (done) => {
 
     shell$<TestData>({ fileName: 'package.json' })
         .pipe(
-            upload(
-                (shell) => ({
-                    fileName: shell.context.fileName,
-                    fileId: shell.context.fileName,
-                    path: path.resolve(testDataDir, shell.context.fileName),
+            upload<TestData>({
+                inputs: (shell) => ({
+                    body: {
+                        fileName: shell.context.fileName,
+                        fileId: shell.context.fileName,
+                        path: path.resolve(testDataDir, shell.context.fileName),
+                    },
+                    queryParameters: { folderId: shell.homeFolderId },
                 }),
-                (shell, resp) => {
+                newContext: (shell, resp: NewAssetResponse<UploadResponse>) => {
                     return new TestData({
                         ...shell.context,
                         asset: resp,
                     })
                 },
-            ),
+            }),
             trashItem({
                 inputs: (shell) => ({ itemId: shell.context.asset.itemId }),
             }),
