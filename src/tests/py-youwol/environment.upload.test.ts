@@ -1,4 +1,4 @@
-import { shell$ } from '../common'
+import { Shell, shell$ } from '../common'
 /* eslint-disable jest/no-done-callback -- eslint-comment Find a good way to work with rxjs in jest */
 import '../mock-requests'
 import { setup$ } from './utils'
@@ -8,6 +8,7 @@ import { NewProjectResponse } from '../../lib/flux-backend'
 import { uploadAsset, switchToRemoteShell } from './shell'
 import { purgeDrive, queryChildren, trashItem } from '../treedb-backend/shell'
 import { getAsset } from '../assets-backend/shell'
+import { Observable } from 'rxjs'
 
 jest.setTimeout(10 * 1000)
 beforeAll(async (done) => {
@@ -19,42 +20,23 @@ beforeAll(async (done) => {
     })
 })
 
-test('upload flux project', (done) => {
-    class Context {
-        public readonly projectName =
-            'test-upload-flux-project (auto-generated)'
-        asset: NewAssetResponse<NewProjectResponse>
-        projectId: string
-        assetId: string
-        constructor(
-            params: { asset?: NewAssetResponse<NewProjectResponse> } = {},
-        ) {
-            Object.assign(this, params)
-        }
-    }
-    shell$(new Context())
-        .pipe(
-            newProject({
-                inputs: (shell) => ({
-                    queryParameters: { folderId: shell.homeFolderId },
-                    body: { name: shell.context.projectName },
-                }),
-                newContext: (
-                    shell,
-                    resp: NewAssetResponse<NewProjectResponse>,
-                ) => {
-                    return new Context({
-                        ...shell.context,
-                        asset: resp,
-                    })
-                },
-            }),
-            uploadAsset({
+interface UploadContext {
+    asset: NewAssetResponse<unknown>
+}
+
+function uploadTest<TContext extends UploadContext>({
+    createOperator,
+    getRawOperator,
+}) {
+    return (source$: Observable<Shell<TContext>>) => {
+        return source$.pipe(
+            createOperator,
+            uploadAsset<TContext>({
                 inputs: (shell) => ({
                     assetId: shell.context.asset.assetId,
                 }),
             }),
-            queryChildren<Context>({
+            queryChildren<TContext>({
                 inputs: (shell) => ({
                     parentId: shell.homeFolderId,
                 }),
@@ -75,23 +57,14 @@ test('upload flux project', (done) => {
                     }
                 },
                 sideEffects: (resp, shell) => {
-                    expect(resp.name).toBe(shell.context.projectName)
+                    expect(resp.name).toBe(shell.context.asset.name)
                 },
             }),
-            getProject({
-                inputs: (shell) => {
-                    return {
-                        projectId: shell.context.asset.rawId,
-                    }
-                },
-                sideEffects: (resp) => {
-                    expect(resp).toBeTruthy()
-                },
-            }),
+            getRawOperator,
             trashItem({
                 inputs: (shell) => ({ itemId: shell.context.asset.itemId }),
             }),
-            queryChildren<Context>({
+            queryChildren<TContext>({
                 inputs: (shell) => ({
                     parentId: shell.homeFolderId,
                 }),
@@ -104,6 +77,51 @@ test('upload flux project', (done) => {
             }),
             purgeDrive({
                 inputs: (shell) => ({ driveId: shell.defaultDriveId }),
+            }),
+        )
+    }
+}
+
+test('upload flux project', (done) => {
+    class Context implements UploadContext {
+        public readonly projectName =
+            'test-upload-flux-project (auto-generated)'
+        asset: NewAssetResponse<NewProjectResponse>
+
+        constructor(
+            params: { asset?: NewAssetResponse<NewProjectResponse> } = {},
+        ) {
+            Object.assign(this, params)
+        }
+    }
+    shell$(new Context())
+        .pipe(
+            uploadTest({
+                createOperator: newProject<Context>({
+                    inputs: (shell) => ({
+                        queryParameters: { folderId: shell.homeFolderId },
+                        body: { name: shell.context.projectName },
+                    }),
+                    newContext: (
+                        shell,
+                        resp: NewAssetResponse<NewProjectResponse>,
+                    ) => {
+                        return new Context({
+                            ...shell.context,
+                            asset: resp,
+                        })
+                    },
+                }),
+                getRawOperator: getProject<Context>({
+                    inputs: (shell) => {
+                        return {
+                            projectId: shell.context.asset.rawId,
+                        }
+                    },
+                    sideEffects: (resp) => {
+                        expect(resp).toBeTruthy()
+                    },
+                }),
             }),
         )
         .subscribe(() => {
