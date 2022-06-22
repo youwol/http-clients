@@ -11,6 +11,9 @@ import { getAsset } from '../assets-backend/shell'
 import { Observable } from 'rxjs'
 import { CreateStoryResponse } from '../../lib/stories-backend'
 import { createStory, getStory } from '../stories-backend/shell.operators'
+import { getInfo, upload } from '../files-backend/shell'
+import path from 'path'
+import { UploadResponse } from '../../lib/files-backend'
 
 jest.setTimeout(10 * 1000)
 beforeAll(async (done) => {
@@ -164,6 +167,61 @@ test('upload story', (done) => {
                     inputs: (shell) => {
                         return {
                             storyId: shell.context.asset.rawId,
+                        }
+                    },
+                    sideEffects: (resp) => {
+                        expect(resp).toBeTruthy()
+                    },
+                }),
+            }),
+        )
+        .subscribe(() => {
+            done()
+        })
+})
+
+test('upload data', (done) => {
+    class Context implements UploadContext {
+        public readonly fileName = 'package.json'
+        public readonly folder = __dirname + '/../files-backend/test-data'
+        public readonly targetName = 'test-upload-data (auto-generated)'
+        public readonly asset: NewAssetResponse<UploadResponse>
+
+        constructor(params: { asset?: NewAssetResponse<UploadResponse> } = {}) {
+            Object.assign(this, params)
+        }
+    }
+
+    shell$(new Context())
+        .pipe(
+            uploadTest<Context>({
+                createOperator: upload<Context>({
+                    inputs: (shell) => {
+                        return {
+                            body: {
+                                fileName: shell.context.targetName,
+                                path: path.resolve(
+                                    shell.context.folder,
+                                    shell.context.fileName,
+                                ),
+                            },
+                            queryParameters: { folderId: shell.homeFolderId },
+                        }
+                    },
+                    newContext: (
+                        shell,
+                        resp: NewAssetResponse<UploadResponse>,
+                    ) => {
+                        return new Context({
+                            ...shell.context,
+                            asset: resp,
+                        })
+                    },
+                }),
+                getRawOperator: getInfo<Context>({
+                    inputs: (shell) => {
+                        return {
+                            fileId: shell.context.asset.rawId,
                         }
                     },
                     sideEffects: (resp) => {
