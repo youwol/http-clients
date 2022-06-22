@@ -5,6 +5,7 @@ import { ContextMessage, HealthzResponse } from './interfaces'
 import { AdminRouter } from './routers/admin.router'
 import { take } from 'rxjs/operators'
 import { WebSocketResponse$ } from '../ws-utils'
+import { AuthorizationRouter } from './routers'
 
 export class WebSocket$<TMessage> {
     public readonly message$: Subject<TMessage>
@@ -68,6 +69,7 @@ export class WsRouter {
 
 export class PyYouwolClient extends RootRouter {
     public readonly admin: AdminRouter
+    public readonly authorization: AuthorizationRouter
 
     static ws = new WsRouter()
 
@@ -81,6 +83,7 @@ export class PyYouwolClient extends RootRouter {
             headers,
         })
         this.admin = new AdminRouter(this, PyYouwolClient.ws)
+        this.authorization = new AuthorizationRouter(this)
     }
 
     /**
