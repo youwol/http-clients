@@ -54,7 +54,7 @@ test('pyYouwol.admin.local-cdn.collectUpdates - empty', (done) => {
 
 test('install & pyYouwol.admin.local-cdn.collectUpdates', (done) => {
     Client.HostName = getPyYouwolBasePath()
-
+    const httpClientsPackageId = window.btoa('@youwol/http-clients')
     from(
         install({
             modules: ['@youwol/http-clients'],
@@ -123,11 +123,11 @@ test('install & pyYouwol.admin.local-cdn.collectUpdates', (done) => {
                 return combineLatest([
                     pyYouwol.admin.localCdn
                         .getPackage$({
-                            packageId: 'QHlvdXdvbC9odHRwLWNsaWVudHM=',
+                            packageId: httpClientsPackageId,
                         })
                         .pipe(raiseHTTPErrors()),
                     pyYouwol.admin.localCdn.webSocket.package$({
-                        packageId: 'QHlvdXdvbC9odHRwLWNsaWVudHM=',
+                        packageId: httpClientsPackageId,
                     }),
                 ])
             }),
