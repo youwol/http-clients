@@ -32,11 +32,19 @@ import {
     updateItem,
 } from './shell'
 import {
+    BorrowResponse,
+    CreateDriveResponse,
     FolderBase,
     GetDriveResponse,
     ItemBase,
 } from '../../lib/explorer-backend'
-import { createAsset, getAsset } from '../assets-backend/shell'
+import {
+    accessInfo,
+    createAsset,
+    getAccessPolicy,
+    getAsset,
+    upsertAccessPolicy,
+} from '../assets-backend/shell'
 import { setup$ } from '../py-youwol/utils'
 
 beforeEach(async (done) => {
@@ -596,13 +604,27 @@ test('borrow item happy path', (done) => {
             tags: [],
             images: [],
             thumbnails: [],
-            groupId: '',
         }
         public readonly folder = {
             folderId: 'test-folder-id',
             name: 'test folder',
         }
         public readonly updatedName: string = 'renamed test asset'
+
+        public readonly groupId: string
+
+        public readonly ywUserGroupId = window.btoa('/youwol-users')
+        public readonly borrowedYwUsers: BorrowResponse
+        public readonly ywUsersDrive: CreateDriveResponse
+        constructor(
+            params: {
+                groupId?: string
+                borrowedYwUsers?: BorrowResponse
+                ywUsersDrive?: CreateDriveResponse
+            } = {},
+        ) {
+            Object.assign(this, params)
+        }
     }
     shell$<Context>(new Context())
         .pipe(
@@ -691,20 +713,138 @@ test('borrow item happy path', (done) => {
                     expect(response.name).toBe(shell.context.updatedName)
                 },
             }),
-        )
-        .subscribe(() => {
-            done()
-        })
-})
-
-test('default drive', (done) => {
-    class Context {}
-    shell$<Context>(new Context())
-        .pipe(
-            getDefaultUserDrive(),
-            getDefaultDrive((shell) => ({
-                groupId: shell.privateGroupId,
-            })),
+            upsertAccessPolicy<Context>({
+                inputs: (shell) => {
+                    return {
+                        assetId: shell.context.asset.assetId,
+                        groupId: '*',
+                        body: {
+                            read: 'forbidden',
+                            share: 'authorized',
+                        },
+                    }
+                },
+            }),
+            getAccessPolicy<Context>({
+                inputs: (shell) => {
+                    return {
+                        assetId: shell.context.asset.assetId,
+                        groupId: shell.context.groupId,
+                    }
+                },
+                sideEffects: (resp) => {
+                    expect(resp.read).toBe('owning')
+                },
+            }),
+            accessInfo<Context>({
+                inputs: (shell) => {
+                    return {
+                        assetId: shell.context.asset.assetId,
+                    }
+                },
+                sideEffects: (resp) => {
+                    expect(resp.ownerInfo.exposingGroups).toHaveLength(0)
+                    expect(resp.ownerInfo.defaultAccess.read).toBe('forbidden')
+                    expect(resp.ownerInfo.defaultAccess.share).toBe(
+                        'authorized',
+                    )
+                },
+            }),
+            // Make sure borrowing in another group create required access policies
+            createDrive<Context>({
+                inputs: (shell) => ({
+                    groupId: shell.context.ywUserGroupId,
+                    body: {
+                        name: 'drive youwol-user',
+                    },
+                }),
+                newContext: (shell, resp) => {
+                    return new Context({ ...shell.context, ywUsersDrive: resp })
+                },
+            }),
+            borrow<Context>({
+                inputs: (shell) => {
+                    return {
+                        itemId: shell.context.item.itemId,
+                        body: {
+                            destinationFolderId:
+                                shell.context.ywUsersDrive.driveId,
+                        },
+                    }
+                },
+                newContext: (shell, resp) => {
+                    return new Context({
+                        ...shell.context,
+                        borrowedYwUsers: resp,
+                    })
+                },
+            }),
+            getAccessPolicy<Context>({
+                inputs: (shell) => {
+                    return {
+                        assetId: shell.context.asset.assetId,
+                        groupId: shell.context.ywUserGroupId,
+                    }
+                },
+                sideEffects: (resp) => {
+                    expect(resp.read).toBe('authorized')
+                    expect(resp.share).toBe('authorized')
+                },
+            }),
+            accessInfo<Context>({
+                inputs: (shell) => {
+                    return {
+                        assetId: shell.context.asset.assetId,
+                    }
+                },
+                sideEffects: (resp) => {
+                    expect(resp.ownerInfo.exposingGroups).toHaveLength(1)
+                    expect(resp.ownerInfo.exposingGroups[0].name).toBe(
+                        '/youwol-users',
+                    )
+                    expect(resp.ownerInfo.defaultAccess.read).toBe('forbidden')
+                    expect(resp.ownerInfo.defaultAccess.share).toBe(
+                        'authorized',
+                    )
+                },
+            }),
+            trashItem<Context>({
+                inputs: (shell) => ({
+                    itemId: shell.context.borrowedYwUsers.itemId,
+                }),
+                sideEffects: (resp) => {
+                    expect(resp).toBeTruthy()
+                },
+            }),
+            purgeDrive<Context>({
+                inputs: (shell) => {
+                    return {
+                        driveId: shell.context.ywUsersDrive.driveId,
+                    }
+                },
+            }),
+            getAccessPolicy<Context>({
+                inputs: (shell) => {
+                    return {
+                        assetId: shell.context.asset.assetId,
+                        groupId: shell.context.ywUserGroupId,
+                    }
+                },
+                sideEffects: (resp) => {
+                    expect(resp.read).toBe('forbidden')
+                    expect(resp.share).toBe('authorized')
+                },
+            }),
+            accessInfo<Context>({
+                inputs: (shell) => {
+                    return {
+                        assetId: shell.context.asset.assetId,
+                    }
+                },
+                sideEffects: (resp) => {
+                    expect(resp.ownerInfo.exposingGroups).toHaveLength(0)
+                },
+            }),
         )
         .subscribe(() => {
             done()
