@@ -37,6 +37,7 @@ import {
     PostBorrowBody,
     TrashItemResponse,
     PurgeDriveResponse,
+    BorrowResponse,
 } from '../../lib/explorer-backend'
 import { AssetsGtwPurgeResponse } from '../../lib/assets-gateway'
 export function expectDrive(drive: unknown) {
@@ -104,26 +105,30 @@ export function healthz<T>() {
     }
 }
 
-export function createDrive<T>(
-    input: (shell: Shell<T>) => {
+export function createDrive<TContext>({
+    inputs,
+    authorizedErrors,
+    newContext,
+    sideEffects,
+}: {
+    inputs: (shell: Shell<TContext>) => {
         groupId: string
         body: CreateDriveBody
-    },
-    cb?: (shell: Shell<T>, resp: CreateDriveResponse) => T,
-) {
-    return (source$: Observable<Shell<T>>) => {
-        return source$.pipe(
-            mergeMap((shell) => {
-                return shell.assetsGtw.explorer.createDrive$(input(shell)).pipe(
-                    raiseHTTPErrors(),
-                    tap((resp) => {
-                        expectDrive(resp)
-                    }),
-                    mapToShell(shell, cb),
-                )
-            }),
-        )
     }
+    authorizedErrors?: (resp: HTTPError) => boolean
+    sideEffects?: (resp, shell: Shell<TContext>) => void
+    newContext?: (shell: Shell<TContext>, resp: CreateDriveResponse) => TContext
+}) {
+    return wrap<Shell<TContext>, CreateDriveResponse, TContext>({
+        observable: (shell: Shell<TContext>) =>
+            shell.assetsGtw.explorer.createDrive$(inputs(shell)),
+        authorizedErrors,
+        sideEffects: (resp, shell) => {
+            expectDrive(resp)
+            sideEffects && sideEffects(resp, shell)
+        },
+        newShell: (shell, resp) => newShellFromContext(shell, resp, newContext),
+    })
 }
 
 export function queryDrives<T>(
@@ -303,26 +308,30 @@ export function getFolder<T>(
     }
 }
 
-export function createItem<T>(
-    input: (shell: Shell<T>) => {
+export function createItem<TContext>({
+    inputs,
+    authorizedErrors,
+    newContext,
+    sideEffects,
+}: {
+    inputs: (shell: Shell<TContext>) => {
         folderId: string
         body: CreateItemBody
-    },
-    cb?: (shell: Shell<T>, resp: CreateItemResponse) => T,
-) {
-    return (source$: Observable<Shell<T>>) => {
-        return source$.pipe(
-            mergeMap((shell) => {
-                return shell.assetsGtw.explorer.createItem$(input(shell)).pipe(
-                    raiseHTTPErrors(),
-                    tap((resp) => {
-                        expectItem(resp)
-                    }),
-                    mapToShell(shell, cb),
-                )
-            }),
-        )
     }
+    authorizedErrors?: (resp: HTTPError) => boolean
+    sideEffects?: (resp, shell: Shell<TContext>) => void
+    newContext?: (shell: Shell<TContext>, resp: CreateItemResponse) => TContext
+}) {
+    return wrap<Shell<TContext>, CreateItemResponse, TContext>({
+        observable: (shell: Shell<TContext>) =>
+            shell.assetsGtw.explorer.createItem$(inputs(shell)),
+        authorizedErrors,
+        sideEffects: (resp, shell) => {
+            expectItem(resp)
+            sideEffects && sideEffects(resp, shell)
+        },
+        newShell: (shell, resp) => newShellFromContext(shell, resp, newContext),
+    })
 }
 
 export function updateItem<T>(
@@ -347,25 +356,29 @@ export function updateItem<T>(
     }
 }
 
-export function getItem<T>(
-    input: (shell: Shell<T>) => {
+export function getItem<TContext>({
+    inputs,
+    authorizedErrors,
+    newContext,
+    sideEffects,
+}: {
+    inputs: (shell: Shell<TContext>) => {
         itemId: string
-    },
-    cb?: (shell: Shell<T>, resp: GetItemResponse) => T,
-) {
-    return (source$: Observable<Shell<T>>) => {
-        return source$.pipe(
-            mergeMap((shell) => {
-                return shell.assetsGtw.explorer.getItem$(input(shell)).pipe(
-                    raiseHTTPErrors(),
-                    tap((resp) => {
-                        expectItem(resp)
-                    }),
-                    mapToShell(shell, cb),
-                )
-            }),
-        )
     }
+    authorizedErrors?: (resp: HTTPError) => boolean
+    sideEffects?: (resp, shell: Shell<TContext>) => void
+    newContext?: (shell: Shell<TContext>, resp: GetItemResponse) => TContext
+}) {
+    return wrap<Shell<TContext>, GetItemResponse, TContext>({
+        observable: (shell: Shell<TContext>) =>
+            shell.assetsGtw.explorer.getItem$(inputs(shell)),
+        authorizedErrors,
+        sideEffects: (resp, shell) => {
+            expectItem(resp)
+            sideEffects && sideEffects(resp, shell)
+        },
+        newShell: (shell, resp) => newShellFromContext(shell, resp, newContext),
+    })
 }
 
 export function queryItemsByAssetId<T>(
@@ -459,27 +472,30 @@ export function move<T>(
     }
 }
 
-export function borrow<T>(
-    input: (shell: Shell<T>) => {
+export function borrow<TContext>({
+    inputs,
+    authorizedErrors,
+    newContext,
+    sideEffects,
+}: {
+    inputs: (shell: Shell<TContext>) => {
         itemId: string
         body: PostBorrowBody
-    },
-    cb?: (shell: Shell<T>, resp: MoveResponse) => T,
-) {
-    return (source$: Observable<Shell<T>>) => {
-        return source$.pipe(
-            mergeMap((shell) => {
-                return shell.assetsGtw.explorer.borrow$(input(shell)).pipe(
-                    raiseHTTPErrors(),
-                    tap((resp) => {
-                        expectItem(resp)
-                        expect(resp.borrowed).toBeTruthy()
-                    }),
-                    mapToShell(shell, cb),
-                )
-            }),
-        )
     }
+    authorizedErrors?: (resp: HTTPError) => boolean
+    sideEffects?: (resp, shell: Shell<TContext>) => void
+    newContext?: (shell: Shell<TContext>, resp: BorrowResponse) => TContext
+}) {
+    return wrap<Shell<TContext>, BorrowResponse, TContext>({
+        observable: (shell: Shell<TContext>) =>
+            shell.assetsGtw.explorer.borrow$(inputs(shell)),
+        authorizedErrors,
+        sideEffects: (resp, shell) => {
+            expectItem(resp)
+            sideEffects && sideEffects(resp, shell)
+        },
+        newShell: (shell, resp) => newShellFromContext(shell, resp, newContext),
+    })
 }
 
 export function getEntity<T>(

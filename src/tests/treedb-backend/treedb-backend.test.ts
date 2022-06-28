@@ -80,16 +80,15 @@ test('happy path drives', (done) => {
 
     shell$<Context>(new Context())
         .pipe(
-            createDrive(
-                (shell) => ({
+            createDrive({
+                inputs: (shell) => ({
                     groupId: shell.privateGroupId,
                     body: shell.context.drive,
                 }),
-                (shell, resp) => {
+                sideEffects: (resp, shell) => {
                     expectDrive(resp, shell, shell.context.drive.name)
-                    return shell.context
                 },
-            ),
+            }),
             updateDrive(
                 (shell) => ({
                     driveId: shell.context.drive.driveId,
@@ -326,16 +325,15 @@ test('happy path items', (done) => {
     }
     shell$<Context>(new Context())
         .pipe(
-            createItem(
-                (shell) => ({
+            createItem({
+                inputs: (shell) => ({
                     folderId: shell.homeFolderId,
                     body: shell.context.item,
                 }),
-                (shell, resp) => {
+                sideEffects: (resp, shell) => {
                     expectItem(resp, shell, shell.context.item.name)
-                    return shell.context
                 },
-            ),
+            }),
             updateItem(
                 (shell) => ({
                     itemId: shell.context.item.itemId,
@@ -348,15 +346,14 @@ test('happy path items', (done) => {
                     return shell.context
                 },
             ),
-            getItem(
-                (shell) => ({
+            getItem({
+                inputs: (shell) => ({
                     itemId: shell.context.item.itemId,
                 }),
-                (shell, resp) => {
+                sideEffects: (resp, shell) => {
                     expectItem(resp, shell, shell.context.updatedItemName)
-                    return shell.context
                 },
-            ),
+            }),
             getEntity(
                 (shell) => ({
                     entityId: shell.context.item.itemId,
@@ -495,10 +492,12 @@ test('happy path move', (done) => {
                 parentFolderId: shell.homeFolderId,
                 body: shell.context.folder,
             })),
-            createItem((shell) => ({
-                folderId: shell.context.folder.folderId,
-                body: shell.context.item,
-            })),
+            createItem({
+                inputs: (shell) => ({
+                    folderId: shell.context.folder.folderId,
+                    body: shell.context.item,
+                }),
+            }),
             queryChildren({
                 inputs: (shell) => ({
                     parentId: shell.homeFolderId,
@@ -611,10 +610,18 @@ test('borrow item happy path', (done) => {
                 parentFolderId: shell.homeFolderId,
                 body: shell.context.folder,
             })),
-            createItem((shell) => ({
-                folderId: shell.context.folder.folderId,
-                body: shell.context.item,
-            })),
+            createItem({
+                inputs: (shell) => ({
+                    folderId: shell.context.folder.folderId,
+                    body: shell.context.item,
+                }),
+                newContext: (shell, resp) => {
+                    return new Context({
+                        ...shell.context,
+                        groupId: resp.groupId,
+                    })
+                },
+            }),
             queryChildren<Context>({
                 inputs: (shell) => ({
                     parentId: shell.context.folder.folderId,
@@ -626,18 +633,23 @@ test('borrow item happy path', (done) => {
             }),
             createAsset({
                 inputs: (shell) => ({
-                    body: shell.context.asset,
+                    body: {
+                        ...shell.context.asset,
+                        groupId: shell.context.groupId,
+                    },
                 }),
                 newContext: (shell) => {
                     return shell.context
                 },
             }),
-            borrow((shell) => ({
-                itemId: shell.context.item.itemId,
-                body: {
-                    destinationFolderId: shell.context.folder.folderId,
-                },
-            })),
+            borrow<Context>({
+                inputs: (shell) => ({
+                    itemId: shell.context.item.itemId,
+                    body: {
+                        destinationFolderId: shell.context.folder.folderId,
+                    },
+                }),
+            }),
             queryChildren<Context>({
                 inputs: (shell) => ({
                     parentId: shell.context.folder.folderId,
