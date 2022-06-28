@@ -233,7 +233,7 @@ export function getAccessPolicy<TContext>({
             shell.assetsGtw.assets.getAccessPolicy$(inputs(shell)),
         authorizedErrors,
         sideEffects: (resp, shell) => {
-            expectAttributes(resp, ['read', 'share', 'parameters', 'timestamp'])
+            expectAttributes(resp, ['read', 'share', 'parameters'])
             sideEffects && sideEffects(resp, shell)
         },
         newShell: (shell, resp) => newShellFromContext(shell, resp, newContext),
