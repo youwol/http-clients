@@ -8,6 +8,7 @@ import { expectAttributes, getPyYouwolBasePath } from '../common'
 /* eslint-disable jest/no-done-callback -- eslint-comment Find a good way to work with rxjs in jest */
 import '../mock-requests'
 import { expectDownloadEvents$, expectUpdateStatus, setup$ } from './utils'
+import { AssetsGatewayClient } from '../../lib/assets-gateway'
 
 const pyYouwol = new PyYouwolClient()
 
@@ -142,6 +143,15 @@ test('install & pyYouwol.admin.local-cdn.collectUpdates', (done) => {
                 expect(respHttp.versions[0].entryPointSize).toBeGreaterThan(0)
                 expect(respHttp.versions[0].filesCount).toBeGreaterThan(0)
                 expect(respWs.data).toEqual(respHttp)
+            }),
+            mergeMap(() => {
+                return new AssetsGatewayClient().assets.queryAccessInfo$({
+                    assetId: window.btoa(httpClientsPackageId),
+                })
+            }),
+            tap((resp) => {
+                expect(resp.ownerInfo.defaultAccess.read).toBe('authorized')
+                expect(resp.ownerInfo.defaultAccess.share).toBe('authorized')
             }),
         )
         .subscribe(() => {
