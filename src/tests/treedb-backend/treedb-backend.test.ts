@@ -453,24 +453,6 @@ test('happy path items', (done) => {
                     )
                 },
             }),
-            /*purgeDrive(
-                (shell) => ({
-                    driveId: shell.defaultDriveId,
-                }),
-                (shell: Shell<Context>, resp) => {
-                    expect(resp.foldersCount).toBe(0)
-                    expect(resp.itemsCount).toBe(1)
-                    expect(resp.errorsAssetDeletion).toHaveLength(1)
-                    expect(resp.errorsAssetDeletion[0]).toBe(
-                        shell.context.item.assetId,
-                    )
-                    expect(resp.errorsRawDeletion).toHaveLength(1)
-                    expect(resp.errorsRawDeletion[0]).toBe(
-                        shell.context.item.rawId,
-                    )
-                    return shell.context
-                },
-            ),*/
         )
         .subscribe(() => {
             done()
