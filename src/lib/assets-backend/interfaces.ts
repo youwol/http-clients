@@ -12,7 +12,7 @@ export type SharePolicy = 'forbidden' | 'authorized'
 export interface AccessPolicy {
     read: ReadPolicy
     share: SharePolicy
-    parameters: { [k: string]: unknown }
+    parameters?: { [k: string]: unknown }
 }
 
 export interface AddImageBody {

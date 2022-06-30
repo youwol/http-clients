@@ -1,80 +1,89 @@
 import '../mock-requests'
-import { HTTPError, raiseHTTPErrors } from '../../lib'
+import { CallerRequestOptions, HTTPError, raiseHTTPErrors } from '../../lib'
 import { NewAssetResponse } from '../../lib/assets-gateway'
 import { mergeMap, take, tap } from 'rxjs/operators'
-import { forkJoin, Observable, OperatorFunction } from 'rxjs'
+import { forkJoin, Observable } from 'rxjs'
 
 import {
     expectAssetAttributes,
     expectAttributes,
-    ManagedError,
     mapToShell,
+    newShellFromContext,
     Shell,
+    wrap,
 } from '../common'
 import {
     DeleteProjectResponse,
     GetProjectResponse,
+    NewProjectBody,
     NewProjectResponse,
     UpdateProjectBody,
 } from '../../lib/flux-backend'
 import { readFileSync } from 'fs'
 
-export function newProject<T>(
-    input: (shell: Shell<T>) => { folderId: string },
-    cb: (shell: Shell<T>, resp: NewAssetResponse<NewProjectResponse>) => T,
-) {
-    return (source$: Observable<Shell<T>>) => {
-        return source$.pipe(
-            mergeMap((shell) => {
-                const { folderId } = input(shell)
-                return shell.assetsGtw.flux
-                    .newProject$({
-                        body: { name: 'flux-project' },
-                        queryParameters: { folderId },
-                    })
-                    .pipe(
-                        raiseHTTPErrors(),
-                        tap((resp) => {
-                            expectAssetAttributes(resp)
-                        }),
-                        mapToShell(shell, cb),
-                    )
-            }),
-        )
+export function newProject<TContext>({
+    inputs,
+    sideEffects,
+    authorizedErrors,
+    newContext,
+}: {
+    inputs: (shell: Shell<TContext>) => {
+        body: NewProjectBody
+        queryParameters: { folderId?: string }
+        callerOptions?: CallerRequestOptions
     }
+    authorizedErrors?: (resp: HTTPError) => boolean
+    sideEffects?: (resp, shell: Shell<TContext>) => void
+    newContext?: (
+        shell: Shell<TContext>,
+        resp: NewProjectResponse | NewAssetResponse<NewProjectResponse>,
+    ) => TContext
+}) {
+    return wrap<
+        Shell<TContext>,
+        NewProjectResponse | NewAssetResponse<NewProjectResponse>,
+        TContext
+    >({
+        observable: (shell: Shell<TContext>) =>
+            shell.assetsGtw.flux.newProject$(inputs(shell)),
+        authorizedErrors,
+        sideEffects: (resp, shell) => {
+            sideEffects && sideEffects(resp, shell)
+        },
+        newShell: (shell, resp) => newShellFromContext(shell, resp, newContext),
+    })
 }
 
-export function getProject<T>(
-    input: (shell: Shell<T>) => { projectId: string },
-    cb: (shell: Shell<T>, resp: GetProjectResponse) => T,
-    onError: OperatorFunction<
-        GetProjectResponse | HTTPError,
-        GetProjectResponse | ManagedError
-    > = raiseHTTPErrors(),
-) {
-    return (source$: Observable<Shell<T>>) => {
-        return source$.pipe(
-            mergeMap((shell) => {
-                const { projectId } = input(shell)
-                return shell.assetsGtw.flux.getProject$({ projectId }).pipe(
-                    onError,
-                    tap((resp) => {
-                        if (resp == 'ManagedError') {
-                            return shell
-                        }
-                        expectAttributes(resp, [
-                            'schemaVersion',
-                            'requirements',
-                            'workflow',
-                            'builderRendering',
-                            'runnerRendering',
-                        ])
-                    }),
-                    mapToShell(shell, cb),
-                )
-            }),
-        )
+export function getProject<TContext>({
+    inputs,
+    sideEffects,
+    authorizedErrors,
+    newContext,
+}: {
+    inputs: (shell: Shell<TContext>) => {
+        projectId: string
+        callerOptions?: CallerRequestOptions
     }
+    authorizedErrors?: (resp: HTTPError) => boolean
+    sideEffects?: (resp, shell: Shell<TContext>) => void
+    newContext?: (shell: Shell<TContext>, resp: GetProjectResponse) => TContext
+}) {
+    return wrap<Shell<TContext>, GetProjectResponse, TContext>({
+        observable: (shell: Shell<TContext>) =>
+            shell.assetsGtw.flux.getProject$(inputs(shell)),
+        authorizedErrors,
+        sideEffects: (resp, shell) => {
+            expectAttributes(resp, [
+                'schemaVersion',
+                'requirements',
+                'workflow',
+                'builderRendering',
+                'runnerRendering',
+            ])
+            sideEffects && sideEffects(resp, shell)
+        },
+        newShell: (shell, resp) => newShellFromContext(shell, resp, newContext),
+    })
 }
 
 export function updateProject<T>(

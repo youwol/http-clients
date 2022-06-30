@@ -34,18 +34,22 @@ import {
     GetDefaultDriveResponse,
 } from './interfaces'
 import { RootRouter } from '../router'
+import { AssetsGtwPurgeResponse } from '../assets-gateway'
 
 export class ExplorerClient extends RootRouter {
     constructor({
         headers,
         basePath,
+        hostName,
     }: {
         headers?: { [_key: string]: string }
         basePath?: string
+        hostName?: string
     } = {}) {
         super({
             basePath: basePath || '/api/treedb-backend',
             headers,
+            hostName,
         })
     }
 
@@ -565,7 +569,7 @@ export class ExplorerClient extends RootRouter {
     }: {
         driveId: string
         callerOptions?: CallerRequestOptions
-    }): HTTPResponse$<PurgeDriveResponse> {
+    }): HTTPResponse$<PurgeDriveResponse | AssetsGtwPurgeResponse> {
         return this.send$({
             command: 'delete',
             path: `/drives/${driveId}/purge`,

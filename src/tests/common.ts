@@ -197,7 +197,7 @@ export function wrap<TShell, TResp, TContext>({
     }
 }
 
-function newShellFromContext<TContext, TResp>(
+export function newShellFromContext<TContext, TResp>(
     shell: Shell<TContext>,
     resp: TResp,
     newContext?: (s: Shell<TContext>, r: TResp) => TContext,

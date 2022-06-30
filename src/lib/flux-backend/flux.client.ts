@@ -25,13 +25,16 @@ export class FluxClient extends RootRouter {
     constructor({
         headers,
         basePath,
+        hostName,
     }: {
         headers?: { [_key: string]: string }
         basePath?: string
+        hostName?: string
     } = {}) {
         super({
             basePath: basePath || '/api/flux-backend',
             headers,
+            hostName,
         })
     }
 

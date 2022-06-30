@@ -123,3 +123,5 @@ export interface QueryCustomDispatchesResponse {
 }
 
 export type QueryCowSayResponse = string
+
+export class UploadAssetResponse {}

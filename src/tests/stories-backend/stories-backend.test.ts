@@ -3,19 +3,19 @@ import {
     healthz,
     addDocuments,
     addPlugin,
-    createStory,
     deleteDocument,
     deleteStory,
     downloadZip,
     getContent,
     getGlobalContents,
-    getStory,
     moveDocument,
     publish,
     queryDocuments,
     updateContent,
     updateDocument,
     updateGlobalContents,
+    createStory,
+    getStory,
 } from './shell.operators'
 import {
     expectAssetAttributes,
@@ -23,11 +23,17 @@ import {
     Shell,
     shell$,
 } from '../common'
-import { GetDocumentResponse } from '../../lib/stories-backend'
-import { onHTTPErrors } from '../../lib'
+import {
+    CreateStoryResponse,
+    GetDocumentResponse,
+} from '../../lib/stories-backend'
+
 import { readFileSync } from 'fs'
 import path from 'path'
 import { setup$ } from '../py-youwol/utils'
+import { NewAssetResponse } from '../../lib/assets-gateway'
+import { purgeDrive, trashItem } from '../treedb-backend/shell'
+import { getAsset } from '../assets-backend/shell'
 
 beforeAll(async (done) => {
     setup$({
@@ -73,23 +79,30 @@ test('create story, play with content', (done) => {
     const storyId = 'test-story-play-with-content'
     shell$<TestData>()
         .pipe(
-            createStory(storyId, title, (shell, resp) => {
-                expectAssetAttributes(resp)
-                expect(resp.name).toBe(title)
-                return shell.context
+            createStory({
+                inputs: (shell) => ({
+                    body: {
+                        storyId,
+                        title,
+                    },
+                    queryParameters: { folderId: shell.homeFolderId },
+                }),
+                sideEffects: (resp: NewAssetResponse<CreateStoryResponse>) => {
+                    expectAssetAttributes(resp)
+                    expect(resp.name).toBe(title)
+                },
             }),
-            getStory(storyId, (shell, resp) => {
-                expectAttributes(resp, [
-                    'storyId',
-                    'rootDocumentId',
-                    'title',
-                    'authors',
-                ])
-                expect(resp.storyId).toBe(storyId)
-                expect(resp.title).toBe(title)
-                expect(resp.rootDocumentId).toBe(`root_${resp.storyId}`)
-                expect(resp.authors).toHaveLength(1)
-                return { ...shell.context, ...resp }
+            getStory({
+                inputs: () => ({ storyId }),
+                sideEffects: (resp) => {
+                    expect(resp.storyId).toBe(storyId)
+                    expect(resp.title).toBe(title)
+                    expect(resp.rootDocumentId).toBe(`root_${resp.storyId}`)
+                    expect(resp.authors).toHaveLength(1)
+                },
+                newContext: (shell, resp) => {
+                    return new TestData({ ...shell.context, ...resp })
+                },
             }),
             getContent(
                 (shell) => ({
@@ -137,13 +150,24 @@ test('create story, play with documents', (done) => {
     const storyId = 'test-story-play-with-documents'
     shell$<TestData>()
         .pipe(
-            createStory(storyId, title, (shell, resp) => {
-                expectAssetAttributes(resp)
-                expect(resp.name).toBe(title)
-                return shell.context
+            createStory({
+                inputs: (shell) => ({
+                    body: {
+                        storyId,
+                        title,
+                    },
+                    queryParameters: { folderId: shell.homeFolderId },
+                }),
+                sideEffects: (resp: NewAssetResponse<CreateStoryResponse>) => {
+                    expectAssetAttributes(resp)
+                    expect(resp.name).toBe(title)
+                },
             }),
-            getStory(storyId, (shell, resp) => {
-                return { ...shell.context, ...resp }
+            getStory({
+                inputs: () => ({ storyId }),
+                newContext: (shell, resp) => {
+                    return new TestData({ ...shell.context, ...resp })
+                },
             }),
             queryDocuments(
                 (shell) => ({
@@ -246,15 +270,26 @@ test('create story, play with global attributes', (done) => {
     const storyId = 'test-story-play-with-content'
     shell$<TestData>()
         .pipe(
-            createStory(storyId, title, (shell, _resp) => {
-                return shell.context
+            createStory({
+                inputs: (shell) => ({
+                    body: {
+                        storyId,
+                        title,
+                    },
+                    queryParameters: { folderId: shell.homeFolderId },
+                }),
             }),
-            getStory(storyId, (shell, resp) => {
-                expect(resp.storyId).toBe(storyId)
-                expect(resp.title).toBe(title)
-                expect(resp.rootDocumentId).toBe(`root_${resp.storyId}`)
-                expect(resp.authors).toHaveLength(1)
-                return shell.context
+            getStory({
+                inputs: () => ({ storyId }),
+                sideEffects: (resp) => {
+                    expect(resp.storyId).toBe(storyId)
+                    expect(resp.title).toBe(title)
+                    expect(resp.rootDocumentId).toBe(`root_${resp.storyId}`)
+                    expect(resp.authors).toHaveLength(1)
+                },
+                newContext: (shell) => {
+                    return shell.context
+                },
             }),
             getGlobalContents(storyId, (shell, _resp) => {
                 return shell.context
@@ -281,11 +316,20 @@ test('create story, play with plugins', (done) => {
     const storyId = 'test-story-play-with-plugins'
     shell$<TestData>()
         .pipe(
-            createStory(storyId, title, (shell, _resp) => {
-                return shell.context
+            createStory({
+                inputs: (shell) => ({
+                    body: {
+                        storyId,
+                        title,
+                    },
+                    queryParameters: { folderId: shell.homeFolderId },
+                }),
             }),
-            getStory(storyId, (shell, resp) => {
-                return { ...shell.context, ...resp }
+            getStory({
+                inputs: () => ({ storyId }),
+                newContext: (shell, resp) => {
+                    return new TestData({ ...shell.context, ...resp })
+                },
             }),
             addPlugin(
                 (shell) => ({
@@ -298,11 +342,16 @@ test('create story, play with plugins', (done) => {
                     return shell.context
                 },
             ),
-            getStory(storyId, (shell, resp) => {
-                expect(resp.requirements.plugins).toEqual([
-                    '@youwol/http-clients',
-                ])
-                return shell.context
+            getStory({
+                inputs: () => ({ storyId }),
+                sideEffects: (resp) => {
+                    expect(resp.requirements.plugins).toEqual([
+                        '@youwol/http-clients',
+                    ])
+                },
+                newContext: (shell) => {
+                    return shell.context
+                },
             }),
         )
         .subscribe(() => {
@@ -328,15 +377,24 @@ test('move-document', (done) => {
     }
     shell$<TestData>()
         .pipe(
-            createStory(storyId, title, (shell) => {
-                return shell.context
+            createStory({
+                inputs: (shell) => ({
+                    body: {
+                        storyId,
+                        title,
+                    },
+                    queryParameters: { folderId: shell.homeFolderId },
+                }),
             }),
-            getStory(storyId, (shell, resp) => {
-                return {
-                    ...shell.context,
-                    storyId: resp.storyId,
-                    rootDocumentId: resp.rootDocumentId,
-                }
+            getStory({
+                inputs: () => ({ storyId }),
+                newContext: (shell, resp) => {
+                    return new TestData({
+                        ...shell.context,
+                        storyId: resp.storyId,
+                        rootDocumentId: resp.rootDocumentId,
+                    })
+                },
             }),
             // Not as the same time to control order
             addDoc('page1'),
@@ -416,10 +474,12 @@ test('publish story', (done) => {
                     return shell.context
                 },
             ),
-            getStory(storyId, (shell, resp) => {
-                expect(resp.storyId).toBe(storyId)
-                expect(resp.requirements.plugins.length).toEqual(1)
-                return shell.context
+            getStory({
+                inputs: () => ({ storyId }),
+                sideEffects: (resp) => {
+                    expect(resp.storyId).toBe(storyId)
+                    expect(resp.requirements.plugins.length).toEqual(1)
+                },
             }),
             downloadZip(
                 () => ({ storyId }),
@@ -433,17 +493,12 @@ test('publish story', (done) => {
                     return shell.context
                 },
             ),
-            getStory(
-                storyId,
-                (shell) => {
-                    expect(false).toBeTruthy()
-                    return shell.context
+            getStory({
+                inputs: () => ({ storyId }),
+                authorizedErrors: (error) => {
+                    return error.status == 404
                 },
-                onHTTPErrors((resp) => {
-                    expect(resp.status).toBe(404)
-                    return 'ErrorManaged'
-                }),
-            ),
+            }),
             publish(
                 (shell) => ({
                     folderId: shell.homeFolderId,
@@ -454,10 +509,69 @@ test('publish story', (done) => {
                     return shell.context
                 },
             ),
-            getStory(storyId, (shell, resp) => {
-                expect(resp.storyId).toBe(storyId)
-                expect(resp.requirements.plugins.length).toEqual(1)
-                return shell.context
+            getStory({
+                inputs: () => ({ storyId }),
+                sideEffects: (resp) => {
+                    expect(resp.storyId).toBe(storyId)
+                    expect(resp.requirements.plugins.length).toEqual(1)
+                },
+            }),
+        )
+        .subscribe(() => {
+            done()
+        })
+})
+
+test('new story, delete from explorer (purge)', (done) => {
+    class Context {
+        public readonly title = 'test story: play with content'
+        public readonly storyId = 'test-story-play-with-content'
+        public readonly itemId: string
+        public readonly assetId: string
+        constructor(params: { itemId?: string; assetId?: string } = {}) {
+            Object.assign(this, params)
+        }
+    }
+    shell$<Context>(new Context())
+        .pipe(
+            createStory({
+                inputs: (shell) => ({
+                    body: {
+                        storyId: shell.context.storyId,
+                        title: shell.context.title,
+                    },
+                    queryParameters: { folderId: shell.homeFolderId },
+                }),
+                newContext: (
+                    shell,
+                    resp: NewAssetResponse<CreateStoryResponse>,
+                ) => {
+                    return new Context({
+                        ...shell.context,
+                        itemId: resp.itemId,
+                        assetId: resp.assetId,
+                    })
+                },
+            }),
+            trashItem({
+                inputs: (shell) => ({ itemId: shell.context.itemId }),
+            }),
+            purgeDrive({
+                inputs: (shell) => ({ driveId: shell.defaultDriveId }),
+            }),
+            getStory({
+                inputs: (shell) => ({ storyId: shell.context.storyId }),
+                authorizedErrors: (resp) => {
+                    expect(resp.status).toBe(404)
+                    return true
+                },
+            }),
+            getAsset({
+                inputs: (shell) => ({ assetId: shell.context.assetId }),
+                authorizedErrors: (resp) => {
+                    expect(resp.status).toBe(404)
+                    return true
+                },
             }),
         )
         .subscribe(() => {

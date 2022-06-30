@@ -32,11 +32,19 @@ import {
     updateItem,
 } from './shell'
 import {
+    BorrowResponse,
+    CreateDriveResponse,
     FolderBase,
     GetDriveResponse,
     ItemBase,
 } from '../../lib/explorer-backend'
-import { createAsset, getAsset } from '../assets-backend/shell'
+import {
+    accessInfo,
+    createAsset,
+    getAccessPolicy,
+    getAsset,
+    upsertAccessPolicy,
+} from '../assets-backend/shell'
 import { setup$ } from '../py-youwol/utils'
 
 beforeEach(async (done) => {
@@ -80,16 +88,15 @@ test('happy path drives', (done) => {
 
     shell$<Context>(new Context())
         .pipe(
-            createDrive(
-                (shell) => ({
+            createDrive({
+                inputs: (shell) => ({
                     groupId: shell.privateGroupId,
                     body: shell.context.drive,
                 }),
-                (shell, resp) => {
+                sideEffects: (resp, shell) => {
                     expectDrive(resp, shell, shell.context.drive.name)
-                    return shell.context
                 },
-            ),
+            }),
             updateDrive(
                 (shell) => ({
                     driveId: shell.context.drive.driveId,
@@ -229,27 +236,24 @@ test('happy path folders', (done) => {
                     return shell.context
                 },
             ),
-            queryChildren(
-                (shell) => ({
+            queryChildren({
+                inputs: (shell) => ({
                     parentId: shell.homeFolderId,
                 }),
-                (shell, resp) => {
+                sideEffects: (resp) => {
                     expect(resp.folders).toHaveLength(1)
                     expect(resp.items).toHaveLength(0)
-                    return shell.context
                 },
-            ),
-            queryChildren(
-                (shell) => ({
+            }),
+            queryChildren({
+                inputs: (shell) => ({
                     parentId: shell.context.folder.folderId,
                 }),
-                (shell, resp) => {
-                    // There is the default drive in it
+                sideEffects: (resp) => {
                     expect(resp.folders).toHaveLength(0)
                     expect(resp.items).toHaveLength(0)
-                    return shell.context
                 },
-            ),
+            }),
             getFolderPath(
                 (shell) => ({
                     folderId: shell.context.folder.folderId,
@@ -269,16 +273,15 @@ test('happy path folders', (done) => {
             trashFolder((shell) => ({
                 folderId: shell.context.folder.folderId,
             })),
-            queryChildren(
-                (shell) => ({
+            queryChildren({
+                inputs: (shell) => ({
                     parentId: shell.homeFolderId,
                 }),
-                (shell, resp) => {
+                sideEffects: (resp) => {
                     expect(resp.folders).toHaveLength(0)
                     expect(resp.items).toHaveLength(0)
-                    return shell.context
                 },
-            ),
+            }),
             queryDeleted(
                 (shell) => ({
                     driveId: shell.defaultDriveId,
@@ -289,16 +292,15 @@ test('happy path folders', (done) => {
                     return shell.context
                 },
             ),
-            purgeDrive(
-                (shell) => ({
+            purgeDrive({
+                inputs: (shell) => ({
                     driveId: shell.defaultDriveId,
                 }),
-                (shell, resp) => {
+                sideEffects: (resp) => {
                     expect(resp.foldersCount).toBe(1)
                     expect(resp.itemsCount).toBe(0)
-                    return shell.context
                 },
-            ),
+            }),
         )
         .subscribe(() => {
             done()
@@ -309,6 +311,7 @@ test('happy path items', (done) => {
     class Context {
         public readonly item = {
             itemId: 'test-item-id',
+            rawId: 'test-item-raw-id',
             assetId: btoa('test-item-raw-id'),
             name: 'test item',
             kind: 'flux-project',
@@ -330,16 +333,15 @@ test('happy path items', (done) => {
     }
     shell$<Context>(new Context())
         .pipe(
-            createItem(
-                (shell) => ({
+            createItem({
+                inputs: (shell) => ({
                     folderId: shell.homeFolderId,
                     body: shell.context.item,
                 }),
-                (shell, resp) => {
+                sideEffects: (resp, shell) => {
                     expectItem(resp, shell, shell.context.item.name)
-                    return shell.context
                 },
-            ),
+            }),
             updateItem(
                 (shell) => ({
                     itemId: shell.context.item.itemId,
@@ -352,15 +354,14 @@ test('happy path items', (done) => {
                     return shell.context
                 },
             ),
-            getItem(
-                (shell) => ({
+            getItem({
+                inputs: (shell) => ({
                     itemId: shell.context.item.itemId,
                 }),
-                (shell, resp) => {
+                sideEffects: (resp, shell) => {
                     expectItem(resp, shell, shell.context.updatedItemName)
-                    return shell.context
                 },
-            ),
+            }),
             getEntity(
                 (shell) => ({
                     entityId: shell.context.item.itemId,
@@ -375,11 +376,11 @@ test('happy path items', (done) => {
                     return shell.context
                 },
             ),
-            queryChildren(
-                (shell) => ({
+            queryChildren({
+                inputs: (shell) => ({
                     parentId: shell.homeFolderId,
                 }),
-                (shell, resp) => {
+                sideEffects: (resp, shell) => {
                     expect(resp.folders).toHaveLength(0)
                     expect(resp.items).toHaveLength(1)
                     expectItem(
@@ -387,9 +388,8 @@ test('happy path items', (done) => {
                         shell,
                         shell.context.updatedItemName,
                     )
-                    return shell.context
                 },
-            ),
+            }),
             getPath(
                 (shell) => ({
                     itemId: shell.context.item.itemId,
@@ -416,19 +416,18 @@ test('happy path items', (done) => {
                     return shell.context
                 },
             ),
-            trashItem((shell) => ({
-                itemId: shell.context.item.itemId,
-            })),
-            queryChildren(
-                (shell) => ({
+            trashItem({
+                inputs: (shell) => ({ itemId: shell.context.item.itemId }),
+            }),
+            queryChildren({
+                inputs: (shell) => ({
                     parentId: shell.homeFolderId,
                 }),
-                (shell, resp) => {
+                sideEffects: (resp) => {
                     expect(resp.folders).toHaveLength(0)
                     expect(resp.items).toHaveLength(0)
-                    return shell.context
                 },
-            ),
+            }),
             queryDeleted(
                 (shell) => ({
                     driveId: shell.defaultDriveId,
@@ -439,16 +438,39 @@ test('happy path items', (done) => {
                     return shell.context
                 },
             ),
-            purgeDrive(
+            purgeDrive<Context>({
+                inputs: (shell) => ({ driveId: shell.defaultDriveId }),
+                sideEffects: (resp, shell) => {
+                    expect(resp.foldersCount).toBe(0)
+                    expect(resp.itemsCount).toBe(1)
+                    expect(resp.errorsAssetDeletion).toHaveLength(1)
+                    expect(resp.errorsAssetDeletion[0]).toBe(
+                        shell.context.item.assetId,
+                    )
+                    expect(resp.errorsRawDeletion).toHaveLength(1)
+                    expect(resp.errorsRawDeletion[0]).toBe(
+                        shell.context.item.rawId,
+                    )
+                },
+            }),
+            /*purgeDrive(
                 (shell) => ({
                     driveId: shell.defaultDriveId,
                 }),
-                (shell, resp) => {
+                (shell: Shell<Context>, resp) => {
                     expect(resp.foldersCount).toBe(0)
                     expect(resp.itemsCount).toBe(1)
+                    expect(resp.errorsAssetDeletion).toHaveLength(1)
+                    expect(resp.errorsAssetDeletion[0]).toBe(
+                        shell.context.item.assetId,
+                    )
+                    expect(resp.errorsRawDeletion).toHaveLength(1)
+                    expect(resp.errorsRawDeletion[0]).toBe(
+                        shell.context.item.rawId,
+                    )
                     return shell.context
                 },
-            ),
+            ),*/
         )
         .subscribe(() => {
             done()
@@ -478,20 +500,21 @@ test('happy path move', (done) => {
                 parentFolderId: shell.homeFolderId,
                 body: shell.context.folder,
             })),
-            createItem((shell) => ({
-                folderId: shell.context.folder.folderId,
-                body: shell.context.item,
-            })),
-            queryChildren(
-                (shell) => ({
-                    parentId: shell.context.folder.folderId,
+            createItem({
+                inputs: (shell) => ({
+                    folderId: shell.context.folder.folderId,
+                    body: shell.context.item,
                 }),
-                (shell, resp) => {
-                    expect(resp.folders).toHaveLength(0)
-                    expect(resp.items).toHaveLength(1)
-                    return shell.context
+            }),
+            queryChildren({
+                inputs: (shell) => ({
+                    parentId: shell.homeFolderId,
+                }),
+                sideEffects: (resp) => {
+                    expect(resp.folders).toHaveLength(1)
+                    expect(resp.items).toHaveLength(0)
                 },
-            ),
+            }),
             move(
                 (shell) => ({
                     body: {
@@ -505,26 +528,24 @@ test('happy path move', (done) => {
                     return shell.context
                 },
             ),
-            queryChildren(
-                (shell) => ({
+            queryChildren({
+                inputs: (shell) => ({
                     parentId: shell.context.folder.folderId,
                 }),
-                (shell, resp) => {
+                sideEffects: (resp) => {
                     expect(resp.folders).toHaveLength(0)
                     expect(resp.items).toHaveLength(0)
-                    return shell.context
                 },
-            ),
-            queryChildren(
-                (shell) => ({
+            }),
+            queryChildren({
+                inputs: (shell) => ({
                     parentId: shell.homeFolderId,
                 }),
-                (shell, resp) => {
+                sideEffects: (resp) => {
                     expect(resp.folders).toHaveLength(1)
                     expect(resp.items).toHaveLength(1)
-                    return shell.context
                 },
-            ),
+            }),
             createFolder((shell) => ({
                 parentFolderId: shell.homeFolderId,
                 body: shell.context.folder2,
@@ -541,26 +562,24 @@ test('happy path move', (done) => {
                     destinationFolderId: shell.context.folder.folderId,
                 },
             })),
-            queryChildren(
-                (shell: Shell<Context>) => ({
+            queryChildren<Context>({
+                inputs: (shell) => ({
                     parentId: shell.context.folder.folderId,
                 }),
-                (shell, resp) => {
+                sideEffects: (resp) => {
                     expect(resp.folders).toHaveLength(1)
                     expect(resp.items).toHaveLength(0)
-                    return shell.context
                 },
-            ),
-            queryChildren(
-                (shell: Shell<Context>) => ({
+            }),
+            queryChildren<Context>({
+                inputs: (shell) => ({
                     parentId: shell.context.folder2.folderId,
                 }),
-                (shell, resp) => {
+                sideEffects: (resp) => {
                     expect(resp.folders).toHaveLength(0)
                     expect(resp.items).toHaveLength(1)
-                    return shell.context
                 },
-            ),
+            }),
         )
         .subscribe(() => {
             done()
@@ -585,13 +604,27 @@ test('borrow item happy path', (done) => {
             tags: [],
             images: [],
             thumbnails: [],
-            groupId: '',
         }
         public readonly folder = {
             folderId: 'test-folder-id',
             name: 'test folder',
         }
         public readonly updatedName: string = 'renamed test asset'
+
+        public readonly groupId: string
+
+        public readonly ywUserGroupId = window.btoa('/youwol-users')
+        public readonly borrowedYwUsers: BorrowResponse
+        public readonly ywUsersDrive: CreateDriveResponse
+        constructor(
+            params: {
+                groupId?: string
+                borrowedYwUsers?: BorrowResponse
+                ywUsersDrive?: CreateDriveResponse
+            } = {},
+        ) {
+            Object.assign(this, params)
+        }
     }
     shell$<Context>(new Context())
         .pipe(
@@ -599,39 +632,51 @@ test('borrow item happy path', (done) => {
                 parentFolderId: shell.homeFolderId,
                 body: shell.context.folder,
             })),
-            createItem((shell) => ({
-                folderId: shell.context.folder.folderId,
-                body: shell.context.item,
-            })),
-            queryChildren(
-                (shell) => ({
+            createItem({
+                inputs: (shell) => ({
+                    folderId: shell.context.folder.folderId,
+                    body: shell.context.item,
+                }),
+                newContext: (shell, resp) => {
+                    return new Context({
+                        ...shell.context,
+                        groupId: resp.groupId,
+                    })
+                },
+            }),
+            queryChildren<Context>({
+                inputs: (shell) => ({
                     parentId: shell.context.folder.folderId,
                 }),
-                (shell, resp) => {
+                sideEffects: (resp) => {
                     expect(resp.folders).toHaveLength(0)
                     expect(resp.items).toHaveLength(1)
-                    return shell.context
                 },
-            ),
+            }),
             createAsset({
                 inputs: (shell) => ({
-                    body: shell.context.asset,
+                    body: {
+                        ...shell.context.asset,
+                        groupId: shell.context.groupId,
+                    },
                 }),
                 newContext: (shell) => {
                     return shell.context
                 },
             }),
-            borrow((shell) => ({
-                itemId: shell.context.item.itemId,
-                body: {
-                    destinationFolderId: shell.context.folder.folderId,
-                },
-            })),
-            queryChildren(
-                (shell) => ({
+            borrow<Context>({
+                inputs: (shell) => ({
+                    itemId: shell.context.item.itemId,
+                    body: {
+                        destinationFolderId: shell.context.folder.folderId,
+                    },
+                }),
+            }),
+            queryChildren<Context>({
+                inputs: (shell) => ({
                     parentId: shell.context.folder.folderId,
                 }),
-                (shell, resp) => {
+                sideEffects: (resp) => {
                     expect(resp.folders).toHaveLength(0)
                     expect(resp.items).toHaveLength(2)
                     const original = resp.items[0]
@@ -640,9 +685,8 @@ test('borrow item happy path', (done) => {
                     expect(original.borrowed).toBeFalsy()
                     expect(borrowed.borrowed).toBeTruthy()
                     expect(borrowed.assetId == borrowed.itemId).toBeFalsy()
-                    return shell.context
                 },
-            ),
+            }),
             queryItemsByAssetId(
                 (shell) => ({
                     assetId: shell.context.item.assetId,
@@ -669,20 +713,138 @@ test('borrow item happy path', (done) => {
                     expect(response.name).toBe(shell.context.updatedName)
                 },
             }),
-        )
-        .subscribe(() => {
-            done()
-        })
-})
-
-test('default drive', (done) => {
-    class Context {}
-    shell$<Context>(new Context())
-        .pipe(
-            getDefaultUserDrive(),
-            getDefaultDrive((shell) => ({
-                groupId: shell.privateGroupId,
-            })),
+            upsertAccessPolicy<Context>({
+                inputs: (shell) => {
+                    return {
+                        assetId: shell.context.asset.assetId,
+                        groupId: '*',
+                        body: {
+                            read: 'forbidden',
+                            share: 'authorized',
+                        },
+                    }
+                },
+            }),
+            getAccessPolicy<Context>({
+                inputs: (shell) => {
+                    return {
+                        assetId: shell.context.asset.assetId,
+                        groupId: shell.context.groupId,
+                    }
+                },
+                sideEffects: (resp) => {
+                    expect(resp.read).toBe('owning')
+                },
+            }),
+            accessInfo<Context>({
+                inputs: (shell) => {
+                    return {
+                        assetId: shell.context.asset.assetId,
+                    }
+                },
+                sideEffects: (resp) => {
+                    expect(resp.ownerInfo.exposingGroups).toHaveLength(0)
+                    expect(resp.ownerInfo.defaultAccess.read).toBe('forbidden')
+                    expect(resp.ownerInfo.defaultAccess.share).toBe(
+                        'authorized',
+                    )
+                },
+            }),
+            // Make sure borrowing in another group create required access policies
+            createDrive<Context>({
+                inputs: (shell) => ({
+                    groupId: shell.context.ywUserGroupId,
+                    body: {
+                        name: 'drive youwol-user',
+                    },
+                }),
+                newContext: (shell, resp) => {
+                    return new Context({ ...shell.context, ywUsersDrive: resp })
+                },
+            }),
+            borrow<Context>({
+                inputs: (shell) => {
+                    return {
+                        itemId: shell.context.item.itemId,
+                        body: {
+                            destinationFolderId:
+                                shell.context.ywUsersDrive.driveId,
+                        },
+                    }
+                },
+                newContext: (shell, resp) => {
+                    return new Context({
+                        ...shell.context,
+                        borrowedYwUsers: resp,
+                    })
+                },
+            }),
+            getAccessPolicy<Context>({
+                inputs: (shell) => {
+                    return {
+                        assetId: shell.context.asset.assetId,
+                        groupId: shell.context.ywUserGroupId,
+                    }
+                },
+                sideEffects: (resp) => {
+                    expect(resp.read).toBe('authorized')
+                    expect(resp.share).toBe('authorized')
+                },
+            }),
+            accessInfo<Context>({
+                inputs: (shell) => {
+                    return {
+                        assetId: shell.context.asset.assetId,
+                    }
+                },
+                sideEffects: (resp) => {
+                    expect(resp.ownerInfo.exposingGroups).toHaveLength(1)
+                    expect(resp.ownerInfo.exposingGroups[0].name).toBe(
+                        '/youwol-users',
+                    )
+                    expect(resp.ownerInfo.defaultAccess.read).toBe('forbidden')
+                    expect(resp.ownerInfo.defaultAccess.share).toBe(
+                        'authorized',
+                    )
+                },
+            }),
+            trashItem<Context>({
+                inputs: (shell) => ({
+                    itemId: shell.context.borrowedYwUsers.itemId,
+                }),
+                sideEffects: (resp) => {
+                    expect(resp).toBeTruthy()
+                },
+            }),
+            purgeDrive<Context>({
+                inputs: (shell) => {
+                    return {
+                        driveId: shell.context.ywUsersDrive.driveId,
+                    }
+                },
+            }),
+            getAccessPolicy<Context>({
+                inputs: (shell) => {
+                    return {
+                        assetId: shell.context.asset.assetId,
+                        groupId: shell.context.ywUserGroupId,
+                    }
+                },
+                sideEffects: (resp) => {
+                    expect(resp.read).toBe('forbidden')
+                    expect(resp.share).toBe('authorized')
+                },
+            }),
+            accessInfo<Context>({
+                inputs: (shell) => {
+                    return {
+                        assetId: shell.context.asset.assetId,
+                    }
+                },
+                sideEffects: (resp) => {
+                    expect(resp.ownerInfo.exposingGroups).toHaveLength(0)
+                },
+            }),
         )
         .subscribe(() => {
             done()

@@ -101,10 +101,11 @@ export class RootRouter extends Router {
     constructor(params: {
         basePath: string
         headers?: { [key: string]: string }
+        hostName?: string
     }) {
         super(
             { ...RootRouter.Headers, ...(params.headers || {}) },
-            `${RootRouter.HostName}${params.basePath}`,
+            `${params.hostName || RootRouter.HostName}${params.basePath}`,
         )
     }
 }

@@ -8,6 +8,7 @@ import { expectAttributes, getPyYouwolBasePath } from '../common'
 /* eslint-disable jest/no-done-callback -- eslint-comment Find a good way to work with rxjs in jest */
 import '../mock-requests'
 import { expectDownloadEvents$, expectUpdateStatus, setup$ } from './utils'
+import { AssetsGatewayClient } from '../../lib/assets-gateway'
 
 const pyYouwol = new PyYouwolClient()
 
@@ -54,7 +55,7 @@ test('pyYouwol.admin.local-cdn.collectUpdates - empty', (done) => {
 
 test('install & pyYouwol.admin.local-cdn.collectUpdates', (done) => {
     Client.HostName = getPyYouwolBasePath()
-
+    const httpClientsPackageId = window.btoa('@youwol/http-clients')
     from(
         install({
             modules: ['@youwol/http-clients'],
@@ -123,11 +124,11 @@ test('install & pyYouwol.admin.local-cdn.collectUpdates', (done) => {
                 return combineLatest([
                     pyYouwol.admin.localCdn
                         .getPackage$({
-                            packageId: 'QHlvdXdvbC9odHRwLWNsaWVudHM=',
+                            packageId: httpClientsPackageId,
                         })
                         .pipe(raiseHTTPErrors()),
                     pyYouwol.admin.localCdn.webSocket.package$({
-                        packageId: 'QHlvdXdvbC9odHRwLWNsaWVudHM=',
+                        packageId: httpClientsPackageId,
                     }),
                 ])
             }),
@@ -142,6 +143,15 @@ test('install & pyYouwol.admin.local-cdn.collectUpdates', (done) => {
                 expect(respHttp.versions[0].entryPointSize).toBeGreaterThan(0)
                 expect(respHttp.versions[0].filesCount).toBeGreaterThan(0)
                 expect(respWs.data).toEqual(respHttp)
+            }),
+            mergeMap(() => {
+                return new AssetsGatewayClient().assets.queryAccessInfo$({
+                    assetId: window.btoa(httpClientsPackageId),
+                })
+            }),
+            tap((resp) => {
+                expect(resp.ownerInfo.defaultAccess.read).toBe('authorized')
+                expect(resp.ownerInfo.defaultAccess.share).toBe('authorized')
             }),
         )
         .subscribe(() => {

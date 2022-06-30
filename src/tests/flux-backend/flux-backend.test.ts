@@ -14,13 +14,15 @@ import {
     upload,
     uploadPackages,
 } from './shell'
-import { GetProjectResponse } from '../../lib/flux-backend'
-import { onHTTPErrors } from '../../lib'
+import { GetProjectResponse, NewProjectResponse } from '../../lib/flux-backend'
 import { tap } from 'rxjs/operators'
 import path from 'path'
 import { Subject } from 'rxjs'
 import * as fs from 'fs'
 import { setup$ } from '../py-youwol/utils'
+import { purgeDrive, trashItem } from '../treedb-backend/shell'
+import { getAsset } from '../assets-backend/shell'
+import { NewAssetResponse } from '../../lib/assets-gateway'
 
 beforeAll(async (done) => {
     setup$({
@@ -44,22 +46,30 @@ test('new project, update project, delete', (done) => {
     }
     shell$<Context>()
         .pipe(
-            newProject(
-                (shell) => ({ folderId: shell.homeFolderId }),
-                (shell, resp) => {
+            newProject({
+                inputs: (shell) => ({
+                    queryParameters: { folderId: shell.homeFolderId },
+                    body: { name: 'flux-project' },
+                }),
+                newContext: (
+                    shell,
+                    resp: NewAssetResponse<NewProjectResponse>,
+                ) => {
                     return new Context({
                         ...shell.context,
                         projectId: resp.rawId,
                     })
                 },
-            ),
-            getProject(
-                (shell) => ({ projectId: shell.context.projectId }),
-                (shell, resp) => {
+            }),
+            getProject({
+                inputs: (shell) => ({ projectId: shell.context.projectId }),
+                sideEffects: (resp) => {
                     expect(resp.workflow.modules).toHaveLength(1)
+                },
+                newContext: (shell, resp) => {
                     return new Context({ ...shell.context, project: resp })
                 },
-            ),
+            }),
             updateProject((shell) => {
                 const workflow = shell.context.project.workflow
                 const rootModule = workflow.modules[0]
@@ -76,24 +86,71 @@ test('new project, update project, delete', (done) => {
                     },
                 }
             }),
-            getProject(
-                (shell) => ({ projectId: shell.context.projectId }),
-                (shell, resp) => {
+            getProject({
+                inputs: (shell) => ({ projectId: shell.context.projectId }),
+                sideEffects: (resp) => {
                     expect(resp.workflow.modules).toHaveLength(2)
-                    return shell.context
                 },
-            ),
+            }),
             deleteProject((shell) => ({ projectId: shell.context.projectId })),
-            getProject(
-                (shell) => ({ projectId: shell.context.projectId }),
-                (shell) => {
-                    return shell.context
+            getProject({
+                inputs: (shell) => ({ projectId: shell.context.projectId }),
+                authorizedErrors: (resp) => {
+                    return resp.status == 404
                 },
-                onHTTPErrors((resp) => {
-                    expect(resp.status).toBe(404)
-                    return 'ManagedError'
+            }),
+        )
+        .subscribe(() => {
+            done()
+        })
+})
+
+test('new project, delete from explorer (purge)', (done) => {
+    class Context {
+        itemId: string
+        projectId: string
+        assetId: string
+        constructor(params: { itemId?: string; projectId?: string }) {
+            Object.assign(this, params)
+        }
+    }
+    shell$<Context>()
+        .pipe(
+            newProject({
+                inputs: (shell) => ({
+                    queryParameters: { folderId: shell.homeFolderId },
+                    body: { name: 'flux-project' },
                 }),
-            ),
+                newContext: (
+                    shell,
+                    resp: NewAssetResponse<NewProjectResponse>,
+                ) => {
+                    return new Context({
+                        ...shell.context,
+                        itemId: resp.itemId,
+                        projectId: resp.rawId,
+                    })
+                },
+            }),
+            trashItem({
+                inputs: (shell) => ({ itemId: shell.context.itemId }),
+            }),
+            purgeDrive({
+                inputs: (shell) => ({ driveId: shell.defaultDriveId }),
+            }),
+            getProject({
+                inputs: (shell) => ({ projectId: shell.context.projectId }),
+                authorizedErrors: (resp) => {
+                    return resp.status == 404
+                },
+            }),
+            getAsset({
+                inputs: (shell) => ({ assetId: shell.context.projectId }),
+                authorizedErrors: (resp) => {
+                    expect(resp.status).toBe(404)
+                    return true
+                },
+            }),
         )
         .subscribe(() => {
             done()
@@ -121,13 +178,15 @@ test('upload/download project', (done) => {
                 projectId: shell.context.projectId,
                 folderId: shell.homeFolderId,
             })),
-            getProject(
-                (shell) => ({ projectId: shell.context.projectId }),
-                (shell, resp) => {
+            getProject({
+                inputs: (shell) => ({ projectId: shell.context.projectId }),
+                sideEffects: (resp) => {
                     expect(resp.workflow.modules).toHaveLength(5)
+                },
+                newContext: (shell, resp) => {
                     return new Context({ ...shell.context, project: resp })
                 },
-            ),
+            }),
             downloadZip(
                 (shell) => ({ projectId: shell.context.projectId }),
                 (shell, resp) => {
@@ -151,28 +210,21 @@ test('upload/download project', (done) => {
                 return
             }),
             deleteProject((shell) => ({ projectId: shell.context.projectId })),
-            getProject(
-                (shell) => ({ projectId: shell.context.projectId }),
-                (shell) => {
-                    return shell.context
-                },
-                onHTTPErrors((resp) => {
-                    expect(resp.status).toBe(404)
-                    return 'ManagedError'
-                }),
-            ),
+            getProject({
+                inputs: (shell) => ({ projectId: shell.context.projectId }),
+                authorizedErrors: (resp) => resp.status == 404,
+            }),
             upload((shell) => ({
                 zipFile: path.resolve(__dirname, './result.zip'),
                 projectId: shell.context.projectId,
                 folderId: shell.homeFolderId,
             })),
-            getProject(
-                (shell) => ({ projectId: shell.context.projectId }),
-                (shell, resp) => {
+            getProject({
+                inputs: (shell) => ({ projectId: shell.context.projectId }),
+                sideEffects: (resp, shell) => {
                     expect(resp).toEqual(shell.context.project)
-                    return shell.context
                 },
-            ),
+            }),
         )
         .subscribe(() => {
             done()
@@ -209,31 +261,30 @@ test('update metadata', (done) => {
             uploadPackages((shell) => ({
                 filePaths: shell.context.packages,
             })),
-            getProject(
-                (shell) => ({ projectId: shell.context.projectId }),
-                (shell, resp) => {
+            getProject({
+                inputs: (shell) => ({ projectId: shell.context.projectId }),
+                sideEffects: (resp) => {
                     expect(resp.workflow.modules).toHaveLength(1)
+                },
+                newContext: (shell, resp) => {
                     return new Context({ ...shell.context, project: resp })
                 },
-            ),
+            }),
             updateMetadata((shell) => ({
                 projectId: shell.context.projectId,
                 libraries: { a: '0.0.2' },
             })),
-            getProject(
-                (shell) => ({ projectId: shell.context.projectId }),
-                (shell, resp) => {
-                    // a2 has an additional dependency on b@0.0.1 (depending itself on root)
-                    // => three layers for loading graph: root => b => a
+            getProject({
+                inputs: (shell) => ({ projectId: shell.context.projectId }),
+                sideEffects: (resp) => {
                     expect(resp.workflow.modules).toHaveLength(1)
                     expect(resp.requirements.libraries.a).toBe('0.0.2')
                     expect(resp.requirements.libraries.b).toBe('0.0.1')
                     expect(
                         resp.requirements.loadingGraph.definition,
                     ).toHaveLength(3)
-                    return shell.context
                 },
-            ),
+            }),
         )
         .subscribe(() => done())
 })
@@ -272,13 +323,15 @@ test('duplicate project', (done) => {
             uploadPackages((shell) => ({
                 filePaths: shell.context.packages,
             })),
-            getProject(
-                (shell) => ({ projectId: shell.context.projectId }),
-                (shell, resp) => {
+            getProject({
+                inputs: (shell) => ({ projectId: shell.context.projectId }),
+                sideEffects: (resp) => {
                     expect(resp.workflow.modules).toHaveLength(1)
+                },
+                newContext: (shell, resp) => {
                     return new Context({ ...shell.context, project: resp })
                 },
-            ),
+            }),
             duplicate(
                 (shell) => ({
                     projectId: shell.context.projectId,
@@ -292,13 +345,15 @@ test('duplicate project', (done) => {
                     })
                 },
             ),
-            getProject(
-                (shell) => ({ projectId: shell.context.duplicatedId }),
-                (shell, resp) => {
+            getProject({
+                inputs: (shell) => ({ projectId: shell.context.projectId }),
+                sideEffects: (resp) => {
                     expect(resp.workflow.modules).toHaveLength(1)
+                },
+                newContext: (shell, resp) => {
                     return new Context({ ...shell.context, project: resp })
                 },
-            ),
+            }),
         )
         .subscribe(() => done())
 })

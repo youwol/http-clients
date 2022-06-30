@@ -1,11 +1,13 @@
 import { forkJoin, Observable } from 'rxjs'
-import { map, mergeMap, tap } from 'rxjs/operators'
-import { raiseHTTPErrors } from '../../lib'
+import { mergeMap, tap } from 'rxjs/operators'
+import { HTTPError, raiseHTTPErrors } from '../../lib'
 import {
     expectAssetAttributes,
     expectAttributes,
     mapToShell,
+    newShellFromContext,
     Shell,
+    wrap,
 } from '../common'
 import {
     AddPluginBody,
@@ -18,7 +20,11 @@ import {
     UpdateGlobalContentBody,
     AddPluginResponse,
     UpdateDocumentBody,
+    CreateStoryResponse,
+    GetStoryResponse,
+    CreateBody,
 } from '../../lib/stories-backend'
+import { NewAssetResponse } from '../../lib/assets-gateway'
 
 export function healthz<T>() {
     return (source$: Observable<Shell<T>>) => {
@@ -36,59 +42,67 @@ export function healthz<T>() {
     }
 }
 
-export function createStory<T>(
-    storyId: string,
-    title: string,
-    cb: (shell: Shell<T>, resp) => T,
-) {
-    return (source$: Observable<Shell<T>>) => {
-        return source$.pipe(
-            mergeMap((shell) => {
-                return shell.assetsGtw.stories
-                    .create$({
-                        body: { title, storyId },
-                        queryParameters: { folderId: shell.homeFolderId },
-                    })
-                    .pipe(
-                        raiseHTTPErrors(),
-                        tap((resp) => {
-                            expectAssetAttributes(resp)
-                        }),
-                        mapToShell(shell, cb),
-                    )
-            }),
-        )
+export function createStory<TContext>({
+    inputs,
+    authorizedErrors,
+    newContext,
+    sideEffects,
+}: {
+    inputs: (shell: Shell<TContext>) => {
+        body: CreateBody
+        queryParameters?: { folderId?: string }
     }
+    authorizedErrors?: (resp: HTTPError) => boolean
+    sideEffects?: (resp, shell: Shell<TContext>) => void
+    newContext?: (
+        shell: Shell<TContext>,
+        resp: CreateStoryResponse | NewAssetResponse<CreateStoryResponse>,
+    ) => TContext
+}) {
+    return wrap<
+        Shell<TContext>,
+        CreateStoryResponse | NewAssetResponse<CreateStoryResponse>,
+        TContext
+    >({
+        observable: (shell: Shell<TContext>) =>
+            shell.assetsGtw.stories.create$(inputs(shell)),
+        authorizedErrors,
+        sideEffects: (resp, shell) => {
+            expectAssetAttributes(resp)
+            sideEffects && sideEffects(resp, shell)
+        },
+        newShell: (shell, resp) => newShellFromContext(shell, resp, newContext),
+    })
 }
 
-export function getStory<T>(
-    storyId: string,
-    cb: (shell: Shell<T>, resp) => T,
-    onError = raiseHTTPErrors(),
-) {
-    return (source$: Observable<Shell<T>>) => {
-        return source$.pipe(
-            mergeMap((shell) => {
-                return shell.assetsGtw.stories.getStory$({ storyId }).pipe(
-                    onError,
-                    map((resp) => {
-                        if (resp == 'ErrorManaged') return shell
-                        expectAttributes(resp, [
-                            'storyId',
-                            'rootDocumentId',
-                            'title',
-                            'authors',
-                        ])
-                        const context = cb(shell, resp)
-                        return new Shell({
-                            ...shell,
-                            context,
-                        })
-                    }),
-                )
-            }),
-        )
+export function getStory<TContext>({
+    inputs,
+    authorizedErrors,
+    newContext,
+    sideEffects,
+}: {
+    inputs: (shell: Shell<TContext>) => {
+        storyId: string
     }
+    authorizedErrors?: (resp: HTTPError) => boolean
+    sideEffects?: (resp, shell: Shell<TContext>) => void
+    newContext?: (shell: Shell<TContext>, resp: GetStoryResponse) => TContext
+}) {
+    return wrap<Shell<TContext>, GetStoryResponse, TContext>({
+        observable: (shell: Shell<TContext>) =>
+            shell.assetsGtw.stories.getStory$(inputs(shell)),
+        authorizedErrors,
+        sideEffects: (resp, shell) => {
+            expectAttributes(resp, [
+                'storyId',
+                'rootDocumentId',
+                'title',
+                'authors',
+            ])
+            sideEffects && sideEffects(resp, shell)
+        },
+        newShell: (shell, resp) => newShellFromContext(shell, resp, newContext),
+    })
 }
 
 export function getGlobalContents<T>(
