@@ -1,17 +1,15 @@
-import { RootRouter } from '../router'
-import { CallerRequestOptions, HTTPResponse$ } from '../utils'
-import {
-    GetHealthzResponse,
-    QueryGroupsResponse,
-    GetUserInfoResponse,
-} from './interfaces'
-import { MiscRouter } from './routers'
+import { map } from 'rxjs/operators'
+import { AccountsClient } from '../accounts-backend/accounts.client'
+import { AssetsClient } from '../assets-backend'
 import { CdnClient } from '../cdn-backend'
-import { StoriesClient } from '../stories-backend'
+import { ExplorerClient } from '../explorer-backend'
 import { FilesClient } from '../files-backend'
 import { FluxClient } from '../flux-backend'
-import { ExplorerClient } from '../explorer-backend'
-import { AssetsClient } from '../assets-backend'
+import { RootRouter } from '../router'
+import { StoriesClient } from '../stories-backend'
+import { CallerRequestOptions, HTTPError, HTTPResponse$ } from '../utils'
+import { GetHealthzResponse, GetUserInfoResponse, QueryGroupsResponse } from './interfaces'
+import { MiscRouter } from './routers'
 
 export class AssetsGatewayClient extends RootRouter {
     public readonly misc: MiscRouter
@@ -21,11 +19,12 @@ export class AssetsGatewayClient extends RootRouter {
     public readonly flux: FluxClient
     public readonly explorer: ExplorerClient
     public readonly assets: AssetsClient
+    public readonly accounts: AccountsClient
 
     constructor({
-        headers,
-        hostName,
-    }: {
+                    headers,
+                    hostName,
+                }: {
         headers?: { [_key: string]: string }
         hostName?: string
     } = {}) {
@@ -65,6 +64,10 @@ export class AssetsGatewayClient extends RootRouter {
             basePath: `/api/assets-gateway/assets-backend`,
             hostName,
         })
+        this.accounts = new AccountsClient({
+            headers,
+            hostName,
+        })
     }
 
     /**
@@ -88,29 +91,28 @@ export class AssetsGatewayClient extends RootRouter {
      *
      * @param callerOptions
      * @returns response
+     *
+     * @deprecated Use AccountsClient.getSessionDetails$().userInfo instead
      */
     getUserInfo$(
         callerOptions: CallerRequestOptions = {},
     ): HTTPResponse$<GetUserInfoResponse> {
-        return this.send$({
-            command: 'query',
-            path: `/user-info`,
-            callerOptions,
-        })
+        return this.accounts.getSessionDetails$(callerOptions)
+            .pipe(map((resp) => resp instanceof HTTPError ? resp : resp.userInfo))
     }
 
     /**
      * Groups in which the user belong
      * @param callerOptions
      * @returns response
+     *
+     * @deprecated Use AccountsClient.getSessionDetails$().userInfo.groups instead
+     *
      */
     queryGroups$(
         callerOptions: CallerRequestOptions = {},
     ): HTTPResponse$<QueryGroupsResponse> {
-        return this.send$({
-            command: 'query',
-            path: `/groups`,
-            callerOptions,
-        })
+        return this.accounts.getSessionDetails$(callerOptions)
+            .pipe(map(resp => resp instanceof HTTPError ? resp : { groups: resp.userInfo.groups }))
     }
 }
