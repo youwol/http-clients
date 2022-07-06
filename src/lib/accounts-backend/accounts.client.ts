@@ -30,15 +30,15 @@ export class AccountsClient extends RootRouter {
     }
 
     private _logoutUrl(redirectUri: string, forget_user: boolean): string {
-        return `${this.basePath}/openid_rp/logout?target_uri=${encodeURI(redirectUri)}${forget_user ? '&forget_me=true' : ''}`
+        return `${this.basePath}/openid_rp/logout?target_uri=${encodeURIComponent(redirectUri)}${forget_user ? '&forget_me=true' : ''}`
     }
 
     public loginAsUserUrl(redirectUri: string): string {
-        return `${this.basePath}/openid_rp/login?flow=user&target_uri=${encodeURI(redirectUri)}`
+        return `${this.basePath}/openid_rp/login?flow=user&target_uri=${encodeURIComponent(redirectUri)}`
     }
 
     public loginAsTempUserUrl(redirectUri: string): string {
-        return `${this.basePath}/openid_rp/login?flow=temp&target_uri=${encodeURI(redirectUri)}`
+        return `${this.basePath}/openid_rp/login?flow=temp&target_uri=${encodeURIComponent(redirectUri)}`
     }
 
     public sendRegisterMail$(

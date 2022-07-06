@@ -7,7 +7,7 @@ const keycloak_logout = /\/auth\/realms\/.*\/protocol\/openid-connect\/logout\?r
 const keycloak_auth = /\/auth\/realms\/.*\/protocol\/openid-connect\/auth\?/
 
 describe('logout', () => {
-    const target_uri = 'https://platform.youwol.com/inexisting/target/uri'
+    const target_uri = 'https://platform.youwol.com/inexisting/target/uri?param=value&p=http%3A//localhost%3A2000/applications/%40youwol/developer-portal/latest&flow=auto'
     const url = subject.logoutUrl(target_uri)
     test(`header yw_jwt deleted`, () => {
         return expect(
@@ -55,7 +55,7 @@ describe('logout', () => {
 
 
 describe('user login', () => {
-    const target_uri = 'https://platform.youwol.com/inexisting/target/uri'
+    const target_uri = 'https://platform.youwol.com/inexisting/target/uri?param=value&p=http%3A//localhost%3A2000/applications/%40youwol/developer-portal/latest&flow=auto'
     const url = subject.loginAsUserUrl(target_uri)
     test(`307 temporary redirection`, () => {
         return expect(
