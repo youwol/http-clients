@@ -1,9 +1,9 @@
-import { newShellFromContext, Shell, wrap } from '../common'
-import { HTTPError, raiseHTTPErrors } from '../../lib'
-import { PyYouwolClient, UploadAssetResponse } from '../../lib/py-youwol'
 import { Observable } from 'rxjs'
 import { map, mergeMap } from 'rxjs/operators'
+import { HTTPError, raiseHTTPErrors } from '../../lib'
 import { AssetsGatewayClient } from '../../lib/assets-gateway'
+import { PyYouwolClient, UploadAssetResponse } from '../../lib/py-youwol'
+import { newShellFromContext, Shell, wrap } from '../common'
 
 export function uploadAsset<TContext>({
     inputs,
@@ -41,7 +41,7 @@ export function switchToRemoteShell<TContext>() {
                             return new Shell({
                                 ...shell,
                                 assetsGtw: new AssetsGatewayClient({
-                                    hostName: 'https://gc.platform.youwol.com',
+                                    hostName: 'https://platform.youwol.com', // Should be dynamic, from py-youwol env
                                     headers: {
                                         authorization: `Bearer ${accessToken}`,
                                     },
