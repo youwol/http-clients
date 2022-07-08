@@ -9,6 +9,7 @@ import {
     duplicate,
     getProject,
     newProject,
+    publishProject,
     updateMetadata,
     updateProject,
     upload,
@@ -23,6 +24,9 @@ import { setup$ } from '../py-youwol/utils'
 import { purgeDrive, trashItem } from '../treedb-backend/shell'
 import { getAsset } from '../assets-backend/shell'
 import { NewAssetResponse } from '../../lib/assets-gateway'
+import { getInfo } from '../cdn-backend/shell'
+
+import { UploadResponse as CdnUploadResponse } from '../../lib/cdn-backend'
 
 beforeAll(async (done) => {
     setup$({
@@ -356,4 +360,122 @@ test('duplicate project', (done) => {
             }),
         )
         .subscribe(() => done())
+})
+
+test('new project, publish as application', (done) => {
+    class Context {
+        projectId: string
+        project: GetProjectResponse
+        cdnAsset: NewAssetResponse<CdnUploadResponse>
+        constructor(params: {
+            projectId?: string
+            project?: GetProjectResponse
+            cdnAsset?: NewAssetResponse<CdnUploadResponse>
+        }) {
+            Object.assign(this, params)
+        }
+    }
+    function getPublishBody(version: string) {
+        return {
+            name: 'my-app-test',
+            displayName: 'Test application',
+            version,
+            execution: {
+                standalone: true,
+                parametrized: [],
+            },
+            graphics: {
+                appIcon: { innerText: 'app icon' },
+                fileIcon: { innerText: 'file icon' },
+                background: { innerText: 'background' },
+            },
+        }
+    }
+    shell$<Context>()
+        .pipe(
+            newProject({
+                inputs: (shell) => ({
+                    queryParameters: { folderId: shell.homeFolderId },
+                    body: { name: 'flux-project' },
+                }),
+                newContext: (
+                    shell,
+                    resp: NewAssetResponse<NewProjectResponse>,
+                ) => {
+                    return new Context({
+                        ...shell.context,
+                        projectId: resp.rawId,
+                    })
+                },
+            }),
+            getProject({
+                inputs: (shell) => ({ projectId: shell.context.projectId }),
+                sideEffects: (resp) => {
+                    expect(resp.workflow.modules).toHaveLength(1)
+                },
+                newContext: (shell, resp) => {
+                    return new Context({ ...shell.context, project: resp })
+                },
+            }),
+            publishProject({
+                inputs: (shell) => {
+                    return {
+                        projectId: shell.context.projectId,
+                        body: getPublishBody('0.0.1'),
+                        queryParameters: {
+                            folderId: shell.homeFolderId,
+                        },
+                    }
+                },
+                sideEffects: (resp) => {
+                    expect(resp.name).toBe('my-app-test')
+                    expect(resp.rawResponse.name).toBe('my-app-test')
+                    expect(resp.rawResponse.version).toBe('0.0.1')
+                },
+                newContext: (shell, resp) => {
+                    return new Context({ ...shell.context, cdnAsset: resp })
+                },
+            }),
+            getInfo(
+                (shell) => {
+                    return { libraryId: shell.context.cdnAsset.rawId }
+                },
+                (shell, resp) => {
+                    expect(resp.versions).toEqual(['0.0.1'])
+                    return shell.context
+                },
+            ),
+            publishProject({
+                inputs: (shell) => {
+                    return {
+                        projectId: shell.context.projectId,
+                        body: getPublishBody('0.0.2'),
+                        // we should not need to provide folderId as the asset has already been published
+                        queryParameters: {
+                            folderId: shell.homeFolderId,
+                        },
+                    }
+                },
+                sideEffects: (resp) => {
+                    expect(resp.name).toBe('my-app-test')
+                    expect(resp.rawResponse.name).toBe('my-app-test')
+                    expect(resp.rawResponse.version).toBe('0.0.2')
+                },
+                newContext: (shell, resp) => {
+                    return new Context({ ...shell.context, cdnAsset: resp })
+                },
+            }),
+            getInfo(
+                (shell) => {
+                    return { libraryId: shell.context.cdnAsset.rawId }
+                },
+                (shell, resp) => {
+                    expect(resp.versions).toEqual(['0.0.2', '0.0.1'])
+                    return shell.context
+                },
+            ),
+        )
+        .subscribe(() => {
+            done()
+        })
 })

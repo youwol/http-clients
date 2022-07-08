@@ -17,9 +17,11 @@ import {
     GetProjectResponse,
     NewProjectBody,
     NewProjectResponse,
+    PublishApplicationBody,
     UpdateProjectBody,
 } from '../../lib/flux-backend'
 import { readFileSync } from 'fs'
+import { UploadResponse as CdnUploadResponse } from '../../lib/cdn-backend'
 
 export function newProject<TContext>({
     inputs,
@@ -253,4 +255,46 @@ export function duplicate<T>(
             }),
         )
     }
+}
+
+export function publishProject<TContext>({
+    inputs,
+    authorizedErrors,
+    newContext,
+    sideEffects,
+}: {
+    inputs: (shell: Shell<TContext>) => {
+        projectId: string
+        body: PublishApplicationBody
+        queryParameters?: { folderId?: string }
+    }
+    authorizedErrors?: (resp: HTTPError) => boolean
+    sideEffects?: (resp, shell: Shell<TContext>) => void
+    newContext?: (
+        shell: Shell<TContext>,
+        resp: NewAssetResponse<CdnUploadResponse>,
+    ) => TContext
+}) {
+    return wrap<
+        Shell<TContext>,
+        NewAssetResponse<CdnUploadResponse> | CdnUploadResponse,
+        TContext
+    >({
+        observable: (shell: Shell<TContext>) =>
+            shell.assetsGtw.flux.publishApplication$(inputs(shell)),
+        authorizedErrors,
+        sideEffects: (resp: NewAssetResponse<CdnUploadResponse>, shell) => {
+            expectAssetAttributes(resp)
+            expectAttributes(resp.rawResponse, [
+                'name',
+                'id',
+                'version',
+                'fingerprint',
+                'compressedSize',
+            ])
+            expect(resp.kind).toBe('package')
+            sideEffects && sideEffects(resp, shell)
+        },
+        newShell: (shell, resp) => newShellFromContext(shell, resp, newContext),
+    })
 }
