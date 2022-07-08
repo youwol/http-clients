@@ -125,3 +125,27 @@ export interface UpdateMetadataBody {
 
 export interface UpdateMetadataResponse {}
 export interface DuplicateResponse extends NewProjectResponse {}
+
+export interface OpenWithDescription {
+    match: { [k: string]: string } | string
+    parametrized: { [k: string]: string } | string
+}
+
+export interface GraphicsDescription {
+    appIcon: { [k: string]: any }
+    fileIcon: { [k: string]: any }
+    background: { [k: string]: any }
+}
+
+export interface ExecutionDescription {
+    standalone: boolean
+    parametrized: OpenWithDescription[]
+}
+
+export interface PublishApplicationBody {
+    name: string
+    displayName: string
+    version: string
+    execution: ExecutionDescription
+    graphics: GraphicsDescription
+}
