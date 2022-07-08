@@ -1,5 +1,4 @@
-import { map } from 'rxjs/operators'
-import { AccountsClient } from '../accounts-backend/accounts.client'
+import { AccountsClient } from '../accounts-backend'
 import { AssetsClient } from '../assets-backend'
 import { CdnClient } from '../cdn-backend'
 import { ExplorerClient } from '../explorer-backend'
@@ -7,8 +6,12 @@ import { FilesClient } from '../files-backend'
 import { FluxClient } from '../flux-backend'
 import { RootRouter } from '../router'
 import { StoriesClient } from '../stories-backend'
-import { CallerRequestOptions, HTTPError, HTTPResponse$ } from '../utils'
-import { GetHealthzResponse, GetUserInfoResponse, QueryGroupsResponse } from './interfaces'
+import { CallerRequestOptions, HTTPResponse$ } from '../utils'
+import {
+    GetHealthzResponse,
+    GetUserInfoResponse,
+    QueryGroupsResponse,
+} from './interfaces'
 import { MiscRouter } from './routers'
 
 export class AssetsGatewayClient extends RootRouter {
@@ -22,9 +25,9 @@ export class AssetsGatewayClient extends RootRouter {
     public readonly accounts: AccountsClient
 
     constructor({
-                    headers,
-                    hostName,
-                }: {
+        headers,
+        hostName,
+    }: {
         headers?: { [_key: string]: string }
         hostName?: string
     } = {}) {
@@ -97,8 +100,11 @@ export class AssetsGatewayClient extends RootRouter {
     getUserInfo$(
         callerOptions: CallerRequestOptions = {},
     ): HTTPResponse$<GetUserInfoResponse> {
-        return this.accounts.getSessionDetails$(callerOptions)
-            .pipe(map((resp) => resp instanceof HTTPError ? resp : resp.userInfo))
+        return this.send$({
+            command: 'query',
+            path: `/user-info`,
+            callerOptions,
+        })
     }
 
     /**
@@ -107,12 +113,14 @@ export class AssetsGatewayClient extends RootRouter {
      * @returns response
      *
      * @deprecated Use AccountsClient.getSessionDetails$().userInfo.groups instead
-     *
      */
     queryGroups$(
         callerOptions: CallerRequestOptions = {},
     ): HTTPResponse$<QueryGroupsResponse> {
-        return this.accounts.getSessionDetails$(callerOptions)
-            .pipe(map(resp => resp instanceof HTTPError ? resp : { groups: resp.userInfo.groups }))
+        return this.send$({
+            command: 'query',
+            path: `/groups`,
+            callerOptions,
+        })
     }
 }
