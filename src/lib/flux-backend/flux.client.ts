@@ -18,6 +18,7 @@ import {
     DuplicateResponse,
     PublishApplicationBody,
 } from './interfaces'
+import { UploadResponse as CdnUploadResponse } from '../cdn-backend'
 import { RootRouter } from '../router'
 import { Observable } from 'rxjs'
 import { NewAssetResponse } from '../assets-gateway'
@@ -289,7 +290,7 @@ export class FluxClient extends RootRouter {
         body: PublishApplicationBody
         queryParameters?: { folderId?: string }
         callerOptions?: CallerRequestOptions
-    }): HTTPResponse$<NewAssetResponse<DuplicateResponse> | DuplicateResponse> {
+    }): HTTPResponse$<NewAssetResponse<CdnUploadResponse> | CdnUploadResponse> {
         const suffix =
             queryParameters && queryParameters.folderId
                 ? `?folder-id=${queryParameters.folderId}`
