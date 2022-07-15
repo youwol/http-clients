@@ -1,13 +1,13 @@
 import { Observable, of, OperatorFunction, ReplaySubject, Subject } from 'rxjs'
 import { filter, map, mergeMap, tap } from 'rxjs/operators'
 
+export type Empty = Record<string, never>
+
 export interface JsonMap {
     [member: string]: string | number | boolean | null | JsonArray | JsonMap
 }
 
-export type JsonArray = Array<
-    string | number | boolean | null | JsonArray | JsonMap
->
+export type JsonArray = Array<string | number | boolean | null | JsonArray | JsonMap>
 
 export type Json = JsonMap | JsonArray | string | number | boolean | null
 
@@ -24,7 +24,8 @@ export type CommandType =
 export type HTTPResponse$<T> = Observable<T | HTTPError>
 
 export class HTTPError {
-    constructor(public readonly status: number, public readonly body: Json) {}
+    constructor(public readonly status: number, public readonly body: Json) {
+    }
 }
 
 export function muteHTTPErrors<T>(
@@ -93,10 +94,10 @@ export class RequestFollower {
     transferredCount: number
 
     constructor({
-        requestId,
-        channels$,
-        commandType,
-    }: {
+                    requestId,
+                    channels$,
+                    commandType,
+                }: {
         requestId: string
         channels$: Subject<RequestEvent> | Array<Subject<RequestEvent>>
         commandType: CommandType
@@ -184,6 +185,12 @@ export function request$<T = unknown>(request: Request) {
     return new Observable<T>((observer) => {
         fetch(request)
             .then((response) => {
+                if (!response.headers.has('content-type')) {
+                    return response.ok
+                        ? {}
+                        : new HTTPError(response.status, null)
+                }
+
                 const contentType = response.headers.get('content-type')
 
                 if (contentType == 'application/json') {
@@ -326,12 +333,12 @@ function instrumentXHR(
     follower?: RequestFollower,
 ) {
     follower &&
-        (xhr.onloadstart = (event) => follower && follower.start(event.total))
+    (xhr.onloadstart = (event) => follower && follower.start(event.total))
 
     follower &&
-        (xhr.upload.onprogress = (event) => {
-            follower && follower.progressTo(event.loaded, event.total)
-        })
+    (xhr.upload.onprogress = (event) => {
+        follower && follower.progressTo(event.loaded, event.total)
+    })
 
     xhr.onload = () => {
         if (xhr.readyState === 4) {
@@ -348,13 +355,13 @@ function instrumentXHR(
 }
 
 export function sendFormData({
-    url,
-    queryParameters,
-    formData,
-    method,
-    headers,
-    callerOptions,
-}: {
+                                 url,
+                                 queryParameters,
+                                 formData,
+                                 method,
+                                 headers,
+                                 callerOptions,
+                             }: {
     url: string
     queryParameters?: { [_k: string]: string }
     formData: FormData
