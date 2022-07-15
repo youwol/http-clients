@@ -1,7 +1,6 @@
-import { Observable } from 'rxjs'
 import { RootRouter } from '../router'
-import { CallerRequestOptions, HTTPError, HTTPResponse$ } from '../utils'
-import { Empty, SessionDetails } from './interfaces'
+import { CallerRequestOptions, Empty, HTTPResponse$ } from '../utils'
+import { SessionDetails } from './interfaces'
 
 export class AccountsClient extends RootRouter {
     constructor({
@@ -42,16 +41,19 @@ export class AccountsClient extends RootRouter {
     }
 
     public sendRegisterMail$(
-        { email, username }: { email: string, username?: string },
+        details: {email: string, target_uri: string},
         callerOptions: CallerRequestOptions = {},
     ): HTTPResponse$<Empty> {
-        if (username === undefined) {
-            username = email
-        }
-        console.log(`Shall register with username "${username}" and email ${email}`)
-        return new Observable<HTTPError | Empty>(() => {
-            throw new Error('Not implemented')
-        })
+        return this.send$(
+            {
+                command: 'create',
+                path: '/registration',
+                nativeRequestOptions: {
+                    json: details
+                },
+                callerOptions
+            }
+        )
     }
 
     public startVisibleImpersonation$(
