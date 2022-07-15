@@ -23,5 +23,3 @@ export interface SessionImpersonationDetails {
 }
 
 export type SessionDetails = SessionImpersonationDetails | SessionBaseDetails
-
-export type Empty = Record<string, never>
