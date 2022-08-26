@@ -51,18 +51,12 @@ export interface K8sDockerRepositories {
     repositories: DockerRepository[]
 }
 
-export interface OpenIdConnect {
-    authSecret: string
-    host: string
-}
-
 export interface K8sInstance {
     instanceInfo: K8sInstanceInfo
     configFile: string
     contextName: string
     docker: K8sDockerRepositories
     host: string
-    openIdConnect: OpenIdConnect
     proxyPort: string
 }
 
