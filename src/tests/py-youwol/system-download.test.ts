@@ -18,7 +18,7 @@ import {
 import { expectAttributes, getPyYouwolBasePath, send, shell$ } from '../common'
 /* eslint-disable jest/no-done-callback -- eslint-comment Find a good way to work with rxjs in jest */
 import '../mock-requests'
-import { Client, install, ModulesInput } from '@youwol/cdn-client'
+import { Client, install, State } from '@youwol/cdn-client'
 import { raiseHTTPErrors } from '../../lib'
 import { merge, Observable, of } from 'rxjs'
 import { setup$ } from './utils'
@@ -41,7 +41,7 @@ beforeEach(async (done) => {
 })
 
 function testInstall(
-    modules: ModulesInput,
+    modules: string[],
     expectedStatus: 'succeeded' | 'failed' = 'succeeded',
 ) {
     return (
@@ -95,7 +95,7 @@ test('install package @youwol/logging#0.0.2-next => Failure', (done) => {
             //wait for websocket to connect
             take(1),
             testInstall(
-                [{ name: '@youwol/logging', version: '0.0.2-next' }],
+                ['@youwol/logging#0.0.2-next'],
                 'failed',
             ),
         )
@@ -113,7 +113,7 @@ test('install package rxjs + clear + install package rxjs', (done) => {
             tap((resp: ResetCdnResponse) => {
                 expectAttributes(resp, ['deletedPackages'])
                 expect(resp.deletedPackages).toEqual(['rxjs'])
-                Client.resetCache()
+                State.resetCache()
             }),
             mergeMap(() => pyYouwol.admin.localCdn.getStatus$()),
             raiseHTTPErrors(),
