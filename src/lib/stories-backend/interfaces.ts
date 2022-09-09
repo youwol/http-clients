@@ -2,7 +2,13 @@ type Url = string
 
 export interface LoadingGraph {
     graphType: string
-    lock: { id: string; name: string; version: string }[]
+    lock: {
+        id: string
+        name: string
+        version: string
+        apiKey: string
+        exportedSymbol: string
+    }[]
     definition: [string, Url][][]
 }
 
@@ -28,8 +34,8 @@ export interface GetDocumentResponse {
     contentId: string
     parentDocumentId: string
 }
-export interface CreateDocumentResponse extends GetDocumentResponse {}
-export interface UpdateDocumentResponse extends GetDocumentResponse {}
+export type CreateDocumentResponse = GetDocumentResponse
+export type UpdateDocumentResponse = GetDocumentResponse
 /**
  * Children documents of a document
  */
@@ -48,11 +54,11 @@ export interface StoryResponse {
     requirements: StoryRequirements
 }
 
-export interface CreateStoryResponse extends StoryResponse {}
+export type CreateStoryResponse = StoryResponse
 
-export interface PublishStoryResponse extends StoryResponse {}
+export type PublishStoryResponse = StoryResponse
 
-export interface GetStoryResponse extends StoryResponse {}
+export type GetStoryResponse = StoryResponse
 
 export interface DeleteStoryResponse {
     pass
@@ -72,22 +78,6 @@ export interface AddPluginResponse {
     packageName: string
     version: string
     requirements: StoryRequirements
-}
-
-/**
- * Story is a wrapper of root document with metadata.
- */
-export interface StoryResponse {
-    storyId: string
-    rootDocumentId: string
-    title: string
-    authors: AuthorResponse[]
-    requirements: StoryRequirements
-}
-
-export interface StoryRequirements {
-    plugins: string[]
-    loadingGraph: LoadingGraph
 }
 
 export interface GlobalContent {
@@ -119,7 +109,7 @@ export interface CreateDocumentBody {
     title: string
     content?: DocumentContentBody
 }
-export interface UpdateContentBody extends DocumentContentBody {}
+export type UpdateContentBody = DocumentContentBody
 export interface DeleteDocumentResponse {
     deletedDocuments: number
 }
@@ -130,7 +120,13 @@ export interface MoveDocumentBody {
 export interface AddPluginBody {
     packageName: string
 }
+export interface UpgradePluginsBody {}
+
+export interface UpgradePluginsResponse {
+    upgradedPlugins: { [k: string]: string }
+    requirements: StoryRequirements
+}
 export interface UpdateContentsResponse {}
 export interface UpdateGlobalContentsResponse {}
 export interface MoveDocumentResponse {}
-export interface GetGlobalContentResponse extends GlobalContent {}
+export type GetGlobalContentResponse = GlobalContent

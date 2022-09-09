@@ -3,7 +3,7 @@ import { map, mergeMap, reduce, take, tap } from 'rxjs/operators'
 import { raiseHTTPErrors, RootRouter } from '../../lib'
 import { PyYouwolClient } from '../../lib/py-youwol'
 import { expectAttributes, resetPyYouwolDbs$ } from '../common'
-import { Client } from '@youwol/cdn-client'
+import { State } from '@youwol/cdn-client'
 
 export function setup$(
     { localOnly, email }: { localOnly?: boolean; email?: string } = {
@@ -11,7 +11,7 @@ export function setup$(
         email: 'int_tests_yw-users@test-user',
     },
 ) {
-    Client.resetCache()
+    State.resetCache()
     const headers = {
         'py-youwol-local-only': localOnly ? 'true' : 'false',
     }

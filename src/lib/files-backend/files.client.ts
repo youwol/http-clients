@@ -34,7 +34,7 @@ export class FilesClient extends RootRouter {
     }
 
     /**
-     * Publish a story from a .zip file
+     * Upload a file (blob).
      *
      * @param body
      * @param body.fileName filename

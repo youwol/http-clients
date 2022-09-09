@@ -16,6 +16,7 @@ import {
     updateGlobalContents,
     createStory,
     getStory,
+    upgradePlugins,
 } from './shell.operators'
 import {
     expectAssetAttributes,
@@ -353,6 +354,23 @@ test('create story, play with plugins', (done) => {
                     return shell.context
                 },
             }),
+            upgradePlugins({
+                inputs: () => ({
+                    storyId,
+                    body: {},
+                    callerOptions: {
+                        headers: { 'py-youwol-local-only': 'false' },
+                    },
+                }),
+                sideEffects: (resp) => {
+                    expect(resp.requirements.plugins).toEqual([
+                        '@youwol/http-clients',
+                    ])
+                },
+                newContext: (shell) => {
+                    return shell.context
+                },
+            }),
         )
         .subscribe(() => {
             done()
@@ -363,7 +381,7 @@ test('move-document', (done) => {
     const title = 'test story: play with content'
     const storyId = 'test-story-play-with-content'
 
-    let addDoc = (title: string) => {
+    const addDoc = (title: string) => {
         return addDocuments(
             (shell: Shell<TestData>) => ({
                 storyId: shell.context.storyId,
@@ -478,7 +496,7 @@ test('publish story', (done) => {
                 inputs: () => ({ storyId }),
                 sideEffects: (resp) => {
                     expect(resp.storyId).toBe(storyId)
-                    expect(resp.requirements.plugins.length).toEqual(1)
+                    expect(resp.requirements.plugins).toHaveLength(1)
                 },
             }),
             downloadZip(
@@ -513,7 +531,7 @@ test('publish story', (done) => {
                 inputs: () => ({ storyId }),
                 sideEffects: (resp) => {
                     expect(resp.storyId).toBe(storyId)
-                    expect(resp.requirements.plugins.length).toEqual(1)
+                    expect(resp.requirements.plugins).toHaveLength(1)
                 },
             }),
         )
