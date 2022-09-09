@@ -20,6 +20,8 @@ export interface Library {
     name: string
     version: string
     id: string
+    apiKey: string
+    exportedSymbol: string
 }
 
 export interface LoadingGraph {
