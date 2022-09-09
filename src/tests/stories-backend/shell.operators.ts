@@ -23,6 +23,8 @@ import {
     CreateStoryResponse,
     GetStoryResponse,
     CreateBody,
+    UpgradePluginsBody,
+    UpgradePluginsResponse,
 } from '../../lib/stories-backend'
 import { NewAssetResponse } from '../../lib/assets-gateway'
 
@@ -287,6 +289,36 @@ export function addPlugin<T>(
             }),
         )
     }
+}
+
+export function upgradePlugins<TContext>({
+    inputs,
+    authorizedErrors,
+    newContext,
+    sideEffects,
+}: {
+    inputs: (shell: Shell<TContext>) => {
+        storyId: string
+        body: UpgradePluginsBody
+        callerOptions
+    }
+    authorizedErrors?: (resp: HTTPError) => boolean
+    sideEffects?: (resp, shell: Shell<TContext>) => void
+    newContext?: (
+        shell: Shell<TContext>,
+        resp: UpgradePluginsResponse,
+    ) => TContext
+}) {
+    return wrap<Shell<TContext>, UpgradePluginsResponse, TContext>({
+        observable: (shell: Shell<TContext>) =>
+            shell.assetsGtw.stories.upgradePlugins$(inputs(shell)),
+        authorizedErrors,
+        sideEffects: (resp, shell) => {
+            expectAttributes(resp, ['pluginsUpgraded', 'requirements'])
+            sideEffects && sideEffects(resp, shell)
+        },
+        newShell: (shell, resp) => newShellFromContext(shell, resp, newContext),
+    })
 }
 
 export function addDocuments<T>(

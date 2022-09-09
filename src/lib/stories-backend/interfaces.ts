@@ -130,6 +130,12 @@ export interface MoveDocumentBody {
 export interface AddPluginBody {
     packageName: string
 }
+export interface UpgradePluginsBody {}
+
+export interface UpgradePluginsResponse {
+    upgradedPlugins: { [k: string]: string }
+    requirements: StoryRequirements
+}
 export interface UpdateContentsResponse {}
 export interface UpdateGlobalContentsResponse {}
 export interface MoveDocumentResponse {}

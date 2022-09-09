@@ -30,6 +30,8 @@ import {
     CreateBody,
     PublishBody,
     CreateDocumentBody,
+    UpgradePluginsBody,
+    UpgradePluginsResponse,
 } from './interfaces'
 import { RootRouter } from '../router'
 import { Observable } from 'rxjs'
@@ -473,6 +475,32 @@ export class StoriesClient extends RootRouter {
         return this.send$({
             command: 'update',
             path: `/stories/${storyId}/plugins`,
+            nativeRequestOptions: {
+                json: body,
+            },
+            callerOptions,
+        })
+    }
+
+    /**
+     * upgrade the plugins of a story
+     *
+     * @param storyId storyId
+     * @param body body
+     * @param callerOptions
+     */
+    upgradePlugins$({
+        storyId,
+        body,
+        callerOptions,
+    }: {
+        storyId: string
+        body: UpgradePluginsBody
+        callerOptions?: CallerRequestOptions
+    }): HTTPResponse$<UpgradePluginsResponse> {
+        return this.send$({
+            command: 'update',
+            path: `/stories/${storyId}/plugins/upgrade`,
             nativeRequestOptions: {
                 json: body,
             },
