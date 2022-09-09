@@ -2,7 +2,13 @@ type Url = string
 
 export interface LoadingGraph {
     graphType: string
-    lock: { id: string; name: string; version: string }[]
+    lock: {
+        id: string
+        name: string
+        version: string
+        apiKey: string
+        exportedSymbol: string
+    }[]
     definition: [string, Url][][]
 }
 
