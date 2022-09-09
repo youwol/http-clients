@@ -74,22 +74,6 @@ export interface AddPluginResponse {
     requirements: StoryRequirements
 }
 
-/**
- * Story is a wrapper of root document with metadata.
- */
-export interface StoryResponse {
-    storyId: string
-    rootDocumentId: string
-    title: string
-    authors: AuthorResponse[]
-    requirements: StoryRequirements
-}
-
-export interface StoryRequirements {
-    plugins: string[]
-    loadingGraph: LoadingGraph
-}
-
 export interface GlobalContent {
     css: string
     javascript: string
