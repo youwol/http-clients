@@ -7,7 +7,7 @@ export interface NewProjectResponse {
     libraries: { [k: string]: string }
 }
 
-export interface UploadResponse extends NewProjectResponse {}
+export type UploadResponse = NewProjectResponse
 export interface UploadBody {
     content: Blob | File
 }
@@ -113,9 +113,9 @@ export interface Project {
     runnerRendering: RunnerRendering
 }
 
-export interface GetProjectResponse extends Project {}
+export type GetProjectResponse = Project
 
-export interface UpdateProjectBody extends Project {}
+export type UpdateProjectBody = Project
 
 export interface UpdateProjectResponse {}
 
@@ -126,7 +126,7 @@ export interface UpdateMetadataBody {
 }
 
 export interface UpdateMetadataResponse {}
-export interface DuplicateResponse extends NewProjectResponse {}
+export type DuplicateResponse = NewProjectResponse
 
 export interface OpenWithDescription {
     match: { [k: string]: string } | string

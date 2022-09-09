@@ -28,8 +28,8 @@ export interface GetDocumentResponse {
     contentId: string
     parentDocumentId: string
 }
-export interface CreateDocumentResponse extends GetDocumentResponse {}
-export interface UpdateDocumentResponse extends GetDocumentResponse {}
+export type CreateDocumentResponse = GetDocumentResponse
+export type UpdateDocumentResponse = GetDocumentResponse
 /**
  * Children documents of a document
  */
@@ -48,11 +48,11 @@ export interface StoryResponse {
     requirements: StoryRequirements
 }
 
-export interface CreateStoryResponse extends StoryResponse {}
+export type CreateStoryResponse = StoryResponse
 
-export interface PublishStoryResponse extends StoryResponse {}
+export type PublishStoryResponse = StoryResponse
 
-export interface GetStoryResponse extends StoryResponse {}
+export type GetStoryResponse = StoryResponse
 
 export interface DeleteStoryResponse {
     pass
@@ -119,7 +119,7 @@ export interface CreateDocumentBody {
     title: string
     content?: DocumentContentBody
 }
-export interface UpdateContentBody extends DocumentContentBody {}
+export type UpdateContentBody = DocumentContentBody
 export interface DeleteDocumentResponse {
     deletedDocuments: number
 }
@@ -133,4 +133,4 @@ export interface AddPluginBody {
 export interface UpdateContentsResponse {}
 export interface UpdateGlobalContentsResponse {}
 export interface MoveDocumentResponse {}
-export interface GetGlobalContentResponse extends GlobalContent {}
+export type GetGlobalContentResponse = GlobalContent
