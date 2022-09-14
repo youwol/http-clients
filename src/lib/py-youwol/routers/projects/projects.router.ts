@@ -15,6 +15,8 @@ import {
     GetPipelineStepStatusResponse,
     RunStepResponse,
     PipelineStepEventKind,
+    CreateProjectFromTemplateBody,
+    CreateProjectFromTemplateResponse,
 } from './interfaces'
 import { WsRouter } from '../../py-youwol.client'
 
@@ -216,6 +218,29 @@ export class ProjectsRouter extends Router {
         return this.send$({
             command: 'update',
             path: `/${projectId}/flows/${flowId}/steps/${stepId}/run`,
+            callerOptions,
+        })
+    }
+
+    /**
+     * Create a new project from a template
+     *
+     * @param body
+     * @param callerOptions
+     */
+    createProjectFromTemplate({
+        body,
+        callerOptions,
+    }: {
+        body: CreateProjectFromTemplateBody
+        callerOptions?: CallerRequestOptions
+    }): HTTPResponse$<CreateProjectFromTemplateResponse> {
+        return this.send$({
+            command: 'create',
+            path: `/create-from-template`,
+            nativeRequestOptions: {
+                json: body,
+            },
             callerOptions,
         })
     }

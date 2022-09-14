@@ -140,3 +140,10 @@ export interface PipelineStepEvent {
     stepId: string
     event: PipelineStepEventKind
 }
+
+export interface CreateProjectFromTemplateBody {
+    type: string
+    parameters: { [k: string]: string }
+}
+
+export type CreateProjectFromTemplateResponse = Project

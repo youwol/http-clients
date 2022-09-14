@@ -60,6 +60,13 @@ export interface K8sInstance {
     proxyPort: string
 }
 
+export interface ProjectTemplate {
+    icon?: { [k: string]: unknown }
+    type: string
+    folder: string
+    parameters: { [k: string]: string }
+}
+
 export interface YouwolEnvironment {
     availableProfiles: string[]
     httpPort: number
@@ -72,6 +79,7 @@ export interface YouwolEnvironment {
     selectedRemote?: string
 
     pathsBook: PathsBook
+    projectTemplates: ProjectTemplate[]
     customDispatches: CustomDispatch[]
     cache: { [key: string]: unknown }
 
