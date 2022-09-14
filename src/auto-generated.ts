@@ -30,7 +30,7 @@ const exportedSymbols = {
 export const setup = {
     name:'@youwol/http-clients',
         assetId:'QHlvdXdvbC9odHRwLWNsaWVudHM=',
-    version:'1.0.2',
+    version:'1.0.3-wip',
     shortDescription:"The library exposes some of YouWol backend services.",
     developerDocumentation:'https://platform.youwol.com/applications/@youwol/cdn-explorer/latest?package=@youwol/http-clients',
     npmPackage:'https://www.npmjs.com/package/@youwol/http-clients',
