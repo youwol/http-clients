@@ -53,10 +53,9 @@ export interface Project {
 export interface ProjectsLoadingResults {
     results: (Project | Failure)[]
 }
-export interface GetProjectsStatusResponse extends ProjectsLoadingResults {}
+export type GetProjectsStatusResponse = ProjectsLoadingResults
 
-export interface ProjectsLoadingResultsResponse
-    extends ProjectsLoadingResults {}
+export type ProjectsLoadingResultsResponse = ProjectsLoadingResults
 
 export interface ChildToParentConnections {
     id: string
@@ -75,16 +74,16 @@ export interface ProjectStatus {
     projectName: string
     workspaceDependencies: DependenciesResponse[]
 }
-export interface GetProjectStatusResponse extends ProjectStatus {}
+export type GetProjectStatusResponse = ProjectStatus
 
 export interface Artifact {
     id: string
     path: string
     links: Link[]
 }
-export interface ArtifactsResponse extends Artifact {}
+export type ArtifactsResponse = Artifact
 
-export interface GetArtifactResponse extends Artifact {}
+export type GetArtifactResponse = Artifact
 
 export interface Manifest {
     succeeded: boolean
@@ -109,21 +108,20 @@ export interface PipelineStepStatusResponse {
     manifest?: Manifest
     status: 'OK' | 'KO' | 'outdated' | 'none'
 }
-export interface GetPipelineStepStatusResponse
-    extends PipelineStepStatusResponse {}
+export type GetPipelineStepStatusResponse = PipelineStepStatusResponse
 
-export interface RunStepResponse extends PipelineStepStatusResponse {}
+export type RunStepResponse = PipelineStepStatusResponse
 
 export interface PipelineStatus {
     projectId: string
     steps: PipelineStepStatusResponse[]
 }
 
-export interface PipelineStatusResponse extends PipelineStatus {}
+export type PipelineStatusResponse = PipelineStatus
 
-export interface ProjectStatusResponse extends ProjectStatus {}
+export type ProjectStatusResponse = ProjectStatus
 
-export interface GetPipelineStatusResponse extends PipelineStatus {}
+export type GetPipelineStatusResponse = PipelineStatus
 
 export interface GetArtifactsResponse {
     artifacts: Artifact[]

@@ -108,10 +108,9 @@ export interface EnvironmentStatusResponse {
     remoteGateway?: RemoteGatewayInfo
     remotesInfo: RemoteGatewayInfo[]
 }
-export interface GetEnvironmentStatusResponse
-    extends EnvironmentStatusResponse {}
+export type GetEnvironmentStatusResponse = EnvironmentStatusResponse
 
-export interface SwitchProfileResponse extends EnvironmentStatusResponse {}
+export type SwitchProfileResponse = EnvironmentStatusResponse
 
 export interface CustomDispatch {
     type: string
