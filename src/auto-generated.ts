@@ -7,7 +7,11 @@ const runTimeDependencies = {
     "includedInBundle": []
 }
 const externals = {
-    "rxjs": "rxjs_APIv6",
+    "rxjs": {
+        "commonjs": "rxjs",
+        "commonjs2": "rxjs",
+        "root": "rxjs_APIv6"
+    },
     "rxjs/operators": {
         "commonjs": "rxjs/operators",
         "commonjs2": "rxjs/operators",
@@ -17,10 +21,16 @@ const externals = {
         ]
     }
 }
+const exportedSymbols = {
+    "rxjs": {
+        "apiKey": "6",
+        "exportedSymbol": "rxjs"
+    }
+}
 export const setup = {
     name:'@youwol/http-clients',
-    assetId:'QHlvdXdvbC9odHRwLWNsaWVudHM=',
-    version:'1.0.1',
+        assetId:'QHlvdXdvbC9odHRwLWNsaWVudHM=',
+    version:'1.0.2',
     shortDescription:"The library exposes some of YouWol backend services.",
     developerDocumentation:'https://platform.youwol.com/applications/@youwol/cdn-explorer/latest?package=@youwol/http-clients',
     npmPackage:'https://www.npmjs.com/package/@youwol/http-clients',
@@ -28,5 +38,9 @@ export const setup = {
     userGuide:'https://l.youwol.com/doc/@youwol/http-clients',
     apiVersion:'1',
     runTimeDependencies,
-    externals
+    externals,
+    exportedSymbols,
+    getDependencySymbolExported: (module:string) => {
+        return `${exportedSymbols[module].exportedSymbol}_APIv${exportedSymbols[module].apiKey}`
+    }
 }

@@ -1151,10 +1151,10 @@
   resolved "https://registry.yarnpkg.com/@xtuc/long/-/long-4.2.2.tgz#d291c6a4e97989b5c61d9acf396ae4fe133a718d"
   integrity sha512-NuHqBY1PB/D8xU6s/thBgOAiAP7HOYDQ32+BFZILJ8ivkUkAHQnWfn6WhL79Owj1qmUnoN/YPhktdIoucipkAQ==
 
-"@youwol/cdn-client@^1.0.1":
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/@youwol/cdn-client/-/cdn-client-1.0.1.tgz#35e64f8669d77d37091d370a41f392376649a5be"
-  integrity sha512-LV77+Z2fASrWGDqFZZp/b/dDCmbtkl1ScKvHUDkGejb7eOkTiZ1QyXh9Cv2WaCGZD+qRzsmfMMFF34EL4FMgNw==
+"@youwol/cdn-client@^1.0.2":
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/@youwol/cdn-client/-/cdn-client-1.0.2.tgz#bf85a98923db73513f917262f2c8a19f4bebc886"
+  integrity sha512-51cMbL7Tm2YEtB+xJPn1ck5vwqG3fClg4TIoybh6++ybh8vQWxxQF2RC3gjXkUkhShTznu5O+x9Y7dgKUrfpDw==
   dependencies:
     semver "^7.3.4"
 

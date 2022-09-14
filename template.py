@@ -24,7 +24,7 @@ template = Template(
             },
         ),
         devTime={
-            "@youwol/cdn-client": "^1.0.1",
+            "@youwol/cdn-client": "^1.0.2",
             "isomorphic-fetch": "^3.0.0",
         }),
     testConfig="https://github.com/youwol/integration-tests-conf",
