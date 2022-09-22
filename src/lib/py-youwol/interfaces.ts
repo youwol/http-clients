@@ -31,6 +31,7 @@ export type Label =
     | 'Label.PIPELINE_STEP_RUNNING'
     | 'Label.RUN_PIPELINE_STEP'
     | 'HelmPackage'
+    | 'Label.PROJECT_CREATING'
 
 export interface ContextMessage<T = unknown> {
     contextId: string

@@ -85,4 +85,28 @@ export class CdnSessionsStorageClient extends RootRouter {
             callerOptions,
         })
     }
+
+    /**
+     * Delete data
+     *
+     * @param packageName name of the cdn package
+     * @param dataName name of the data
+     * @param callerOptions
+     * @returns response
+     */
+    deleteData$({
+        packageName,
+        dataName,
+        callerOptions,
+    }: {
+        packageName: string
+        dataName: string
+        callerOptions?: CallerRequestOptions
+    }): HTTPResponse$<Json> {
+        return this.send$({
+            command: 'delete',
+            path: `/applications/${packageName}/${dataName}`,
+            callerOptions,
+        })
+    }
 }
