@@ -109,7 +109,7 @@ export interface EnvironmentStatusResponse {
     configuration: YouwolEnvironment
     users: string[]
     userInfo: UserInfo
-    remoteGateway?: RemoteGatewayInfo
+    remoteGatewayInfo?: RemoteGatewayInfo
     remotesInfo: RemoteGatewayInfo[]
 }
 export type GetEnvironmentStatusResponse = EnvironmentStatusResponse
