@@ -67,6 +67,10 @@ export interface ProjectTemplate {
     parameters: { [k: string]: string }
 }
 
+export interface PipelinesSourceInfo {
+    projectTemplates: ProjectTemplate[]
+}
+
 export interface YouwolEnvironment {
     availableProfiles: string[]
     httpPort: number
@@ -79,13 +83,13 @@ export interface YouwolEnvironment {
     selectedRemote?: string
 
     pathsBook: PathsBook
+
+    pipelinesSourceInfo?: PipelinesSourceInfo
     projectTemplates: ProjectTemplate[]
     customDispatches: CustomDispatch[]
     cache: { [key: string]: unknown }
 
     tokensCache: DeadlinedCache[]
-
-    k8sInstance?: K8sInstance
 }
 
 export interface UserInfo {

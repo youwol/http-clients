@@ -228,7 +228,7 @@ export class ProjectsRouter extends Router {
      * @param body
      * @param callerOptions
      */
-    createProjectFromTemplate({
+    createProjectFromTemplate$({
         body,
         callerOptions,
     }: {
@@ -238,6 +238,118 @@ export class ProjectsRouter extends Router {
         return this.send$({
             command: 'create',
             path: `/create-from-template`,
+            nativeRequestOptions: {
+                json: body,
+            },
+            callerOptions,
+        })
+    }
+
+    /**
+     * Return the view of a step
+     *
+     * @param projectId project's id
+     * @param flow flow's id
+     * @param stepId step's id
+     * @param callerOptions
+     */
+    getStepView$({
+        projectId,
+        flowId,
+        stepId,
+        callerOptions,
+    }: {
+        projectId: string
+        flowId: string
+        stepId: string
+        callerOptions?: CallerRequestOptions
+    }): HTTPResponse$<string> {
+        return this.send$({
+            command: 'query',
+            path: `/${projectId}/flows/${flowId}/steps/${stepId}/view`,
+            callerOptions,
+        })
+    }
+
+    /**
+     * Execute a GET command of a pipeline's step
+     *
+     * @param projectId project's id
+     * @param flow flow's id
+     * @param stepId step's id
+     * @param commandId command's id
+     * @param callerOptions
+     */
+    executeStepGetCommand$({
+        projectId,
+        flowId,
+        stepId,
+        commandId,
+        callerOptions,
+    }: {
+        projectId: string
+        flowId: string
+        stepId: string
+        commandId: string
+        callerOptions?: CallerRequestOptions
+    }) {
+        return this.send$({
+            command: 'query',
+            path: `/${projectId}/flows/${flowId}/steps/${stepId}/commands/${commandId}`,
+            callerOptions,
+        })
+    }
+
+    /**
+     * Retrieve the configuration of a pipeline's step
+     *
+     * @param projectId project's id
+     * @param flow flow's id
+     * @param stepId step's id
+     * @param callerOptions
+     */
+    getStepConfiguration$({
+        projectId,
+        flowId,
+        stepId,
+        callerOptions,
+    }: {
+        projectId: string
+        flowId: string
+        stepId: string
+        callerOptions?: CallerRequestOptions
+    }) {
+        return this.send$({
+            command: 'query',
+            path: `/${projectId}/flows/${flowId}/steps/${stepId}/configuration`,
+            callerOptions,
+        })
+    }
+
+    /**
+     * Update the configuration of a pipeline's step
+     *
+     * @param projectId project's id
+     * @param flow flow's id
+     * @param stepId step's id
+     * @param callerOptions
+     */
+    updateStepConfiguration$({
+        projectId,
+        flowId,
+        stepId,
+        body,
+        callerOptions,
+    }: {
+        projectId: string
+        flowId: string
+        stepId: string
+        body: unknown
+        callerOptions?: CallerRequestOptions
+    }) {
+        return this.send$({
+            command: 'update',
+            path: `/${projectId}/flows/${flowId}/steps/${stepId}/configuration`,
             nativeRequestOptions: {
                 json: body,
             },
