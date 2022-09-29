@@ -23,6 +23,7 @@ import { raiseHTTPErrors } from '../../lib'
 import { merge, Observable, of } from 'rxjs'
 import { setup$ } from './utils'
 import { getAsset } from '../assets-backend/shell'
+import { remoteDataFileAssetId, remoteFluxAssetId } from '../remote_assets_id'
 
 const pyYouwol = new PyYouwolClient()
 
@@ -233,17 +234,15 @@ function test_download_asset(assetId: string, basePath: string) {
 }
 
 test('download flux-project', (done) => {
-    test_download_asset(
-        'YTZjZDhlMzYtYTE5ZC00YTI5LTg3NGQtMDRjMTI2M2E5YjA3',
-        'flux-backend/projects',
-    ).subscribe(() => done())
+    test_download_asset(remoteFluxAssetId, 'flux-backend/projects').subscribe(
+        () => done(),
+    )
 })
 
 test('download data', (done) => {
-    test_download_asset(
-        'MzU5ZmVlNTctNzg0MC00YTBmLTllYjUtOGU3NjI0YzUwMjAw',
-        'files-backend/files',
-    ).subscribe(() => done())
+    test_download_asset(remoteDataFileAssetId, 'files-backend/files').subscribe(
+        () => done(),
+    )
 })
 
 /* eslint-enable jest/no-done-callback -- re-enable */

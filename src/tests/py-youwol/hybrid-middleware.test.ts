@@ -14,8 +14,8 @@ beforeEach(async (done) => {
 
 test('can retrieve asset info when remote only', (done) => {
     class Context {
-        public readonly assetId =
-            'YTZjZDhlMzYtYTE5ZC00YTI5LTg3NGQtMDRjMTI2M2E5YjA3'
+        // the creation of the test data is gathered in the youwol-config.py
+        public readonly assetId = remoteStoryAssetId
     }
 
     shell$<Context>(new Context())
