@@ -118,7 +118,7 @@ export type GetProjectResponse = Project
 
 export type UpdateProjectBody = Project
 
-export interface UpdateProjectResponse {}
+export type UpdateProjectResponse = Record<string, never>
 
 export interface UpdateMetadataBody {
     name?: string
@@ -126,7 +126,7 @@ export interface UpdateMetadataBody {
     libraries?: { [k: string]: string }
 }
 
-export interface UpdateMetadataResponse {}
+export type UpdateMetadataResponse = Record<string, never>
 export type DuplicateResponse = NewProjectResponse
 
 export interface OpenWithDescription {
