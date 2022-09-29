@@ -75,8 +75,8 @@ export function expectFlowStatus(resp, projectName) {
     expect(resp.projectId).toEqual(
         Buffer.from(projectName, 'utf8').toString('base64'),
     )
-    expect(resp.steps).toHaveLength(4)
-    resp.steps.slice(0, 3).forEach((step) => {
+    expect(resp.steps).toHaveLength(3)
+    resp.steps.forEach((step) => {
         expectAttributes(step, ['projectId', 'flowId', 'stepId', 'artifacts'])
         expect(step.status).toBe('none')
     })
@@ -141,22 +141,22 @@ export function expectUpdateStatus(resp) {
 export function expectPipelineStepEvents$(pyYouwol: PyYouwolClient) {
     return pyYouwol.admin.projects.webSocket.stepEvent$().pipe(
         map((ev) => ev.data),
-        take(18),
+        take(12),
         reduce((acc, e) => [...acc, e], []),
         tap((events) => {
-            expect(events).toHaveLength(18)
+            expect(events).toHaveLength(12)
             expect(events.filter((ev) => ev.stepId == 'init')).toHaveLength(3)
             expect(events.filter((ev) => ev.stepId == 'build')).toHaveLength(4)
             expect(
-                events.filter((ev) => ev.stepId == 'publish-local'),
+                events.filter((ev) => ev.stepId == 'cdn-local'),
             ).toHaveLength(5)
-            expect(
+            /*expect(
                 events.filter((ev) => ev.stepId == 'publish-remote'),
-            ).toHaveLength(6)
+            ).toHaveLength(6)*/
             expect(
                 events.filter((ev) => ev.event == 'runStarted'),
-            ).toHaveLength(4)
-            expect(events.filter((ev) => ev.event == 'runDone')).toHaveLength(4)
+            ).toHaveLength(3)
+            expect(events.filter((ev) => ev.event == 'runDone')).toHaveLength(3)
         }),
     )
 }
