@@ -1,5 +1,6 @@
 export interface NewProjectBody {
     name: string
+    projectId?: string
 }
 
 export interface NewProjectResponse {
