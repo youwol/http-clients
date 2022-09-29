@@ -1,9 +1,13 @@
+// eslint-disable-next-line eslint-comments/disable-enable-pair -- to not have problem
+/* eslint-disable jest/no-done-callback -- eslint-comment It is required because */
+
 import '../mock-requests'
 import { shell$ } from '../common'
 import { getAsset, getPermissions } from '../assets-backend/shell'
 import { setup$ } from './utils'
+import { remoteStoryAssetId } from '../remote_assets_id'
 
-beforeEach(async (done) => {
+beforeEach((done) => {
     setup$({
         localOnly: false,
         email: 'int_tests_yw-users@test-user',

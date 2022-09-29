@@ -23,7 +23,7 @@ import path from 'path'
 import { HTTPError } from '../../lib'
 import { setup$ } from '../py-youwol/utils'
 
-beforeEach(async (done) => {
+beforeEach((done) => {
     setup$({
         localOnly: true,
         email: 'int_tests_yw-users@test-user',
@@ -37,7 +37,8 @@ test('healthz', (done) => {
 
     shell$<Context>()
         .pipe(healthz())
-        .subscribe(() => {
+        .subscribe((resp) => {
+            expect(resp).toBeTruthy()
             done()
         })
 })

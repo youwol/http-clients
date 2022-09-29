@@ -82,6 +82,7 @@ function testInstall(
     }
 }
 
+// eslint-disable-next-line jest/expect-expect -- expects are factorized in test_download_asset
 test('install package rxjs', (done) => {
     of({})
         .pipe(testInstall(['rxjs']))
@@ -90,15 +91,13 @@ test('install package rxjs', (done) => {
         })
 })
 
+// eslint-disable-next-line jest/expect-expect -- expects are factorized in test_download_asset
 test('install package @youwol/logging#0.0.2-next => Failure', (done) => {
     of({})
         .pipe(
             //wait for websocket to connect
             take(1),
-            testInstall(
-                ['@youwol/logging#0.0.2-next'],
-                'failed',
-            ),
+            testInstall(['@youwol/logging#0.0.2-next'], 'failed'),
         )
         .subscribe(() => {
             done()
@@ -233,12 +232,14 @@ function test_download_asset(assetId: string, basePath: string) {
     )
 }
 
+// eslint-disable-next-line jest/expect-expect -- expects are factorized in test_download_asset
 test('download flux-project', (done) => {
     test_download_asset(remoteFluxAssetId, 'flux-backend/projects').subscribe(
         () => done(),
     )
 })
 
+// eslint-disable-next-line jest/expect-expect -- expects are factorized in test_download_asset
 test('download data', (done) => {
     test_download_asset(remoteDataFileAssetId, 'files-backend/files').subscribe(
         () => done(),
