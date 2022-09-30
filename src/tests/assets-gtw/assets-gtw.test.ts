@@ -5,7 +5,7 @@ import '../mock-requests'
 import { shell$ } from '../common'
 
 import { healthz } from './shell'
-import { setup$ } from '../py-youwol/utils'
+import { setup$ } from '../py-youwol'
 
 beforeAll(async (done) => {
     setup$({
@@ -21,7 +21,8 @@ test('healthz', (done) => {
 
     shell$<Context>()
         .pipe(healthz())
-        .subscribe(() => {
+        .subscribe((resp) => {
+            expect(resp).toBeTruthy()
             done()
         })
 })

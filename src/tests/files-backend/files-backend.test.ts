@@ -9,13 +9,12 @@ import { get, getInfo, remove, updateMetadata, upload } from './shell'
 import { readFileSync } from 'fs'
 import { from } from 'rxjs'
 import { mapTo, mergeMap, reduce, take, tap } from 'rxjs/operators'
-import { GetInfoResponse } from '../../lib/files-backend'
+import { GetInfoResponse, UploadResponse } from '../../lib/files-backend'
 import { GetAssetResponse } from '../../lib/assets-backend'
-import { setup$ } from '../py-youwol/utils'
+import { setup$ } from '../py-youwol'
 import { NewAssetResponse } from '../../lib/assets-gateway'
-import { purgeDrive, trashItem } from '../treedb-backend/shell'
-import { getAsset } from '../assets-backend/shell'
-import { UploadResponse } from '../../lib/files-backend'
+import { purgeDrive, trashItem } from '../treedb-backend'
+import { getAsset } from '../assets-backend'
 
 beforeAll(async (done) => {
     setup$({
@@ -94,7 +93,7 @@ test('upload files, get stats & get content', (done) => {
                 newContext: (shell, resp: NewAssetResponse<UploadResponse>) => {
                     return new TestData({
                         ...shell.context,
-                        asset: resp as NewAssetResponse<UploadResponse>,
+                        asset: resp,
                         thumbnailUrl: resp.images[0],
                     })
                 },
@@ -129,6 +128,7 @@ test('upload files, get stats & get content', (done) => {
                         )
                         if (!shell.context.fileName.endsWith('.br')) {
                             // there is auto brotli decompression activated in unit tests
+                            // eslint-disable-next-line jest/no-conditional-expect -- seems appropriated here
                             expect(original).toHaveLength(downloaded.length)
                         }
                         resolve(shell)
@@ -165,7 +165,7 @@ test('upload image file, check thumbnails & delete', (done) => {
                 newContext: (shell, resp: NewAssetResponse<UploadResponse>) => {
                     return new TestData({
                         ...shell.context,
-                        asset: resp as NewAssetResponse<UploadResponse>,
+                        asset: resp,
                         thumbnailUrl: resp.images[0],
                     })
                 },

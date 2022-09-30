@@ -3,7 +3,11 @@
 
 import '../mock-requests'
 import { getData, postData, shell$, healthz } from './shell'
-import { setup$ } from '../py-youwol/utils'
+import { setup$ } from '../py-youwol'
+import { RootRouter } from '../../lib'
+import { getPyYouwolBasePath } from '../common'
+
+RootRouter.HostName = getPyYouwolBasePath()
 
 beforeAll(async (done) => {
     setup$({
@@ -23,7 +27,8 @@ test('healthz', (done) => {
 
     shell$<Context>()
         .pipe(healthz())
-        .subscribe(() => {
+        .subscribe((resp) => {
+            expect(resp).toBeTruthy()
             done()
         })
 })

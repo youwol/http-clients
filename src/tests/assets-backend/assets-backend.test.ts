@@ -21,7 +21,7 @@ import {
 import { AssetBase, QueryAccessInfoResponse } from '../../lib/assets-backend'
 import path from 'path'
 import { HTTPError } from '../../lib'
-import { setup$ } from '../py-youwol/utils'
+import { setup$ } from '../py-youwol'
 
 beforeEach((done) => {
     setup$({

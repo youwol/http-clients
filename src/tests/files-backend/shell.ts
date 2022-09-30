@@ -3,7 +3,7 @@ import { HTTPError, raiseHTTPErrors } from '../../lib'
 import { NewAssetResponse } from '../../lib/assets-gateway'
 import { mergeMap } from 'rxjs/operators'
 import { Observable } from 'rxjs'
-import { readFileSync } from 'fs'
+import { PathOrFileDescriptor, readFileSync } from 'fs'
 import {
     expectAssetAttributes,
     expectAttributes,
@@ -24,6 +24,7 @@ export function upload<TContext>({
     authorizedErrors,
     newContext,
     sideEffects,
+    fileReaderSync,
 }: {
     inputs: (shell: Shell<TContext>) => {
         body: {
@@ -39,14 +40,22 @@ export function upload<TContext>({
         shell: Shell<TContext>,
         resp: NewAssetResponse<UploadResponse> | UploadResponse,
     ) => TContext
+    fileReaderSync?: (
+        path: PathOrFileDescriptor,
+        options?: {
+            encoding?: null
+            flag?: string
+        } | null,
+    ) => Buffer
 }) {
+    const fileReader = fileReaderSync || readFileSync
     return wrap<
         Shell<TContext>,
         NewAssetResponse<UploadResponse> | UploadResponse,
         TContext
     >({
         observable: (shell: Shell<TContext>) => {
-            const buffer = readFileSync(inputs(shell).body.path)
+            const buffer = fileReader(inputs(shell).body.path)
             const blob = new Blob([Uint8Array.from(buffer).buffer])
             return shell.assetsGtw.files.upload$({
                 body: { ...inputs(shell).body, content: blob },

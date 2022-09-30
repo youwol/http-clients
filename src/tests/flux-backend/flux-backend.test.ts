@@ -20,11 +20,11 @@ import { tap } from 'rxjs/operators'
 import path from 'path'
 import { Subject } from 'rxjs'
 import * as fs from 'fs'
-import { setup$ } from '../py-youwol/utils'
-import { purgeDrive, trashItem } from '../treedb-backend/shell'
-import { getAsset } from '../assets-backend/shell'
+import { setup$ } from '../py-youwol'
+import { purgeDrive, trashItem } from '../treedb-backend'
+import { getAsset } from '../assets-backend'
 import { NewAssetResponse } from '../../lib/assets-gateway'
-import { getInfo } from '../cdn-backend/shell'
+import { getInfo } from '../cdn-backend'
 
 import { UploadResponse as CdnUploadResponse } from '../../lib/cdn-backend'
 
@@ -298,7 +298,6 @@ test('duplicate project', (done) => {
 
     class Context {
         projectId = 'test-project-id'
-        duplicatedId = ''
         zipFile = `${testDataDir}/project-dependencies.zip`
         packages = [
             `root.zip`,

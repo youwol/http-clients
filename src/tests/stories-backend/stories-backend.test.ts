@@ -1,3 +1,6 @@
+// eslint-disable-next-line eslint-comments/disable-enable-pair -- to not have problem
+/* eslint-disable jest/no-done-callback -- eslint-comment It is required because */
+
 import '../mock-requests'
 import {
     healthz,
@@ -17,7 +20,7 @@ import {
     createStory,
     getStory,
     upgradePlugins,
-} from './shell.operators'
+} from './shell'
 import {
     expectAssetAttributes,
     expectAttributes,
@@ -31,12 +34,13 @@ import {
 
 import { readFileSync } from 'fs'
 import path from 'path'
-import { setup$ } from '../py-youwol/utils'
-import { NewAssetResponse } from '../../lib/assets-gateway'
-import { purgeDrive, trashItem } from '../treedb-backend/shell'
-import { getAsset } from '../assets-backend/shell'
 
-beforeAll(async (done) => {
+import { NewAssetResponse } from '../../lib/assets-gateway'
+import { purgeDrive, trashItem } from '../treedb-backend'
+import { getAsset } from '../assets-backend'
+import { setup$ } from '../py-youwol'
+
+beforeAll((done) => {
     setup$({
         localOnly: true,
         email: 'int_tests_yw-users@test-user',
@@ -64,7 +68,8 @@ test('healthz', (done) => {
 
     shell$<Context>()
         .pipe(healthz())
-        .subscribe(() => {
+        .subscribe((resp) => {
+            expect(resp).toBeTruthy()
             done()
         })
 })

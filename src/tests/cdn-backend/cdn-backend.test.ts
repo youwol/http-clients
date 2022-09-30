@@ -19,7 +19,7 @@ import { readFileSync } from 'fs'
 import { onHTTPErrors } from '../../lib'
 import { GetAssetResponse } from '../../lib/assets-backend'
 import { GetLibraryInfoResponse } from '../../lib/cdn-backend'
-import { setup$ } from '../py-youwol/utils'
+import { setup$ } from '../py-youwol'
 
 beforeAll(async (done) => {
     setup$({
@@ -107,7 +107,7 @@ test('get info', (done) => {
                     version: shell.context.metadata.versions[0],
                 }),
                 (shell, resp) => {
-                    expect(resp.version).toEqual('0.0.1-wip')
+                    expect(resp.version).toBe('0.0.1-wip')
                     return shell.context
                 },
             ),
@@ -138,8 +138,8 @@ test('get explorer', (done) => {
                 }),
                 (shell, resp) => {
                     expectAttributes(resp, ['files', 'folders', 'size'])
-                    expect(resp.files.length).toBe(5)
-                    expect(resp.folders.length).toBe(1)
+                    expect(resp.files).toHaveLength(5)
+                    expect(resp.folders).toHaveLength(1)
                     expectAttributes(resp.folders[0], ['name', 'path', 'size'])
                     return shell.context
                 },
@@ -151,8 +151,8 @@ test('get explorer', (done) => {
                     version: shell.context.metadata.versions[0],
                 }),
                 (shell, resp) => {
-                    expect(resp.files.length).toBe(0)
-                    expect(resp.folders.length).toBe(1)
+                    expect(resp.files).toHaveLength(0)
+                    expect(resp.folders).toHaveLength(1)
                     expect(resp.folders[0].path).toBe('assets/styles')
                     return shell.context
                 },
@@ -164,8 +164,8 @@ test('get explorer', (done) => {
                     version: shell.context.metadata.versions[0],
                 }),
                 (shell, resp) => {
-                    expect(resp.files.length).toBe(1)
-                    expect(resp.folders.length).toBe(0)
+                    expect(resp.files).toHaveLength(1)
+                    expect(resp.folders).toHaveLength(0)
                     expect(resp.files[0].name).toBe('style.css')
                     expect(resp.files[0].encoding).toBe('br')
                     expect(resp.files[0].size).toBeGreaterThan(0)

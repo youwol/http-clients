@@ -8,7 +8,6 @@ import {
     RootRouter,
     send$,
 } from '../lib'
-import { PyYouwolClient } from '../lib/py-youwol'
 import { AssetsGatewayClient } from '../lib/assets-gateway'
 import { filter, map, mergeMap, shareReplay, take, tap } from 'rxjs/operators'
 import { merge, Observable, OperatorFunction } from 'rxjs'
@@ -19,12 +18,6 @@ RootRouter.Headers = { 'py-youwol-local-only': 'true' }
 
 export function getPyYouwolBasePath() {
     return 'http://localhost:2001'
-}
-
-export function resetPyYouwolDbs$(headers: { [k: string]: string } = {}) {
-    return new PyYouwolClient(headers).admin.customCommands.doGet$({
-        name: 'reset',
-    })
 }
 
 export function expectAttributes(
@@ -143,7 +136,7 @@ export function finalize<TShell, TContext, TResp>({
     }
 }
 
-export function wrap<TShell, TResp, TContext>({
+export function wrap<TShell, TResp, _TContext>({
     observable,
     authorizedErrors,
     sideEffects,
