@@ -112,21 +112,9 @@ export interface EnvironmentStatusResponse {
     remoteGatewayInfo?: RemoteGatewayInfo
     remotesInfo: RemoteGatewayInfo[]
 }
-export type GetEnvironmentStatusResponse = EnvironmentStatusResponse
-
-export type SwitchProfileResponse = EnvironmentStatusResponse
-
 export interface CustomDispatch {
     type: string
     name: string
     activated?: boolean
     parameters: { [k: string]: string }
 }
-
-export interface QueryCustomDispatchesResponse {
-    dispatches: { [k: string]: CustomDispatch[] }
-}
-
-export type QueryCowSayResponse = string
-
-export class UploadAssetResponse {}

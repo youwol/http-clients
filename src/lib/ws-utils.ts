@@ -1,6 +1,6 @@
 import { Observable } from 'rxjs'
 import { filter } from 'rxjs/operators'
-import { ContextMessage, Label } from './py-youwol'
+import { ContextMessage, Label } from '../tests/py-youwol'
 
 export type WebSocketResponse$<T> = Observable<ContextMessage<T>>
 
@@ -42,7 +42,9 @@ export function filterCtxMessage<T = unknown>({
                         true,
                     )
 
-                if (!withDataAttributes) return attrsOk && labelsOk
+                if (!withDataAttributes) {
+                    return attrsOk && labelsOk
+                }
 
                 const dataAttrsOk =
                     message.data &&

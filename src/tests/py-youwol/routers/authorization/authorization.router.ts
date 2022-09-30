@@ -1,6 +1,5 @@
-import { Router } from '../../../router'
-import { CallerRequestOptions, HTTPResponse$ } from '../../../utils'
 import { GetAccessTokenResponse } from './interfaces'
+import { CallerRequestOptions, HTTPResponse$, Router } from '../../../../lib'
 
 export class AuthorizationRouter extends Router {
     constructor(parent: Router) {

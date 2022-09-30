@@ -1,7 +1,12 @@
-import { Router } from '../../../router'
-import { CallerRequestOptions, HTTPResponse$, Json } from '../../../utils'
-import { filterCtxMessage, WebSocketResponse$ } from '../../../ws-utils'
 import { WsRouter } from '../../py-youwol.client'
+import {
+    CallerRequestOptions,
+    filterCtxMessage,
+    HTTPResponse$,
+    Json,
+    Router,
+    WebSocketResponse$,
+} from '../../../../lib'
 
 export type Method = 'GET' | 'POST' | 'PUT' | 'DELETE'
 

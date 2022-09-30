@@ -1,11 +1,14 @@
 import { combineLatest, Subject } from 'rxjs'
-import { RootRouter } from '../router'
-import { CallerRequestOptions, HTTPResponse$ } from '../utils'
 import { ContextMessage, HealthzResponse } from './interfaces'
 import { AdminRouter } from './routers/admin.router'
 import { take } from 'rxjs/operators'
-import { WebSocketResponse$ } from '../ws-utils'
 import { AuthorizationRouter } from './routers'
+import {
+    CallerRequestOptions,
+    HTTPResponse$,
+    RootRouter,
+    WebSocketResponse$,
+} from '../../lib'
 
 export class WebSocket$<TMessage> {
     public readonly message$: Subject<TMessage>
