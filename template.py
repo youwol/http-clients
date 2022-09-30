@@ -16,6 +16,13 @@ template = Template(
     name=pkg_json['name'],
     version=pkg_json['version'],
     shortDescription=pkg_json['description'],
+    inPackageJson={
+        "browser": {
+            "fs": False,
+            "path": False,
+            "os": False
+        }
+    },
     author=pkg_json['author'],
     dependencies=Dependencies(
         runTime=RunTimeDeps(
@@ -24,12 +31,11 @@ template = Template(
             },
         ),
         devTime={
-            "@youwol/cdn-client": "^1.0.2",
             "isomorphic-fetch": "^3.0.0",
         }),
     bundles=Bundles(
         mainModule=MainModule(
-            entryFile='./lib/index.ts',
+            entryFile='./index.ts',
             loadDependencies=["rxjs"]
         )
     ),

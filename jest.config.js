@@ -12,5 +12,7 @@ module.exports = {
         '/dist',
         '/yw_config',
         '/src/tests/accounts-backend',
+        '.template',
+        '/src/tests/files-backend/test-data',
     ],
 }
