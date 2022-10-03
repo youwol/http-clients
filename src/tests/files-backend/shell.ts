@@ -1,16 +1,15 @@
 import '../mock-requests'
-import { HTTPError, raiseHTTPErrors } from '../../lib'
+import { HTTPError, raiseHTTPErrors, wrap } from '@youwol/http-primitives'
 import { NewAssetResponse } from '../../lib/assets-gateway'
 import { mergeMap } from 'rxjs/operators'
 import { Observable } from 'rxjs'
-import { readFileSync } from 'fs'
+import { PathOrFileDescriptor, readFileSync } from 'fs'
 import {
     expectAssetAttributes,
     expectAttributes,
     mapToShell,
     newShellFromContext,
     Shell,
-    wrap,
 } from '../common'
 import {
     UploadResponse,
@@ -24,6 +23,7 @@ export function upload<TContext>({
     authorizedErrors,
     newContext,
     sideEffects,
+    fileReaderSync,
 }: {
     inputs: (shell: Shell<TContext>) => {
         body: {
@@ -39,14 +39,21 @@ export function upload<TContext>({
         shell: Shell<TContext>,
         resp: NewAssetResponse<UploadResponse> | UploadResponse,
     ) => TContext
+    fileReaderSync?: (
+        path: PathOrFileDescriptor,
+        options?: {
+            encoding?: null
+            flag?: string
+        } | null,
+    ) => Buffer
 }) {
+    const fileReader = fileReaderSync || readFileSync
     return wrap<
         Shell<TContext>,
-        NewAssetResponse<UploadResponse> | UploadResponse,
-        TContext
+        NewAssetResponse<UploadResponse> | UploadResponse
     >({
         observable: (shell: Shell<TContext>) => {
-            const buffer = readFileSync(inputs(shell).body.path)
+            const buffer = fileReader(inputs(shell).body.path)
             const blob = new Blob([Uint8Array.from(buffer).buffer])
             return shell.assetsGtw.files.upload$({
                 body: { ...inputs(shell).body, content: blob },
@@ -81,7 +88,7 @@ export function getInfo<TContext>({
     sideEffects?: (resp, shell: Shell<TContext>) => void
     newContext?: (shell: Shell<TContext>, resp: GetInfoResponse) => TContext
 }) {
-    return wrap<Shell<TContext>, GetInfoResponse, TContext>({
+    return wrap<Shell<TContext>, GetInfoResponse>({
         observable: (shell: Shell<TContext>) =>
             shell.assetsGtw.files.getInfo$(inputs(shell)),
         authorizedErrors,
@@ -126,7 +133,7 @@ export function get<TContext>({
     sideEffects?: (resp, shell: Shell<TContext>) => void
     newContext?: (shell: Shell<TContext>, resp: Blob) => TContext
 }) {
-    return wrap<Shell<TContext>, Blob, TContext>({
+    return wrap<Shell<TContext>, Blob>({
         observable: (shell: Shell<TContext>) =>
             shell.assetsGtw.files.get$(inputs(shell)),
         authorizedErrors,

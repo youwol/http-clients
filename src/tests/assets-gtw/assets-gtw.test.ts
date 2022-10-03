@@ -5,10 +5,10 @@ import '../mock-requests'
 import { shell$ } from '../common'
 
 import { healthz } from './shell'
-import { setup$ } from '../py-youwol/utils'
+import { LocalYouwol } from '@youwol/http-primitives'
 
 beforeAll(async (done) => {
-    setup$({
+    LocalYouwol.setup$({
         localOnly: true,
         email: 'int_tests_yw-users@test-user',
     }).subscribe(() => {
@@ -21,7 +21,8 @@ test('healthz', (done) => {
 
     shell$<Context>()
         .pipe(healthz())
-        .subscribe(() => {
+        .subscribe((resp) => {
+            expect(resp).toBeTruthy()
             done()
         })
 })

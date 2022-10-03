@@ -1,9 +1,8 @@
 // eslint-disable-next-line eslint-comments/disable-enable-pair -- to not have problem
 /* eslint-disable jest/no-done-callback -- eslint-comment It is required because */
 
-import { Shell } from '../common'
+import { Shell, shell$ } from '../common'
 import '../mock-requests'
-import { shell$ } from '../common'
 import {
     borrow,
     createDrive,
@@ -44,11 +43,11 @@ import {
     getAccessPolicy,
     getAsset,
     upsertAccessPolicy,
-} from '../assets-backend/shell'
-import { setup$ } from '../py-youwol/utils'
+} from '../assets-backend'
+import { LocalYouwol } from '@youwol/http-primitives'
 
 beforeEach(async (done) => {
-    setup$({
+    LocalYouwol.setup$({
         localOnly: true,
         email: 'int_tests_yw-users@test-user',
     }).subscribe(() => {
@@ -61,7 +60,8 @@ test('healthz', (done) => {
 
     shell$<Context>()
         .pipe(healthz())
-        .subscribe(() => {
+        .subscribe((resp) => {
+            expect(resp).toBeTruthy()
             done()
         })
 })
@@ -842,7 +842,8 @@ test('default drive', (done) => {
                 groupId: shell.privateGroupId,
             })),
         )
-        .subscribe(() => {
+        .subscribe((resp) => {
+            expect(resp).toBeTruthy()
             done()
         })
 })

@@ -3,7 +3,8 @@ import {
     downloadBlob,
     HTTPResponse$,
     uploadBlob,
-} from '../utils'
+    RootRouter,
+} from '@youwol/http-primitives'
 import {
     GetHealthzResponse,
     QueryExplorerResponse,
@@ -13,7 +14,7 @@ import {
     GetVersionInfoResponse,
     UploadBody,
 } from './interfaces'
-import { RootRouter } from '../router'
+
 import { NewAssetResponse } from '../assets-gateway'
 import { Observable } from 'rxjs'
 

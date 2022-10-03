@@ -1,5 +1,5 @@
 import '../mock-requests'
-import { Json, raiseHTTPErrors } from '../../lib'
+import { Json, raiseHTTPErrors } from '@youwol/http-primitives'
 import { map, mergeMap, tap } from 'rxjs/operators'
 import { Observable, of, OperatorFunction } from 'rxjs'
 import { CdnSessionsStorageClient } from '../../lib/cdn-sessions-storage'
@@ -64,7 +64,7 @@ export function postData<T>(
         dataName: string
         body: Json
     },
-    cb?: (shell: Shell<T>, resp: any) => T,
+    cb?: (shell: Shell<T>, resp: unknown) => T,
 ) {
     return (source$: Observable<Shell<T>>) => {
         return source$.pipe(

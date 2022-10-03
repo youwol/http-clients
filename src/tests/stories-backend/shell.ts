@@ -1,13 +1,16 @@
 import { forkJoin, Observable } from 'rxjs'
 import { mergeMap, tap } from 'rxjs/operators'
-import { HTTPError, raiseHTTPErrors } from '../../lib'
+import {
+    HTTPError,
+    raiseHTTPErrors,
+    expectAttributes,
+    wrap,
+} from '@youwol/http-primitives'
 import {
     expectAssetAttributes,
-    expectAttributes,
     mapToShell,
     newShellFromContext,
     Shell,
-    wrap,
 } from '../common'
 import {
     AddPluginBody,
@@ -63,8 +66,7 @@ export function createStory<TContext>({
 }) {
     return wrap<
         Shell<TContext>,
-        CreateStoryResponse | NewAssetResponse<CreateStoryResponse>,
-        TContext
+        CreateStoryResponse | NewAssetResponse<CreateStoryResponse>
     >({
         observable: (shell: Shell<TContext>) =>
             shell.assetsGtw.stories.create$(inputs(shell)),
@@ -90,7 +92,7 @@ export function getStory<TContext>({
     sideEffects?: (resp, shell: Shell<TContext>) => void
     newContext?: (shell: Shell<TContext>, resp: GetStoryResponse) => TContext
 }) {
-    return wrap<Shell<TContext>, GetStoryResponse, TContext>({
+    return wrap<Shell<TContext>, GetStoryResponse>({
         observable: (shell: Shell<TContext>) =>
             shell.assetsGtw.stories.getStory$(inputs(shell)),
         authorizedErrors,
@@ -309,7 +311,7 @@ export function upgradePlugins<TContext>({
         resp: UpgradePluginsResponse,
     ) => TContext
 }) {
-    return wrap<Shell<TContext>, UpgradePluginsResponse, TContext>({
+    return wrap<Shell<TContext>, UpgradePluginsResponse>({
         observable: (shell: Shell<TContext>) =>
             shell.assetsGtw.stories.upgradePlugins$(inputs(shell)),
         authorizedErrors,

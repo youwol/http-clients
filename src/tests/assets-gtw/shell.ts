@@ -1,7 +1,7 @@
 import '../mock-requests'
-import { Shell, wrap } from '../common'
+import { Shell } from '../common'
 import { GetHealthzResponse } from '../../lib/assets-gateway'
-import { HTTPError } from '../../lib'
+import { HTTPError, wrap } from '@youwol/http-primitives'
 
 function newShellFromContext<TContext, TResp>(
     shell: Shell<TContext>,
@@ -22,7 +22,7 @@ export function healthz<TContext>({
     sideEffects?: (resp, shell: Shell<TContext>) => void
     newContext?: (shell: Shell<TContext>, resp: GetHealthzResponse) => TContext
 } = {}) {
-    return wrap<Shell<TContext>, GetHealthzResponse, TContext>({
+    return wrap<Shell<TContext>, GetHealthzResponse>({
         observable: (shell: Shell<TContext>) => shell.assetsGtw.getHealthz$(),
         authorizedErrors,
         sideEffects: (resp, shell) => {

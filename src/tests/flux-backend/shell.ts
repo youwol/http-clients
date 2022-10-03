@@ -1,16 +1,20 @@
 import '../mock-requests'
-import { CallerRequestOptions, HTTPError, raiseHTTPErrors } from '../../lib'
+import {
+    CallerRequestOptions,
+    HTTPError,
+    raiseHTTPErrors,
+    wrap,
+    expectAttributes,
+} from '@youwol/http-primitives'
 import { NewAssetResponse } from '../../lib/assets-gateway'
 import { mergeMap, take, tap } from 'rxjs/operators'
 import { forkJoin, Observable } from 'rxjs'
 
 import {
     expectAssetAttributes,
-    expectAttributes,
     mapToShell,
     newShellFromContext,
     Shell,
-    wrap,
 } from '../common'
 import {
     DeleteProjectResponse,
@@ -43,8 +47,7 @@ export function newProject<TContext>({
 }) {
     return wrap<
         Shell<TContext>,
-        NewProjectResponse | NewAssetResponse<NewProjectResponse>,
-        TContext
+        NewProjectResponse | NewAssetResponse<NewProjectResponse>
     >({
         observable: (shell: Shell<TContext>) =>
             shell.assetsGtw.flux.newProject$(inputs(shell)),
@@ -70,7 +73,7 @@ export function getProject<TContext>({
     sideEffects?: (resp, shell: Shell<TContext>) => void
     newContext?: (shell: Shell<TContext>, resp: GetProjectResponse) => TContext
 }) {
-    return wrap<Shell<TContext>, GetProjectResponse, TContext>({
+    return wrap<Shell<TContext>, GetProjectResponse>({
         observable: (shell: Shell<TContext>) =>
             shell.assetsGtw.flux.getProject$(inputs(shell)),
         authorizedErrors,
@@ -277,8 +280,7 @@ export function publishProject<TContext>({
 }) {
     return wrap<
         Shell<TContext>,
-        NewAssetResponse<CdnUploadResponse> | CdnUploadResponse,
-        TContext
+        NewAssetResponse<CdnUploadResponse> | CdnUploadResponse
     >({
         observable: (shell: Shell<TContext>) =>
             shell.assetsGtw.flux.publishApplication$(inputs(shell)),

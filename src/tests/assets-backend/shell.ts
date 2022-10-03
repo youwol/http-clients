@@ -1,5 +1,5 @@
 import '../mock-requests'
-import { expectAttributes, Shell, wrap } from '../common'
+import { expectAttributes, Shell } from '../common'
 import {
     AddImageResponse,
     CreateAssetBody,
@@ -17,7 +17,7 @@ import {
     UpsertAccessPolicyBody,
     UpsertAccessPolicyResponse,
 } from '../../lib/assets-backend'
-import { HTTPError } from '../../lib'
+import { HTTPError, wrap } from '@youwol/http-primitives'
 import { readFileSync } from 'fs'
 
 function newShellFromContext<TContext, TResp>(
@@ -53,7 +53,7 @@ export function healthz<TContext>({
     sideEffects?: (resp, shell: Shell<TContext>) => void
     newContext?: (shell: Shell<TContext>, resp: GetHealthzResponse) => TContext
 } = {}) {
-    return wrap<Shell<TContext>, GetHealthzResponse, TContext>({
+    return wrap<Shell<TContext>, GetHealthzResponse>({
         observable: (shell: Shell<TContext>) =>
             shell.assetsGtw.assets.getHealthz$(),
         authorizedErrors,
@@ -76,7 +76,7 @@ export function createAsset<TContext>({
     sideEffects?: (resp, shell: Shell<TContext>) => void
     newContext?: (shell: Shell<TContext>, resp: CreateAssetResponse) => TContext
 }) {
-    return wrap<Shell<TContext>, GetAssetResponse, TContext>({
+    return wrap<Shell<TContext>, GetAssetResponse>({
         observable: (shell: Shell<TContext>) =>
             shell.assetsGtw.assets.createAsset$(inputs(shell)),
         authorizedErrors,
@@ -102,7 +102,7 @@ export function accessInfo<TContext>({
         resp: QueryAccessInfoResponse,
     ) => TContext
 }) {
-    return wrap<Shell<TContext>, QueryAccessInfoResponse, TContext>({
+    return wrap<Shell<TContext>, QueryAccessInfoResponse>({
         observable: (shell: Shell<TContext>) =>
             shell.assetsGtw.assets.queryAccessInfo$(inputs(shell)),
         authorizedErrors,
@@ -145,7 +145,7 @@ export function updateAsset<TContext>({
     sideEffects?: (resp, shell: Shell<TContext>) => void
     newContext?: (shell: Shell<TContext>, resp: UpdateAssetResponse) => TContext
 }) {
-    return wrap<Shell<TContext>, UpdateAssetResponse, TContext>({
+    return wrap<Shell<TContext>, UpdateAssetResponse>({
         observable: (shell: Shell<TContext>) =>
             shell.assetsGtw.assets.updateAsset$(inputs(shell)),
         authorizedErrors,
@@ -170,7 +170,7 @@ export function getAsset<TContext>({
     sideEffects?: (resp, shell: Shell<TContext>) => void
     newContext?: (shell: Shell<TContext>, resp: GetAssetResponse) => TContext
 }) {
-    return wrap<Shell<TContext>, GetAssetResponse, TContext>({
+    return wrap<Shell<TContext>, GetAssetResponse>({
         observable: (shell: Shell<TContext>) =>
             shell.assetsGtw.assets.getAsset$(inputs(shell)),
         authorizedErrors,
@@ -200,7 +200,7 @@ export function upsertAccessPolicy<TContext>({
         resp: UpsertAccessPolicyResponse,
     ) => TContext
 }) {
-    return wrap<Shell<TContext>, UpsertAccessPolicyResponse, TContext>({
+    return wrap<Shell<TContext>, UpsertAccessPolicyResponse>({
         observable: (shell: Shell<TContext>) =>
             shell.assetsGtw.assets.upsertAccessPolicy$(inputs(shell)),
         authorizedErrors,
@@ -228,7 +228,7 @@ export function getAccessPolicy<TContext>({
         resp: GetAccessPolicyResponse,
     ) => TContext
 }) {
-    return wrap<Shell<TContext>, GetAccessPolicyResponse, TContext>({
+    return wrap<Shell<TContext>, GetAccessPolicyResponse>({
         observable: (shell: Shell<TContext>) =>
             shell.assetsGtw.assets.getAccessPolicy$(inputs(shell)),
         authorizedErrors,
@@ -260,7 +260,7 @@ export function deleteAccessPolicy<TContext>({
         resp: DeleteAccessPolicyResponse,
     ) => TContext
 }) {
-    return wrap<Shell<TContext>, DeleteAccessPolicyResponse, TContext>({
+    return wrap<Shell<TContext>, DeleteAccessPolicyResponse>({
         observable: (shell: Shell<TContext>) =>
             shell.assetsGtw.assets.deleteAccessPolicy$(inputs(shell)),
         authorizedErrors,
@@ -287,7 +287,7 @@ export function getPermissions<TContext>({
         resp: GetPermissionsResponse,
     ) => TContext
 }) {
-    return wrap<Shell<TContext>, GetPermissionsResponse, TContext>({
+    return wrap<Shell<TContext>, GetPermissionsResponse>({
         observable: (shell: Shell<TContext>) =>
             shell.assetsGtw.assets.getPermissions$(inputs(shell)),
         authorizedErrors,
@@ -314,7 +314,7 @@ export function addImage<TContext>({
     sideEffects?: (resp: AddImageResponse, shell: Shell<TContext>) => void
     newContext?: (shell: Shell<TContext>, resp: AddImageResponse) => TContext
 }) {
-    return wrap<Shell<TContext>, AddImageResponse, TContext>({
+    return wrap<Shell<TContext>, AddImageResponse>({
         observable: (shell: Shell<TContext>) => {
             const { path } = inputs(shell)
             const buffer = readFileSync(path)
@@ -348,7 +348,7 @@ export function removeImage<TContext>({
     sideEffects?: (resp: RemoveImageResponse, shell: Shell<TContext>) => void
     newContext?: (shell: Shell<TContext>, resp: RemoveImageResponse) => TContext
 }) {
-    return wrap<Shell<TContext>, RemoveImageResponse, TContext>({
+    return wrap<Shell<TContext>, RemoveImageResponse>({
         observable: (shell: Shell<TContext>) =>
             shell.assetsGtw.assets.removeImage$(inputs(shell)),
         authorizedErrors,
@@ -374,7 +374,7 @@ export function getMedia<TContext>({
     sideEffects?: (resp, shell: Shell<TContext>) => void
     newContext?: (shell: Shell<TContext>, resp: Blob) => TContext
 }) {
-    return wrap<Shell<TContext>, Blob, TContext>({
+    return wrap<Shell<TContext>, Blob>({
         observable: (shell: Shell<TContext>) =>
             shell.assetsGtw.assets.getMedia$(inputs(shell)),
         authorizedErrors,
@@ -402,7 +402,7 @@ export function deleteAsset<TContext>({
     sideEffects?: (resp: DeleteAssetResponse, shell: Shell<TContext>) => void
     newContext?: (shell: Shell<TContext>, resp: DeleteAssetResponse) => TContext
 }) {
-    return wrap<Shell<TContext>, DeleteAssetResponse, TContext>({
+    return wrap<Shell<TContext>, DeleteAssetResponse>({
         observable: (shell: Shell<TContext>) =>
             shell.assetsGtw.assets.deleteAsset$(inputs(shell)),
         authorizedErrors,

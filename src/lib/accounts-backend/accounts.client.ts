@@ -1,13 +1,17 @@
-import { RootRouter } from '../router'
-import { CallerRequestOptions, Empty, HTTPResponse$ } from '../utils'
+import {
+    CallerRequestOptions,
+    Empty,
+    HTTPResponse$,
+    RootRouter,
+} from '@youwol/http-primitives'
 import { SessionDetails } from './interfaces'
 
 export class AccountsClient extends RootRouter {
     constructor({
-                    headers,
-                    basePath,
-                    hostName,
-                }: {
+        headers,
+        basePath,
+        hostName,
+    }: {
         headers?: { [_key: string]: string }
         basePath?: string
         hostName?: string
@@ -19,7 +23,6 @@ export class AccountsClient extends RootRouter {
         })
     }
 
-
     public logoutAndForgetUserUrl(redirectUri: string): string {
         return this._logoutUrl(redirectUri, true)
     }
@@ -29,31 +32,35 @@ export class AccountsClient extends RootRouter {
     }
 
     private _logoutUrl(redirectUri: string, forget_user: boolean): string {
-        return `${this.basePath}/openid_rp/logout?target_uri=${encodeURI(redirectUri)}${forget_user ? '&forget_me=true' : ''}`
+        return `${this.basePath}/openid_rp/logout?target_uri=${encodeURI(
+            redirectUri,
+        )}${forget_user ? '&forget_me=true' : ''}`
     }
 
     public loginAsUserUrl(redirectUri: string): string {
-        return `${this.basePath}/openid_rp/login?flow=user&target_uri=${encodeURI(redirectUri)}`
+        return `${
+            this.basePath
+        }/openid_rp/login?flow=user&target_uri=${encodeURI(redirectUri)}`
     }
 
     public loginAsTempUserUrl(redirectUri: string): string {
-        return `${this.basePath}/openid_rp/login?flow=temp&target_uri=${encodeURI(redirectUri)}`
+        return `${
+            this.basePath
+        }/openid_rp/login?flow=temp&target_uri=${encodeURI(redirectUri)}`
     }
 
     public sendRegisterMail$(
-        details: {email: string, target_uri: string},
+        details: { email: string; target_uri: string },
         callerOptions: CallerRequestOptions = {},
     ): HTTPResponse$<Empty> {
-        return this.send$(
-            {
-                command: 'create',
-                path: '/registration',
-                nativeRequestOptions: {
-                    json: details
-                },
-                callerOptions
-            }
-        )
+        return this.send$({
+            command: 'create',
+            path: '/registration',
+            nativeRequestOptions: {
+                json: details,
+            },
+            callerOptions,
+        })
     }
 
     public startVisibleImpersonation$(
@@ -75,29 +82,27 @@ export class AccountsClient extends RootRouter {
         hidden: boolean,
         callerOptions: CallerRequestOptions,
     ): HTTPResponse$<Empty> {
-        return this.send$(
-            {
-                command: 'create',
-                path: '/impersonation',
-                nativeRequestOptions: {
-                    json: {
-                        userId: userNameOrId,
-                        hidden: hidden,
-                    },
+        return this.send$({
+            command: 'create',
+            path: '/impersonation',
+            nativeRequestOptions: {
+                json: {
+                    userId: userNameOrId,
+                    hidden: hidden,
                 },
-                callerOptions,
             },
-        )
+            callerOptions,
+        })
     }
 
-    public stopImpersonation$(callerOptions: CallerRequestOptions = {}): HTTPResponse$<Empty> {
-        return this.send$(
-            {
-                command: 'delete',
-                path: '/impersonation',
-                callerOptions,
-            },
-        )
+    public stopImpersonation$(
+        callerOptions: CallerRequestOptions = {},
+    ): HTTPResponse$<Empty> {
+        return this.send$({
+            command: 'delete',
+            path: '/impersonation',
+            callerOptions,
+        })
     }
 
     public getSessionDetails$(
