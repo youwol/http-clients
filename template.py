@@ -27,12 +27,11 @@ template = Template(
     dependencies=Dependencies(
         runTime=RunTimeDeps(
             externals={
-                "rxjs": "^6.5.5"
+                "rxjs": "^6.5.5",
+                "@youwol/http-primitives": "^0.1.1"
             },
-        ),
-        devTime={
-            "isomorphic-fetch": "^3.0.0",
-        }),
+        )
+    ),
     bundles=Bundles(
         mainModule=MainModule(
             entryFile='./index.ts',

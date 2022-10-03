@@ -1,7 +1,8 @@
 
 const runTimeDependencies = {
     "externals": {
-        "rxjs": "^6.5.5"
+        "rxjs": "^6.5.5",
+        "@youwol/http-primitives": "^0.1.1"
     },
     "includedInBundle": {}
 }
@@ -10,6 +11,11 @@ const externals = {
         "commonjs": "rxjs",
         "commonjs2": "rxjs",
         "root": "rxjs_APIv6"
+    },
+    "@youwol/http-primitives": {
+        "commonjs": "@youwol/http-primitives",
+        "commonjs2": "@youwol/http-primitives",
+        "root": "@youwol/http-primitives_APIv01"
     },
     "rxjs/operators": {
         "commonjs": "rxjs/operators",
@@ -24,6 +30,10 @@ const exportedSymbols = {
     "rxjs": {
         "apiKey": "6",
         "exportedSymbol": "rxjs"
+    },
+    "@youwol/http-primitives": {
+        "apiKey": "01",
+        "exportedSymbol": "@youwol/http-primitives"
     }
 }
 

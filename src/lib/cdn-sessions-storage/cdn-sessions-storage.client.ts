@@ -1,5 +1,9 @@
-import { RootRouter } from '../router'
-import { CallerRequestOptions, HTTPResponse$, Json } from '../utils'
+import {
+    CallerRequestOptions,
+    HTTPResponse$,
+    Json,
+    RootRouter,
+} from '@youwol/http-primitives'
 import { GetHealthzResponse } from './interfaces'
 
 export class CdnSessionsStorageClient extends RootRouter {

@@ -1,5 +1,5 @@
 import '../mock-requests'
-import { HTTPError, raiseHTTPErrors } from '../../lib'
+import { HTTPError, raiseHTTPErrors } from '@youwol/http-primitives'
 import { map, mergeMap, tap } from 'rxjs/operators'
 import { Observable, OperatorFunction } from 'rxjs'
 import { readFileSync } from 'fs'
@@ -76,7 +76,9 @@ export function getInfo<T>(
                 return shell.assetsGtw.cdn.getLibraryInfo$(input(shell)).pipe(
                     onError,
                     map((resp) => {
-                        if (resp == 'ManagedError') return shell
+                        if (resp == 'ManagedError') {
+                            return shell
+                        }
                         expectAttributes(resp, [
                             'name',
                             'versions',

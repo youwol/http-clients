@@ -4,11 +4,10 @@ import {
     mapToShell,
     newShellFromContext,
     Shell,
-    wrap,
 } from '../common'
 import { Observable } from 'rxjs'
 import { mergeMap, tap } from 'rxjs/operators'
-import { HTTPError, raiseHTTPErrors } from '../../lib'
+import { HTTPError, raiseHTTPErrors, wrap } from '@youwol/http-primitives'
 import {
     QueryChildrenResponse,
     QueryDeletedResponse,
@@ -119,7 +118,7 @@ export function createDrive<TContext>({
     sideEffects?: (resp, shell: Shell<TContext>) => void
     newContext?: (shell: Shell<TContext>, resp: CreateDriveResponse) => TContext
 }) {
-    return wrap<Shell<TContext>, CreateDriveResponse, TContext>({
+    return wrap<Shell<TContext>, CreateDriveResponse>({
         observable: (shell: Shell<TContext>) =>
             shell.assetsGtw.explorer.createDrive$(inputs(shell)),
         authorizedErrors,
@@ -322,7 +321,7 @@ export function createItem<TContext>({
     sideEffects?: (resp, shell: Shell<TContext>) => void
     newContext?: (shell: Shell<TContext>, resp: CreateItemResponse) => TContext
 }) {
-    return wrap<Shell<TContext>, CreateItemResponse, TContext>({
+    return wrap<Shell<TContext>, CreateItemResponse>({
         observable: (shell: Shell<TContext>) =>
             shell.assetsGtw.explorer.createItem$(inputs(shell)),
         authorizedErrors,
@@ -369,7 +368,7 @@ export function getItem<TContext>({
     sideEffects?: (resp, shell: Shell<TContext>) => void
     newContext?: (shell: Shell<TContext>, resp: GetItemResponse) => TContext
 }) {
-    return wrap<Shell<TContext>, GetItemResponse, TContext>({
+    return wrap<Shell<TContext>, GetItemResponse>({
         observable: (shell: Shell<TContext>) =>
             shell.assetsGtw.explorer.getItem$(inputs(shell)),
         authorizedErrors,
@@ -486,7 +485,7 @@ export function borrow<TContext>({
     sideEffects?: (resp, shell: Shell<TContext>) => void
     newContext?: (shell: Shell<TContext>, resp: BorrowResponse) => TContext
 }) {
-    return wrap<Shell<TContext>, BorrowResponse, TContext>({
+    return wrap<Shell<TContext>, BorrowResponse>({
         observable: (shell: Shell<TContext>) =>
             shell.assetsGtw.explorer.borrow$(inputs(shell)),
         authorizedErrors,
@@ -541,7 +540,7 @@ export function queryChildren<TContext>({
         resp: QueryChildrenResponse,
     ) => TContext
 }) {
-    return wrap<Shell<TContext>, QueryChildrenResponse, TContext>({
+    return wrap<Shell<TContext>, QueryChildrenResponse>({
         observable: (shell: Shell<TContext>) =>
             shell.assetsGtw.explorer.queryChildren$(inputs(shell)),
         authorizedErrors,
@@ -589,7 +588,7 @@ export function trashItem<TContext>({
     sideEffects?: (resp, shell: Shell<TContext>) => void
     newContext?: (shell: Shell<TContext>, resp: TrashItemResponse) => TContext
 }) {
-    return wrap<Shell<TContext>, TrashItemResponse, TContext>({
+    return wrap<Shell<TContext>, TrashItemResponse>({
         observable: (shell: Shell<TContext>) =>
             shell.assetsGtw.explorer.trashItem$(inputs(shell)),
         authorizedErrors,
@@ -633,11 +632,7 @@ export function purgeDrive<TContext>({
         resp: PurgeDriveResponse | AssetsGtwPurgeResponse,
     ) => TContext
 }) {
-    return wrap<
-        Shell<TContext>,
-        PurgeDriveResponse | AssetsGtwPurgeResponse,
-        TContext
-    >({
+    return wrap<Shell<TContext>, PurgeDriveResponse | AssetsGtwPurgeResponse>({
         observable: (shell: Shell<TContext>) =>
             shell.assetsGtw.explorer.purgeDrive$(inputs(shell)),
         authorizedErrors,

@@ -20,7 +20,7 @@ import { tap } from 'rxjs/operators'
 import path from 'path'
 import { Subject } from 'rxjs'
 import * as fs from 'fs'
-import { setup$ } from '../py-youwol'
+import { LocalYouwol } from '@youwol/http-primitives'
 import { purgeDrive, trashItem } from '../treedb-backend'
 import { getAsset } from '../assets-backend'
 import { NewAssetResponse } from '../../lib/assets-gateway'
@@ -29,7 +29,7 @@ import { getInfo } from '../cdn-backend'
 import { UploadResponse as CdnUploadResponse } from '../../lib/cdn-backend'
 
 beforeAll(async (done) => {
-    setup$({
+    LocalYouwol.setup$({
         localOnly: true,
         email: 'int_tests_yw-users@test-user',
     }).subscribe(() => {

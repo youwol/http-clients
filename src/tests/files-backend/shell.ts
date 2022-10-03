@@ -1,5 +1,5 @@
 import '../mock-requests'
-import { HTTPError, raiseHTTPErrors } from '../../lib'
+import { HTTPError, raiseHTTPErrors, wrap } from '@youwol/http-primitives'
 import { NewAssetResponse } from '../../lib/assets-gateway'
 import { mergeMap } from 'rxjs/operators'
 import { Observable } from 'rxjs'
@@ -10,7 +10,6 @@ import {
     mapToShell,
     newShellFromContext,
     Shell,
-    wrap,
 } from '../common'
 import {
     UploadResponse,
@@ -51,8 +50,7 @@ export function upload<TContext>({
     const fileReader = fileReaderSync || readFileSync
     return wrap<
         Shell<TContext>,
-        NewAssetResponse<UploadResponse> | UploadResponse,
-        TContext
+        NewAssetResponse<UploadResponse> | UploadResponse
     >({
         observable: (shell: Shell<TContext>) => {
             const buffer = fileReader(inputs(shell).body.path)
@@ -90,7 +88,7 @@ export function getInfo<TContext>({
     sideEffects?: (resp, shell: Shell<TContext>) => void
     newContext?: (shell: Shell<TContext>, resp: GetInfoResponse) => TContext
 }) {
-    return wrap<Shell<TContext>, GetInfoResponse, TContext>({
+    return wrap<Shell<TContext>, GetInfoResponse>({
         observable: (shell: Shell<TContext>) =>
             shell.assetsGtw.files.getInfo$(inputs(shell)),
         authorizedErrors,
@@ -135,7 +133,7 @@ export function get<TContext>({
     sideEffects?: (resp, shell: Shell<TContext>) => void
     newContext?: (shell: Shell<TContext>, resp: Blob) => TContext
 }) {
-    return wrap<Shell<TContext>, Blob, TContext>({
+    return wrap<Shell<TContext>, Blob>({
         observable: (shell: Shell<TContext>) =>
             shell.assetsGtw.files.get$(inputs(shell)),
         authorizedErrors,

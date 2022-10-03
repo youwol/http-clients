@@ -1,4 +1,8 @@
-import { CallerRequestOptions, HTTPResponse$ } from '../utils'
+import {
+    CallerRequestOptions,
+    HTTPResponse$,
+    RootRouter,
+} from '@youwol/http-primitives'
 import {
     AddImageResponse,
     CreateAssetResponse,
@@ -17,7 +21,6 @@ import {
     AddImageBody,
     QueryAccessInfoResponse,
 } from './interfaces'
-import { RootRouter } from '../router'
 
 export class AssetsClient extends RootRouter {
     constructor({

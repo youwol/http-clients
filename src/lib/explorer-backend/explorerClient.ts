@@ -1,4 +1,8 @@
-import { CallerRequestOptions, HTTPResponse$ } from '../utils'
+import {
+    CallerRequestOptions,
+    HTTPResponse$,
+    RootRouter,
+} from '@youwol/http-primitives'
 import {
     GetHealthzResponse,
     CreateDriveBody,
@@ -33,7 +37,6 @@ import {
     BorrowResponse,
     GetDefaultDriveResponse,
 } from './interfaces'
-import { RootRouter } from '../router'
 import { AssetsGtwPurgeResponse } from '../assets-gateway'
 
 export class ExplorerClient extends RootRouter {

@@ -3,7 +3,8 @@ import {
     downloadBlob,
     HTTPError,
     HTTPResponse$,
-} from '../utils'
+    RootRouter,
+} from '@youwol/http-primitives'
 import {
     NewProjectBody,
     NewProjectResponse,
@@ -19,7 +20,6 @@ import {
     PublishApplicationBody,
 } from './interfaces'
 import { UploadResponse as CdnUploadResponse } from '../cdn-backend'
-import { RootRouter } from '../router'
 import { Observable } from 'rxjs'
 import { NewAssetResponse } from '../assets-gateway'
 

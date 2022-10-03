@@ -4,7 +4,8 @@ import {
     HTTPError,
     HTTPResponse$,
     uploadBlob,
-} from '../utils'
+    RootRouter,
+} from '@youwol/http-primitives'
 import {
     GetGlobalContentResponse,
     GetHealthzResponse,
@@ -33,7 +34,6 @@ import {
     UpgradePluginsBody,
     UpgradePluginsResponse,
 } from './interfaces'
-import { RootRouter } from '../router'
 import { Observable } from 'rxjs'
 import { NewAssetResponse } from '../assets-gateway'
 

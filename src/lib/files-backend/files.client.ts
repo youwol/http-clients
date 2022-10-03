@@ -3,7 +3,8 @@ import {
     downloadBlob,
     HTTPError,
     HTTPResponse$,
-} from '../utils'
+    RootRouter,
+} from '@youwol/http-primitives'
 import {
     UploadResponse,
     UpdateMetadataBody,
@@ -12,7 +13,6 @@ import {
     GetInfoResponse,
     UploadBody,
 } from './interfaces'
-import { RootRouter } from '../router'
 import { Observable } from 'rxjs'
 import { NewAssetResponse } from '../assets-gateway'
 

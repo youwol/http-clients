@@ -38,10 +38,10 @@ import path from 'path'
 import { NewAssetResponse } from '../../lib/assets-gateway'
 import { purgeDrive, trashItem } from '../treedb-backend'
 import { getAsset } from '../assets-backend'
-import { setup$ } from '../py-youwol'
+import { LocalYouwol } from '@youwol/http-primitives'
 
 beforeAll((done) => {
-    setup$({
+    LocalYouwol.setup$({
         localOnly: true,
         email: 'int_tests_yw-users@test-user',
     }).subscribe(() => {

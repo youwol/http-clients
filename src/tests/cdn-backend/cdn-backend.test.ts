@@ -16,13 +16,12 @@ import {
 } from './shell'
 import { tap } from 'rxjs/operators'
 import { readFileSync } from 'fs'
-import { onHTTPErrors } from '../../lib'
+import { onHTTPErrors, LocalYouwol } from '@youwol/http-primitives'
 import { GetAssetResponse } from '../../lib/assets-backend'
 import { GetLibraryInfoResponse } from '../../lib/cdn-backend'
-import { setup$ } from '../py-youwol'
 
 beforeAll(async (done) => {
-    setup$({
+    LocalYouwol.setup$({
         localOnly: true,
         email: 'int_tests_yw-users@test-user',
     }).subscribe(() => {

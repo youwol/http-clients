@@ -1,5 +1,8 @@
-import { Router } from '../../../router'
-import { CallerRequestOptions, HTTPResponse$ } from '../../../utils'
+import {
+    Router,
+    CallerRequestOptions,
+    HTTPResponse$,
+} from '@youwol/http-primitives'
 import { EmojisResponse } from './interfaces'
 
 /**

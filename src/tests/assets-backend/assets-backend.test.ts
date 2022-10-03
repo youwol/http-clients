@@ -20,11 +20,10 @@ import {
 } from './shell'
 import { AssetBase, QueryAccessInfoResponse } from '../../lib/assets-backend'
 import path from 'path'
-import { HTTPError } from '../../lib'
-import { setup$ } from '../py-youwol'
+import { HTTPError, LocalYouwol } from '@youwol/http-primitives'
 
 beforeEach((done) => {
-    setup$({
+    LocalYouwol.setup$({
         localOnly: true,
         email: 'int_tests_yw-users@test-user',
     }).subscribe(() => {
