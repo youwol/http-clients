@@ -1250,6 +1250,13 @@
   resolved "https://registry.yarnpkg.com/@youwol/eslint-config/-/eslint-config-0.0.1.tgz#afc2586b8255a1fa56d17d181c42e1d28a8f8598"
   integrity sha512-x2TawReI63KtrgYWO4CCJOgA3JBexrlWyINmVF19bFGU6PaVzYQgY7K0c6nAPiGLLfPqR9QbhzdaOl9LMtnD0g==
 
+"@youwol/http-primitives@^0.1.1":
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/@youwol/http-primitives/-/http-primitives-0.1.1.tgz#1a097ba46513d792c0ea4ac86b8ba6ddcf27442a"
+  integrity sha512-HddZHRdTwl/iteTGdhNUbZJ5Uq49A7XXb6JTowZx3jL95lcRZu4ccD+AQKpW6Hz7SppfEZ1o/+hXu4aysSIewQ==
+  dependencies:
+    rxjs "^6.5.5"
+
 "@youwol/prettier-config@^0.0.1":
   version "0.0.1"
   resolved "https://registry.yarnpkg.com/@youwol/prettier-config/-/prettier-config-0.0.1.tgz#482b12d0d75d9cbf9ff7ec09ace826803e1d2206"
