@@ -41,7 +41,8 @@ const exportedSymbols = {
 const mainEntry : Object = {
     "entryFile": "./index.ts",
     "loadDependencies": [
-        "rxjs"
+        "rxjs",
+        "@youwol/http-primitives"
     ]
 }
 

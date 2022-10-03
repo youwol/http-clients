@@ -35,7 +35,7 @@ template = Template(
     bundles=Bundles(
         mainModule=MainModule(
             entryFile='./index.ts',
-            loadDependencies=["rxjs"]
+            loadDependencies=["rxjs", "@youwol/http-primitives"]
         )
     ),
     testConfig="https://github.com/youwol/integration-tests-conf",
