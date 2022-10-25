@@ -1,0 +1,22 @@
+name: Make release
+
+on:
+    workflow_dispatch:
+        inputs:
+            version:
+                description: version to release
+                required: true
+                type: string
+
+jobs:
+    build_release:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Make release
+              id: make_release
+              uses: youwol-jdecharne/nestor/ts/release@test_release
+              with:
+                  integrations: 'py-youwol'
+                  version: ${{ github.event.inputs.version }}
+                  nestor_gpg_priv: ${{ secrets.TEST_GPG_PRIV }}
+                  nestor_github_pat: ${{ secrets.TEST_GITHUB_PAT }}
