@@ -25,5 +25,4 @@ jobs:
               with:
                   integrations: py-youwol
                   archive: ${{ inputs.archive }}
-                  ignore: "tests"
                   token: ${{ secrets.GITHUB_TOKEN }}
