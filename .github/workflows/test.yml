@@ -1,0 +1,170 @@
+name: Test
+
+on:
+    workflow_dispatch:
+        inputs:
+            archive:
+              description: archive artifacts name
+              default: 'build_and_test'
+              required: false
+              type: string
+            py-youwol-ref:
+              description: py-youwol ref to use
+              default: 'main'
+              required: false
+              type: string
+            int-conf-ref:
+              description: integrations-tests-conf ref to use
+              default: 'main'
+              required: false
+              type: string
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout project repository
+              id: checkout
+              uses: actions/checkout@v3
+              with:
+                token: ${{ secrets.GITHUB_TOKEN }}
+                ref: ${{ github.ref }}
+
+            - name: Setup Node.js
+              id: setup_node
+              uses: actions/setup-node@v3
+              with:
+                node-version: '16'
+                cache: 'yarn'
+
+            - name: Checkout py-youwol repository
+              id: checkout_py-youwol
+              uses: actions/checkout@v3
+              with:
+                token: ${{ secrets.GITHUB_TOKEN }}
+                repository: youwol/py-youwol
+                ref: ${{ inputs.py-youwol-ref }}
+                path: py-youwol
+
+            - name: Setup Python 3.9
+              id: setup_python
+              uses: actions/setup-python@v4
+              with:
+                python-version: '3.9'
+                cache: 'pip'
+                cache-dependency-path: 'py-youwol/dev-requirements.txt'
+
+            - name: Move py-youwol
+              id: move_py-youwol
+              run: mv py-youwol ${RUNNER_TEMP}/
+              shell: sh
+
+            - name: Checkout integration-tests-conf repository
+              id: checkout_int-conf
+              uses: actions/checkout@v3
+              with:
+                token: ${{ secrets.GITHUB_TOKEN }}
+                repository: youwol/integration-tests-conf
+                ref: ${{ inputs.int-conf-ref }}
+                path: int-conf
+
+            - name: Move integration-tests-conf
+              id: move_int-conf
+              run: mv int-conf ${RUNNER_TEMP}/
+              shell: sh
+
+            - name: Install project dependencies
+              id: install_yarn_deps
+              run: |
+                echo "::group::yarn output"
+                yarn --frozen-lockfile
+                echo "::endgroup::"
+              shell: sh
+
+            - name: Install py-youwol dependencies
+              id: install_py-youwol_dep
+              working-directory: ${{ runner.temp }}/py-youwol
+              run: |
+                echo "::group::pip output"
+                pip install -r dev-requirements.txt
+                echo "::endgroup::"
+              shell: sh
+
+            - name: Yarn Build
+              id: yarn_build
+              working-directory: ${{ inputs.path }}
+              env:
+                PYTHONPATH: ${{ runner.temp }}/py-youwol
+              run: |
+                echo "::group::yarn output"
+                yarn build:prod
+                echo "::endgroup::"
+              shell: sh
+
+            - name: Start py-youwol
+              id: start_py-youwol
+              env:
+                PYTHONPATH: ${{ runner.temp }}/py-youwol
+                int_conf_dir: ${{ runner.temp }}/int-conf
+              run: |
+                echo "::group::make working directory"
+                random=$(awk 'BEGIN { srand(); print int(rand()*32768) }' /dev/null | base64)
+                work_dir="${RUNNER_TEMP}/start_py-youwoul/${random}"
+                mkdir -p "${work_dir}"
+                echo "work_dir=${work_dir}" >> $GITHUB_OUTPUT
+                cd "${work_dir}"
+                echo "::endgroup::"
+                #
+                echo "::group::start py-youwol"
+                coverage run "${PYTHONPATH}/youwol/main.py" --conf "${int_conf_dir}/yw_config_IT.py" --daemonize
+                echo "::endgroup"
+                #
+                echo "::group::Trying at most 10 times to call healtz endpoint, waiting 1 seconde between retries"
+                jq_cmd='if .status == "py-youwol ok" then halt else error ("incorrect status from py-youwol") end'
+                for try in $(seq 1 1 10); do
+                  echo "try $try/10 to contact py-youwol instance"
+                  response=$(curl --silent 'http://localhost:2001/healthz' || echo "No response")
+                  if echo "${response}" | jq -e "${jq_cmd}"; then
+                    echo "::endgroup::"
+                    exit 0
+                  else
+                    echo "Invalid response '${response}'."
+                    echo "Retrying in 1 second"
+                    sleep 1
+                  fi
+                done
+                echo "::endgroup::"
+                echo "::group::report failure to contact py-youwol instance"
+                cat ${py_youwol_work_dir}/py-youwol.out
+                cat ${py_youwol_work_dir}/py-youwol.err
+                echo "::endgroup"
+                echo "::error::Failed to contact py-youwol instance after 10 seconds"
+                exit 1
+              shell: sh
+
+            - name: Yarn Test Coverage
+              id: yarn_test_coverage
+              working-directory: ${{ inputs.path }}
+              run: |
+                if yarn test-coverage; then
+                  echo "result=ok" >> $GITHUB_OUTPUT
+                else
+                  echo "result=ko" >> $GITHUB_OUTPUT
+                fi
+              shell: sh
+
+            - name: Stop py-youwol
+              id: stop_py-youwol
+              env:
+                shutdown_script: ${{ steps.start_py-youwol.outputs.work_dir }}/py-youwol.shutdown.sh
+              run: |
+                echo "::group::run shutdown script"
+                if [ -e ${shutdown_script} ] ; then
+                  sh ${shutdown_script}
+                  echo "::endgroup"
+                else
+                  echo "::endgroup"
+                  echo "::error::script not found at ${shutdown_script}"
+                  exit 1
+                fi
+              shell: sh
