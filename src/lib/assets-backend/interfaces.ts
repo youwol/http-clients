@@ -43,7 +43,7 @@ export interface AssetBase {
     defaultAccessPolicy?: AccessPolicy
 }
 
-export interface CreateAssetResponse extends AssetBase {}
+export type CreateAssetResponse = AssetBase
 
 export interface UpdateAssetBody {
     name?: string
@@ -53,12 +53,12 @@ export interface UpdateAssetBody {
     defaultAccessPolicy?: AccessPolicy
 }
 
-export interface UpdateAssetResponse extends AssetBase {}
-export interface GetAssetResponse extends AssetBase {}
+export type UpdateAssetResponse = AssetBase
+export type GetAssetResponse = AssetBase
 
-export interface UpsertAccessPolicyBody extends AccessPolicy {}
-export interface UpsertAccessPolicyResponse {}
-export interface DeleteAccessPolicyResponse {}
+export type UpsertAccessPolicyBody = AccessPolicy
+export type UpsertAccessPolicyResponse = Record<string, never>
+export type DeleteAccessPolicyResponse = Record<string, never>
 
 export interface GetAccessPolicyResponse extends AccessPolicy {
     timestamp: number
@@ -70,10 +70,9 @@ export interface GetPermissionsResponse {
     share: boolean
     expiration?: number
 }
-
-export interface DeleteAssetResponse {}
-export interface AddImageResponse extends AssetBase {}
-export interface RemoveImageResponse extends AssetBase {}
+export type DeleteAssetResponse = Record<string, never>
+export type AddImageResponse = AssetBase
+export type RemoveImageResponse = AssetBase
 
 export interface GroupAccess {
     read: 'forbidden' | 'authorized' | 'owning' | 'expiration-date'

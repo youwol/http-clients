@@ -13,7 +13,7 @@ export interface UserInfoResponse {
     groups: GroupResponse[]
 }
 
-export interface GetUserInfoResponse extends UserInfoResponse {}
+export type GetUserInfoResponse = UserInfoResponse
 
 export interface GroupResponse {
     id: string
@@ -24,7 +24,7 @@ export interface GroupsResponse {
     groups: Array<GroupResponse>
 }
 
-export interface QueryGroupsResponse extends GroupsResponse {}
+export type QueryGroupsResponse = GroupsResponse
 
 export interface NewAssetResponse<T> extends GetAssetResponse {
     readonly itemId: string

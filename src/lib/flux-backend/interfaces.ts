@@ -135,9 +135,9 @@ export interface OpenWithDescription {
 }
 
 export interface GraphicsDescription {
-    appIcon: { [k: string]: any }
-    fileIcon: { [k: string]: any }
-    background: { [k: string]: any }
+    appIcon: { [k: string]: unknown }
+    fileIcon: { [k: string]: unknown }
+    background: { [k: string]: unknown }
 }
 
 export interface ExecutionDescription {

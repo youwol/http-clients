@@ -120,13 +120,13 @@ export interface MoveDocumentBody {
 export interface AddPluginBody {
     packageName: string
 }
-export interface UpgradePluginsBody {}
+export type UpgradePluginsBody = Record<string, never>
 
 export interface UpgradePluginsResponse {
     upgradedPlugins: { [k: string]: string }
     requirements: StoryRequirements
 }
-export interface UpdateContentsResponse {}
-export interface UpdateGlobalContentsResponse {}
-export interface MoveDocumentResponse {}
+export type UpdateContentsResponse = Record<string, never>
+export type UpdateGlobalContentsResponse = Record<string, never>
+export type MoveDocumentResponse = Record<string, never>
 export type GetGlobalContentResponse = GlobalContent

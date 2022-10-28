@@ -19,7 +19,7 @@ export interface UploadBody {
     fileId?: string
     content: Blob | File
 }
-export interface RemoveResponse {}
+export type RemoveResponse = Record<string, never>
 
 export interface UpdateMetadataBody {
     contentEncoding?: string
@@ -27,4 +27,4 @@ export interface UpdateMetadataBody {
     fileName?: string
 }
 
-export interface UpdateMetadataResponse {}
+export type UpdateMetadataResponse = Record<string, never>

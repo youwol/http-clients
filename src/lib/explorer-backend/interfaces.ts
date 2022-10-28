@@ -19,9 +19,9 @@ export interface GetGroupResponse {
     path: string
 }
 
-export interface CreateDriveResponse extends BaseDrive {}
+export type CreateDriveResponse = BaseDrive
 
-export interface GetDriveResponse extends BaseDrive {}
+export type GetDriveResponse = BaseDrive
 
 export interface GetDefaultDriveResponse {
     driveId: string
@@ -47,7 +47,7 @@ export interface UpdateDriveBody {
     name: string
 }
 
-export interface UpdateDriveResponse extends BaseDrive {}
+export type UpdateDriveResponse = BaseDrive
 
 export interface FolderBase {
     folderId: string
@@ -59,7 +59,7 @@ export interface FolderBase {
     metadata: string
 }
 
-export interface GetFolderResponse extends FolderBase {}
+export type GetFolderResponse = FolderBase
 
 export interface CreateFolderBody {
     name: string
@@ -72,8 +72,8 @@ export interface UpdateFolderBody {
     name: string
 }
 
-export interface UpdateFolderResponse extends FolderBase {}
-export interface CreateFolderResponse extends FolderBase {}
+export type UpdateFolderResponse = FolderBase
+export type CreateFolderResponse = FolderBase
 
 export interface ItemBase {
     itemId: string
@@ -97,13 +97,13 @@ export interface CreateItemBody {
     borrowed?: boolean
 }
 
-export interface CreateItemResponse extends ItemBase {}
+export type CreateItemResponse = ItemBase
 
 export interface UpdateItemBody {
     name: string
 }
 
-export interface UpdateItemResponse extends ItemBase {}
+export type UpdateItemResponse = ItemBase
 
 export interface PostMoveBody {
     targetId: string
@@ -115,12 +115,12 @@ export interface PostBorrowBody {
     destinationFolderId: string
 }
 
-export interface GetItemResponse extends ItemBase {}
+export type GetItemResponse = ItemBase
 
 export interface ItemsBase {
     items: ItemBase[]
 }
-export interface QueryItemsByAssetIdResponse extends ItemsBase {}
+export type QueryItemsByAssetIdResponse = ItemsBase
 
 export interface PathBase {
     item?: ItemBase
@@ -128,15 +128,15 @@ export interface PathBase {
     drive: BaseDrive
 }
 
-export interface GetPathResponse extends PathBase {}
-export interface GetPathFolderResponse extends PathBase {}
+export type GetPathResponse = PathBase
+export type GetPathFolderResponse = PathBase
 
 export interface MoveResponse {
     foldersCount: number
     items: ItemBase[]
 }
 
-export interface BorrowResponse extends GetItemResponse {}
+export type BorrowResponse = GetItemResponse
 
 export interface GetEntityResponse {
     entityType: string
@@ -153,9 +153,9 @@ export interface QueryDeletedResponse {
     folders: GetFolderResponse[]
 }
 
-export interface TrashItemResponse {}
-export interface TrashFolderResponse {}
-export interface DeleteDriveResponse {}
+export type TrashItemResponse = Record<string, never>
+export type TrashFolderResponse = Record<string, never>
+export type DeleteDriveResponse = Record<string, never>
 
 export interface PurgeDriveResponse {
     foldersCount: number
