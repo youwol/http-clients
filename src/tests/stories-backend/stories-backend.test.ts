@@ -480,8 +480,8 @@ test('move-document', (done) => {
         })
 })
 
-// eslint-disable-next-line jest/no-disabled-tests -- waiting to TG-
-test.skip('publish story', (done) => {
+ 
+test('publish story', (done) => {
     const buffer = readFileSync(path.resolve(__dirname, './story.zip'))
     const arraybuffer = Uint8Array.from(buffer).buffer
     const storyId = 'ce0ee416-048a-486c-ab08-23ad8c05b25c'

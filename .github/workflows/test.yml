@@ -3,7 +3,7 @@ name: Test
 on:
     workflow_dispatch:
         inputs:
-            py-youwol-ref:
+            py-youwol_ref:
                 description: py-youwol ref to use
                 default: 'main'
                 required: false
@@ -24,31 +24,20 @@ jobs:
               id: prepare
               uses: youwol/nestor/ts/prepare@v1
 
-            - name: Start py-youwol
-              id: start_py-youwol
-              uses: youwol/nestor/py-youwol/start@v1
+            - name: Run Tests with coverage
+              id: tests_coverage
+              uses: youwol/nestor/ts/tests_coverage@v1
               with:
-                  ref: ${{ inputs.py-youwol-ref }}
-                  conf_repository: youwol/integrations-tests-conf
-                  conf_path: yw_config_IT.py
+                py-youwol_conf_path: yw_config_IT.py
+                py-youwol_ref: ${{ inputs.py-youwol_ref }}
+                py-youwol_conf_repository: youwol/integrations-tests-conf
 
-            - name: Run Yarn Coverage
-              id: run_yarn_coverage
-              continue-on-error: true
-              uses: youwol/nestor/ts/coverage@v1
-
-            - name: Stop py-youwol
-              id: stop_py-youwol
-              uses: youwol/nestor/py-youwol/stop@v1
-              with:
-                  instance: ${{ steps.start_py-youwol.outputs.instance }}
-
-            - name: On Yarn Coverage Failure
-              id: yarn_coverage_failure
-              if: steps.run_yarn_coverage.outputs.result != 'success'
+            - name: On Tests Failure
+              id: on_tests_failure
+              if: steps.tests_coverage.outputs.result == 'failure'
               uses: actions/github-script@v6
               with:
-                  script: core.setFailed("Job failed because tests has failed, see job logs")
+                  script: core.setFailed("Job failed because tests has failed, see job logs and annotations.")
 
     static_analysis:
         runs-on: ubuntu-latest
@@ -61,9 +50,9 @@ jobs:
               id: static_analysis
               uses: youwol/nestor/ts/static_analysis@v1
 
-            - name: On Yarn Coverage Failure
-              id: yarn_coverage_failure
+            - name: On Static Analysis Failure
+              id: static_analysis_failure
               if: steps.static_analysis.outputs.result == 'failure'
               uses: actions/github-script@v6
               with:
-                  script: core.setFailed("Job failed because static analysis has failed, see job logs")
+                  script: core.setFailed("Job failed because static analysis has failed, see job logs and annotations.")
