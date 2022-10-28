@@ -480,7 +480,6 @@ test('move-document', (done) => {
         })
 })
 
- 
 test('publish story', (done) => {
     const buffer = readFileSync(path.resolve(__dirname, './story.zip'))
     const arraybuffer = Uint8Array.from(buffer).buffer
