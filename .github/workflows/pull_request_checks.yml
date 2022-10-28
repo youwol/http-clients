@@ -6,7 +6,7 @@ on:
             - main
 
 jobs:
-    integration:
+    integration_py-youwol:
         name: Integration with py-youwol
         runs-on: ubuntu-latest
         steps:
@@ -28,22 +28,3 @@ jobs:
               uses: actions/github-script@v6
               with:
                   script: core.setFailed("Job failed because tests has failed, see job logs and annotations.")
-
-    static_analysis:
-        name: Static analysis
-        runs-on: ubuntu-latest
-        steps:
-            - name: Prepare repository
-              id: prepare
-              uses: youwol/nestor/ts/prepare@v1
-
-            - name: Static Analysis
-              id: static_analysis
-              uses: youwol/nestor/ts/static_analysis@v1
-
-            - name: On Static Analysis Failure
-              id: static_analysis_failure
-              if: steps.static_analysis.outputs.result == 'failure'
-              uses: actions/github-script@v6
-              with:
-                  script: core.setFailed("Job failed because static analysis has failed, see job logs and annotations.")
