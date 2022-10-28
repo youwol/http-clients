@@ -1,23 +1,13 @@
-name: Test
+name: Pull Request Checks
 
 on:
-    workflow_dispatch:
-        inputs:
-            py-youwol_ref:
-                description: py-youwol ref to use
-                default: 'main'
-                required: false
-                type: string
-    push:
-        branches:
-            - main
-            - develop
     pull_request:
         branches:
-            - develop
+            - main
 
 jobs:
-    integration_with_py-youwol:
+    integration:
+        name: Integration with py-youwol
         runs-on: ubuntu-latest
         steps:
             - name: Prepare repository
@@ -29,8 +19,8 @@ jobs:
               uses: youwol/nestor/ts/tests_coverage@v1
               with:
                   py-youwol_conf_path: yw_config_IT.py
-                  py-youwol_ref: ${{ inputs.py-youwol_ref }}
                   py-youwol_conf_repository: youwol/integrations-tests-conf
+                  py-youwol_ref: ${{ inputs.py-youwol_ref }}
 
             - name: On Tests Failure
               id: on_tests_failure
@@ -40,6 +30,7 @@ jobs:
                   script: core.setFailed("Job failed because tests has failed, see job logs and annotations.")
 
     static_analysis:
+        name: Static analysis
         runs-on: ubuntu-latest
         steps:
             - name: Prepare repository
