@@ -3,25 +3,32 @@
 
 import '../mock-requests'
 import { shell$ } from '../common'
+import AdmZip from 'adm-zip'
 import {
     accessInfo,
+    addFiles,
     addImage,
     createAsset,
     deleteAccessPolicy,
     deleteAsset,
+    deleteFiles,
     getAccessPolicy,
     getAsset,
+    getFile,
     getMedia,
     getPermissions,
     healthz,
     removeImage,
     updateAsset,
     upsertAccessPolicy,
+    zipAllFiles,
 } from './shell'
 import { AssetBase, QueryAccessInfoResponse } from '../../lib/assets-backend'
 import path from 'path'
 import { HTTPError, LocalYouwol } from '@youwol/http-primitives'
+import { writeFileSync } from 'fs'
 
+jest.setTimeout(100 * 1000)
 beforeEach((done) => {
     LocalYouwol.setup$({
         localOnly: true,
@@ -64,7 +71,7 @@ test('happy path', (done) => {
     function expectAsset(resp: AssetBase, target: AssetBase) {
         expect(resp.name).toBe(target.name)
         expect(resp.rawId).toBe(target.rawId)
-        expect(resp.assetId).toBe(target.assetId)
+        expect(resp.assetId).toBe(window.btoa(target.rawId))
         expect(resp.description).toBe(target.description)
         expect(resp.tags).toEqual(target.tags)
         expect(resp.groupId).toEqual(target.groupId)
@@ -266,7 +273,6 @@ test('happy path', (done) => {
 test('access-info', (done) => {
     class Context {
         public readonly asset = {
-            assetId: 'test-asset-id',
             rawId: 'test-related-id',
             kind: 'test-kind',
             name: 'test asset',
@@ -276,6 +282,7 @@ test('access-info', (done) => {
             thumbnails: [],
             groupId: '',
         }
+        public readonly assetId = window.btoa('test-related-id')
         public readonly publicGroup = 'L3lvdXdvbC11c2Vycw=='
 
         constructor(params: { asset? } = {}) {
@@ -292,7 +299,7 @@ test('access-info', (done) => {
             }),
             accessInfo({
                 inputs: (shell) => ({
-                    assetId: shell.context.asset.assetId,
+                    assetId: shell.context.assetId,
                 }),
                 sideEffects: (resp: QueryAccessInfoResponse) => {
                     expect(resp.owningGroup.name).toBe('private')
@@ -309,14 +316,14 @@ test('access-info', (done) => {
             }),
             upsertAccessPolicy({
                 inputs: (shell) => ({
-                    assetId: shell.context.asset.assetId,
+                    assetId: shell.context.assetId,
                     groupId: shell.context.publicGroup,
                     body: { read: 'authorized', share: 'forbidden' },
                 }),
             }),
             accessInfo({
                 inputs: (shell) => ({
-                    assetId: shell.context.asset.assetId,
+                    assetId: shell.context.assetId,
                 }),
                 sideEffects: (resp: QueryAccessInfoResponse) => {
                     expect(resp.ownerInfo.exposingGroups).toHaveLength(1)
@@ -328,6 +335,118 @@ test('access-info', (done) => {
                         read: 'authorized',
                         expiration: null,
                     })
+                },
+            }),
+        )
+        .subscribe(() => done())
+})
+
+test('asset with raw-data', (done) => {
+    class Context {
+        public readonly asset = {
+            rawId: 'test-related-id',
+            kind: 'test-kind',
+            name: 'test asset',
+            description: 'an asset for test',
+            tags: ['test', 'assets-backend'],
+            images: [],
+            thumbnails: [],
+            groupId: '',
+        }
+        public readonly assetId = window.btoa('test-related-id')
+        public readonly publicGroup = 'L3lvdXdvbC11c2Vycw=='
+
+        constructor(params: { asset? } = {}) {
+            Object.assign(this, params)
+        }
+    }
+
+    shell$<Context>(new Context())
+        .pipe(
+            createAsset({
+                inputs: (shell) => ({
+                    body: shell.context.asset,
+                }),
+            }),
+            addFiles({
+                inputs: (shell) => ({
+                    assetId: shell.context.assetId,
+                    path: path.resolve(
+                        __dirname,
+                        './test-data/test-add-files.zip',
+                    ),
+                }),
+                sideEffects: (resp) => {
+                    expect(resp.filesCount).toBe(2)
+                    expect(resp.totalBytes).toBe(42)
+                },
+            }),
+            getFile({
+                inputs: (shell) => ({
+                    assetId: shell.context.assetId,
+                    path: './topLevelFile.json',
+                }),
+                sideEffects: (resp) => {
+                    expect(JSON.parse(resp).summary).toBe(
+                        'a file at the top level',
+                    )
+                },
+            }),
+            getFile({
+                inputs: (shell) => ({
+                    assetId: shell.context.assetId,
+                    path: './innerFolder/innerFile.json',
+                }),
+                sideEffects: (resp) => {
+                    expect(JSON.parse(resp).summary).toBe('A file in a folder.')
+                },
+            }),
+            zipAllFiles({
+                inputs: (shell) => ({
+                    assetId: shell.context.assetId,
+                    path: './innerFolder/innerFile.json',
+                }),
+                sideEffects: (resp) => {
+                    expect(resp).toBeTruthy()
+                    resp.arrayBuffer().then((buffer) => {
+                        const zip_path = path.resolve(
+                            __dirname,
+                            './test-data/result.zip',
+                        )
+                        writeFileSync(zip_path, Buffer.from(buffer))
+                        const zipped = new AdmZip(zip_path)
+
+                        zipped.readAsTextAsync('topLevelFile.json', (data) => {
+                            expect(JSON.parse(data).summary).toBe(
+                                'a file at the top level',
+                            )
+                        })
+                        zipped.readAsTextAsync(
+                            'innerFolder/innerFile.json',
+                            (data) => {
+                                expect(JSON.parse(data).summary).toBe(
+                                    'A file in a folder.',
+                                )
+                            },
+                        )
+                    })
+                },
+            }),
+            deleteFiles({
+                inputs: (shell) => ({
+                    assetId: shell.context.assetId,
+                }),
+            }),
+            getFile({
+                inputs: (shell) => ({
+                    assetId: shell.context.assetId,
+                    path: './topLevelFile.json',
+                }),
+                authorizedErrors: (resp) => {
+                    return resp.status == 404
+                },
+                sideEffects: () => {
+                    expect(false).toBeTruthy()
                 },
             }),
         )
