@@ -1,7 +1,7 @@
 {
     "name": "@youwol/http-clients",
     "description": "The library exposes some of YouWol backend services.",
-    "version": "2.0.2-wip",
+    "version": "2.0.2",
     "author": "greinisch@youwol.com",
     "homepage": "https://github.com/youwol/http-clients#README.md",
     "main": "dist/@youwol/http-clients.js",
@@ -22,6 +22,7 @@
         "publish-npm-public": "yarn build:prod && yarn test-coverage && yarn publish --access public"
     },
     "devDependencies": {
+        "adm-zip": "^0.5.9",
         "@types/node": "^18.11.9",
         "typescript": "^4.7.4",
         "ts-lib": "^0.0.5",
@@ -63,12 +64,12 @@
     },
     "dependencies": {
         "rxjs": "^6.5.5",
-        "@youwol/http-primitives": "^0.1.1"
+        "@youwol/http-primitives": "^0.1.2"
     },
     "youwol": {
         "cdnDependencies": {
             "rxjs": "^6.5.5",
-            "@youwol/http-primitives": "^0.1.1"
+            "@youwol/http-primitives": "^0.1.2"
         }
     },
     "browser": {

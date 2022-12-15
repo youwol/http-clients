@@ -1,11 +1,12 @@
 import '../mock-requests'
 import { expectAttributes, Shell } from '../common'
 import {
+    AddFilesResponse,
     AddImageResponse,
     CreateAssetBody,
-    CreateAssetResponse,
     DeleteAccessPolicyResponse,
     DeleteAssetResponse,
+    DeleteFilesResponse,
     GetAccessPolicyResponse,
     GetAssetResponse,
     GetHealthzResponse,
@@ -19,6 +20,7 @@ import {
 } from '../../lib/assets-backend'
 import { HTTPError, wrap } from '@youwol/http-primitives'
 import { readFileSync } from 'fs'
+import { NewAssetResponse } from '../../lib/assets-gateway'
 
 function newShellFromContext<TContext, TResp>(
     shell: Shell<TContext>,
@@ -74,7 +76,10 @@ export function createAsset<TContext>({
     inputs: (shell: Shell<TContext>) => { body: CreateAssetBody }
     authorizedErrors?: (resp: HTTPError) => boolean
     sideEffects?: (resp, shell: Shell<TContext>) => void
-    newContext?: (shell: Shell<TContext>, resp: CreateAssetResponse) => TContext
+    newContext?: (
+        shell: Shell<TContext>,
+        resp: NewAssetResponse<Record<string, never>>,
+    ) => TContext
 }) {
     return wrap<Shell<TContext>, GetAssetResponse>({
         observable: (shell: Shell<TContext>) =>
@@ -328,6 +333,127 @@ export function addImage<TContext>({
         },
         authorizedErrors,
         sideEffects: (resp, shell) => {
+            sideEffects && sideEffects(resp, shell)
+        },
+        newShell: (shell, resp) => newShellFromContext(shell, resp, newContext),
+    })
+}
+
+export function addFiles<TContext>({
+    inputs,
+    authorizedErrors,
+    newContext,
+    sideEffects,
+}: {
+    inputs: (shell: Shell<TContext>) => {
+        assetId: string
+        path: string
+    }
+    authorizedErrors?: (resp: HTTPError) => boolean
+    sideEffects?: (resp: AddFilesResponse, shell: Shell<TContext>) => void
+    newContext?: (shell: Shell<TContext>, resp: AddFilesResponse) => TContext
+}) {
+    return wrap<Shell<TContext>, AddFilesResponse>({
+        observable: (shell: Shell<TContext>) => {
+            const { path } = inputs(shell)
+            const buffer = readFileSync(path)
+            const content = new Blob([Uint8Array.from(buffer).buffer])
+            return shell.assetsGtw.assets.addZipFiles$({
+                ...inputs(shell),
+                body: {
+                    content,
+                },
+            })
+        },
+        authorizedErrors,
+        sideEffects: (resp, shell) => {
+            expectAttributes(resp, ['filesCount', 'totalBytes'])
+            sideEffects && sideEffects(resp, shell)
+        },
+        newShell: (shell, resp) => newShellFromContext(shell, resp, newContext),
+    })
+}
+
+export function getFile<TContext>({
+    inputs,
+    authorizedErrors,
+    newContext,
+    sideEffects,
+}: {
+    inputs: (shell: Shell<TContext>) => {
+        assetId: string
+        path: string
+    }
+    authorizedErrors?: (resp: HTTPError) => boolean
+    sideEffects?: (resp, shell: Shell<TContext>) => void
+    newContext?: (shell: Shell<TContext>, resp: Blob) => TContext
+}) {
+    return wrap<Shell<TContext>, Blob>({
+        observable: (shell: Shell<TContext>) =>
+            shell.assetsGtw.assets.getFile$(inputs(shell)),
+        authorizedErrors,
+        sideEffects: (resp, shell) => {
+            // expect instanceOf Blob not working
+            // Most likely because there are multiple constructors of Blob available,
+            // and different are used
+            expect(resp).toBeTruthy()
+            sideEffects && sideEffects(resp, shell)
+        },
+        newShell: (shell, resp) => newShellFromContext(shell, resp, newContext),
+    })
+}
+
+export function zipAllFiles<TContext>({
+    inputs,
+    authorizedErrors,
+    newContext,
+    sideEffects,
+}: {
+    inputs: (shell: Shell<TContext>) => {
+        assetId: string
+        path: string
+    }
+    authorizedErrors?: (resp: HTTPError) => boolean
+    sideEffects?: (resp: Blob, shell: Shell<TContext>) => void
+    newContext?: (shell: Shell<TContext>, resp: Blob) => TContext
+}) {
+    return wrap<Shell<TContext>, Blob>({
+        observable: (shell: Shell<TContext>) =>
+            shell.assetsGtw.assets.getZipFiles$(inputs(shell)),
+        authorizedErrors,
+        sideEffects: (resp, shell) => {
+            // expect instanceOf Blob not working
+            // Most likely because there are multiple constructors of Blob available,
+            // and different are used
+            expect(resp).toBeTruthy()
+            sideEffects && sideEffects(resp, shell)
+        },
+        newShell: (shell, resp) => newShellFromContext(shell, resp, newContext),
+    })
+}
+
+export function deleteFiles<TContext>({
+    inputs,
+    authorizedErrors,
+    newContext,
+    sideEffects,
+}: {
+    inputs: (shell: Shell<TContext>) => {
+        assetId: string
+    }
+    authorizedErrors?: (resp: HTTPError) => boolean
+    sideEffects?: (resp: DeleteFilesResponse, shell: Shell<TContext>) => void
+    newContext?: (shell: Shell<TContext>, resp: DeleteFilesResponse) => TContext
+}) {
+    return wrap<Shell<TContext>, DeleteFilesResponse>({
+        observable: (shell: Shell<TContext>) =>
+            shell.assetsGtw.assets.deleteFiles$(inputs(shell)),
+        authorizedErrors,
+        sideEffects: (resp, shell) => {
+            // expect instanceOf Blob not working
+            // Most likely because there are multiple constructors of Blob available,
+            // and different are used
+            expect(resp).toBeTruthy()
             sideEffects && sideEffects(resp, shell)
         },
         newShell: (shell, resp) => newShellFromContext(shell, resp, newContext),

@@ -19,7 +19,7 @@ import { getAsset } from '../assets-backend'
 beforeAll(async (done) => {
     LocalYouwol.setup$({
         localOnly: true,
-        email: 'int_tests_yw-users@test-user',
+        authId: 'int_tests_yw-users@test-user',
     }).subscribe(() => {
         done()
     })

@@ -49,7 +49,7 @@ import { LocalYouwol } from '@youwol/http-primitives'
 beforeEach(async (done) => {
     LocalYouwol.setup$({
         localOnly: true,
-        email: 'int_tests_yw-users@test-user',
+        authId: 'int_tests_yw-users@test-user',
     }).subscribe(() => {
         done()
     })
@@ -570,15 +570,8 @@ test('happy path move', (done) => {
 
 test('borrow item happy path', (done) => {
     class Context {
-        public readonly item = {
-            itemId: btoa('test-item-raw-id'),
-            assetId: btoa('test-item-raw-id'),
-            name: 'test item',
-            kind: 'flux-project',
-        }
         // To test 'borrow item' through assets-gtw an asset needs to be created (for permissions purpose)
         public readonly asset = {
-            assetId: btoa('test-item-raw-id'),
             rawId: 'test-item-raw-id',
             kind: 'test-kind',
             name: 'test asset',
@@ -598,11 +591,15 @@ test('borrow item happy path', (done) => {
         public readonly ywUserGroupId = window.btoa('/youwol-users')
         public readonly borrowedYwUsers: BorrowResponse
         public readonly ywUsersDrive: CreateDriveResponse
+        public readonly assetId: string
+        public readonly itemId: string
         constructor(
             params: {
                 groupId?: string
                 borrowedYwUsers?: BorrowResponse
                 ywUsersDrive?: CreateDriveResponse
+                assetId?: string
+                itemId?: string
             } = {},
         ) {
             Object.assign(this, params)
@@ -614,15 +611,23 @@ test('borrow item happy path', (done) => {
                 parentFolderId: shell.homeFolderId,
                 body: shell.context.folder,
             })),
-            createItem({
+            createAsset({
                 inputs: (shell) => ({
-                    folderId: shell.context.folder.folderId,
-                    body: shell.context.item,
+                    body: {
+                        ...shell.context.asset,
+                        groupId: shell.context.groupId,
+                    },
+                    queryParameters: {
+                        folderId: shell.context.folder.folderId,
+                    },
                 }),
                 newContext: (shell, resp) => {
+                    expect(resp.itemId).toBe(resp.assetId)
                     return new Context({
                         ...shell.context,
                         groupId: resp.groupId,
+                        assetId: resp.assetId,
+                        itemId: resp.itemId,
                     })
                 },
             }),
@@ -635,20 +640,9 @@ test('borrow item happy path', (done) => {
                     expect(resp.items).toHaveLength(1)
                 },
             }),
-            createAsset({
-                inputs: (shell) => ({
-                    body: {
-                        ...shell.context.asset,
-                        groupId: shell.context.groupId,
-                    },
-                }),
-                newContext: (shell) => {
-                    return shell.context
-                },
-            }),
             borrow<Context>({
                 inputs: (shell) => ({
-                    itemId: shell.context.item.itemId,
+                    itemId: shell.context.itemId,
                     body: {
                         destinationFolderId: shell.context.folder.folderId,
                     },
@@ -671,7 +665,7 @@ test('borrow item happy path', (done) => {
             }),
             queryItemsByAssetId(
                 (shell) => ({
-                    assetId: shell.context.item.assetId,
+                    assetId: shell.context.assetId,
                 }),
                 (shell, resp) => {
                     expect(resp.items).toHaveLength(2)
@@ -679,7 +673,7 @@ test('borrow item happy path', (done) => {
                 },
             ),
             updateItem((shell) => ({
-                itemId: shell.context.item.itemId,
+                itemId: shell.context.itemId,
                 body: {
                     name: shell.context.updatedName,
                 },
@@ -689,7 +683,7 @@ test('borrow item happy path', (done) => {
              */
             getAsset({
                 inputs: (shell) => {
-                    return { assetId: shell.context.asset.assetId }
+                    return { assetId: shell.context.itemId }
                 },
                 sideEffects: (response, shell) => {
                     expect(response.name).toBe(shell.context.updatedName)
@@ -698,7 +692,7 @@ test('borrow item happy path', (done) => {
             upsertAccessPolicy<Context>({
                 inputs: (shell) => {
                     return {
-                        assetId: shell.context.asset.assetId,
+                        assetId: shell.context.assetId,
                         groupId: '*',
                         body: {
                             read: 'forbidden',
@@ -710,7 +704,7 @@ test('borrow item happy path', (done) => {
             getAccessPolicy<Context>({
                 inputs: (shell) => {
                     return {
-                        assetId: shell.context.asset.assetId,
+                        assetId: shell.context.assetId,
                         groupId: shell.context.groupId,
                     }
                 },
@@ -721,7 +715,7 @@ test('borrow item happy path', (done) => {
             accessInfo<Context>({
                 inputs: (shell) => {
                     return {
-                        assetId: shell.context.asset.assetId,
+                        assetId: shell.context.assetId,
                     }
                 },
                 sideEffects: (resp) => {
@@ -747,7 +741,7 @@ test('borrow item happy path', (done) => {
             borrow<Context>({
                 inputs: (shell) => {
                     return {
-                        itemId: shell.context.item.itemId,
+                        itemId: shell.context.itemId,
                         body: {
                             destinationFolderId:
                                 shell.context.ywUsersDrive.driveId,
@@ -764,7 +758,7 @@ test('borrow item happy path', (done) => {
             getAccessPolicy<Context>({
                 inputs: (shell) => {
                     return {
-                        assetId: shell.context.asset.assetId,
+                        assetId: shell.context.itemId,
                         groupId: shell.context.ywUserGroupId,
                     }
                 },
@@ -776,7 +770,7 @@ test('borrow item happy path', (done) => {
             accessInfo<Context>({
                 inputs: (shell) => {
                     return {
-                        assetId: shell.context.asset.assetId,
+                        assetId: shell.context.itemId,
                     }
                 },
                 sideEffects: (resp) => {
@@ -808,7 +802,7 @@ test('borrow item happy path', (done) => {
             getAccessPolicy<Context>({
                 inputs: (shell) => {
                     return {
-                        assetId: shell.context.asset.assetId,
+                        assetId: shell.context.assetId,
                         groupId: shell.context.ywUserGroupId,
                     }
                 },
@@ -820,7 +814,7 @@ test('borrow item happy path', (done) => {
             accessInfo<Context>({
                 inputs: (shell) => {
                     return {
-                        assetId: shell.context.asset.assetId,
+                        assetId: shell.context.assetId,
                     }
                 },
                 sideEffects: (resp) => {
