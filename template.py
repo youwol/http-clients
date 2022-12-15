@@ -30,7 +30,10 @@ template = Template(
                 "rxjs": "^6.5.5",
                 "@youwol/http-primitives": "^0.1.2"
             },
-        )
+        ),
+        devTime={
+            "adm-zip": "^0.5.9"
+        }
     ),
     bundles=Bundles(
         mainModule=MainModule(
