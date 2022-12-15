@@ -1250,10 +1250,10 @@
   resolved "https://registry.yarnpkg.com/@youwol/eslint-config/-/eslint-config-0.0.4.tgz#f5ca190a60173d67dd01306587c0ac0dc1d184e0"
   integrity sha512-TdsslNgIeh/zOw/h20FNK7I8TW67YrIc0doNzodVyM0agUsHQbxvUKZt590DqVJ03UTDsGR3xSEu3ivkDmZzEw==
 
-"@youwol/http-primitives@^0.1.1":
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/@youwol/http-primitives/-/http-primitives-0.1.1.tgz#1a097ba46513d792c0ea4ac86b8ba6ddcf27442a"
-  integrity sha512-HddZHRdTwl/iteTGdhNUbZJ5Uq49A7XXb6JTowZx3jL95lcRZu4ccD+AQKpW6Hz7SppfEZ1o/+hXu4aysSIewQ==
+"@youwol/http-primitives@^0.1.2":
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/@youwol/http-primitives/-/http-primitives-0.1.2.tgz#0ac9e0d660508157dd777fd6c8f83fc4bca9d540"
+  integrity sha512-wtSarBFx1qf/tOvcX9eAj3PsT4LEqI9IbD+mUf2xKvH4XKkrIUaAIdcIX9rg5eFKYVeQAi3RlTyTQyQz14/X+A==
   dependencies:
     rxjs "^6.5.5"
 
@@ -1309,6 +1309,11 @@ acorn@^8.0.4, acorn@^8.4.1, acorn@^8.5.0, acorn@^8.7.1, acorn@^8.8.0:
   version "8.8.0"
   resolved "https://registry.yarnpkg.com/acorn/-/acorn-8.8.0.tgz#88c0187620435c7f6015803f5539dae05a9dbea8"
   integrity sha512-QOxyigPVrpZ2GXT+PFyZTl6TtOFc5egxHIP9IlQ+RbupQuX4RkT/Bee4/kQuC02Xkzg84JcT7oLYtDIQxp+v7w==
+
+adm-zip@^0.5.9:
+  version "0.5.9"
+  resolved "https://registry.yarnpkg.com/adm-zip/-/adm-zip-0.5.9.tgz#b33691028333821c0cf95c31374c5462f2905a83"
+  integrity sha512-s+3fXLkeeLjZ2kLjCBwQufpI5fuN+kIGBxu6530nVQZGVol0d7Y/M88/xw9HGGUcJjKf8LutN3VPRUBq6N7Ajg==
 
 agent-base@6:
   version "6.0.2"
