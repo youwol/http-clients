@@ -20,8 +20,8 @@ export interface AddImageBody {
 }
 
 export interface CreateAssetBody {
-    assetId?: string
-    rawId: string
+    rawId?: string
+    zippedFiles?: Blob
     kind: string
     groupId?: string
     name: string
@@ -108,3 +108,15 @@ export interface QueryAccessInfoResponse {
     consumerInfo: ConsumerInfo
     ownerInfo?: OwnerInfo
 }
+
+export interface AddFilesBody {
+    // content is a zip-file
+    content: File | Blob
+}
+
+export interface AddFilesResponse {
+    filesCount: number
+    totalBytes: number
+}
+
+export type DeleteFilesResponse = Record<string, never>

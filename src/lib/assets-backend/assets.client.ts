@@ -5,7 +5,6 @@ import {
 } from '@youwol/http-primitives'
 import {
     AddImageResponse,
-    CreateAssetResponse,
     DeleteAccessPolicyResponse,
     DeleteAssetResponse,
     GetAccessPolicyResponse,
@@ -20,7 +19,11 @@ import {
     RemoveImageResponse,
     AddImageBody,
     QueryAccessInfoResponse,
+    AddFilesBody,
+    AddFilesResponse,
+    DeleteFilesResponse,
 } from './interfaces'
+import { NewAssetResponse } from '../assets-gateway'
 
 export class AssetsClient extends RootRouter {
     constructor({
@@ -66,14 +69,21 @@ export class AssetsClient extends RootRouter {
      */
     createAsset$({
         body,
+        queryParameters,
         callerOptions,
     }: {
         body: CreateAssetBody
+        queryParameters?: { folderId?: string }
         callerOptions?: CallerRequestOptions
-    }): HTTPResponse$<CreateAssetResponse> {
+    }): HTTPResponse$<NewAssetResponse<Record<string, never>>> {
+        const suffix =
+            queryParameters && queryParameters.folderId
+                ? `?folder-id=${queryParameters.folderId}`
+                : ''
+
         return this.send$({
             command: 'create',
-            path: `/assets`,
+            path: `/assets${suffix}`,
             nativeRequestOptions: {
                 json: body,
                 method: 'PUT',
@@ -345,6 +355,103 @@ export class AssetsClient extends RootRouter {
         return this.send$({
             command: 'query',
             path: `/assets/${assetId}/${mediaType}/${filename}`,
+            callerOptions,
+        })
+    }
+
+    /**
+     * Add files to the asset from a zip.
+     *
+     * @param assetId
+     * @param body
+     * @param callerOptions
+     */
+    addZipFiles$({
+        assetId,
+        body,
+        callerOptions,
+    }: {
+        assetId: string
+        body: AddFilesBody
+        callerOptions?: CallerRequestOptions
+    }): HTTPResponse$<AddFilesResponse> {
+        const file =
+            body.content instanceof Blob
+                ? new File([body.content], 'zipped_files.zip', {
+                      type: body.content.type,
+                  })
+                : body.content
+
+        const formData = new FormData()
+        formData.append('file', file)
+
+        return this.sendFormData$({
+            command: 'upload',
+            path: `/assets/${assetId}/files`,
+            formData: formData,
+            callerOptions,
+        }) as HTTPResponse$<AddFilesResponse>
+    }
+
+    /**
+     * Retrieve a file from an asset.
+     *
+     * @param assetId
+     * @param path
+     * @param callerOptions
+     */
+    getFile$({
+        assetId,
+        path,
+        callerOptions,
+    }: {
+        assetId: string
+        path: string
+        callerOptions?: CallerRequestOptions
+    }): HTTPResponse$<Blob> {
+        return this.send$({
+            command: 'query',
+            path: `/assets/${assetId}/files/${path}`,
+            callerOptions,
+        })
+    }
+
+    /**
+     * Delete all files of an asset.
+     *
+     * @param assetId
+     * @param callerOptions
+     */
+    deleteFiles$({
+        assetId,
+        callerOptions,
+    }: {
+        assetId: string
+        callerOptions?: CallerRequestOptions
+    }): HTTPResponse$<DeleteFilesResponse> {
+        return this.send$({
+            command: 'delete',
+            path: `/assets/${assetId}/files`,
+            callerOptions,
+        })
+    }
+
+    /**
+     * Extract all files of an asset as a zip.
+     *
+     * @param assetId
+     * @param callerOptions
+     */
+    getZipFiles$({
+        assetId,
+        callerOptions,
+    }: {
+        assetId: string
+        callerOptions?: CallerRequestOptions
+    }): HTTPResponse$<Blob> {
+        return this.send$({
+            command: 'download',
+            path: `/assets/${assetId}/files`,
             callerOptions,
         })
     }
