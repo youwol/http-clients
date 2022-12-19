@@ -21,7 +21,7 @@ import {
     removeImage,
     updateAsset,
     upsertAccessPolicy,
-    zipAllFiles,
+    getZipFiles,
 } from './shell'
 import { AssetBase, QueryAccessInfoResponse } from '../../lib/assets-backend'
 import path from 'path'
@@ -401,7 +401,7 @@ test('asset with raw-data', (done) => {
                     expect(JSON.parse(resp).summary).toBe('A file in a folder.')
                 },
             }),
-            zipAllFiles({
+            getZipFiles({
                 inputs: (shell) => ({
                     assetId: shell.context.assetId,
                 }),

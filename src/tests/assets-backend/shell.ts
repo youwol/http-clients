@@ -403,7 +403,7 @@ export function getFile<TContext>({
     })
 }
 
-export function zipAllFiles<TContext>({
+export function getZipFiles<TContext>({
     inputs,
     authorizedErrors,
     newContext,
