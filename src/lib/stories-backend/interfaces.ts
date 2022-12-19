@@ -6,6 +6,7 @@ export interface LoadingGraph {
         id: string
         name: string
         version: string
+        type: string
         apiKey: string
         exportedSymbol: string
     }[]
