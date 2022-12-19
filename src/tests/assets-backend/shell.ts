@@ -411,7 +411,6 @@ export function zipAllFiles<TContext>({
 }: {
     inputs: (shell: Shell<TContext>) => {
         assetId: string
-        path: string
     }
     authorizedErrors?: (resp: HTTPError) => boolean
     sideEffects?: (resp: Blob, shell: Shell<TContext>) => void

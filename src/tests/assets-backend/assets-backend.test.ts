@@ -404,7 +404,6 @@ test('asset with raw-data', (done) => {
             zipAllFiles({
                 inputs: (shell) => ({
                     assetId: shell.context.assetId,
-                    path: './innerFolder/innerFile.json',
                 }),
                 sideEffects: (resp) => {
                     expect(resp).toBeTruthy()
