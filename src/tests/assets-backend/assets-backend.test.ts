@@ -21,7 +21,7 @@ import {
     removeImage,
     updateAsset,
     upsertAccessPolicy,
-    zipAllFiles,
+    getZipFiles,
 } from './shell'
 import { AssetBase, QueryAccessInfoResponse } from '../../lib/assets-backend'
 import path from 'path'
@@ -387,9 +387,11 @@ test('asset with raw-data', (done) => {
                     path: './topLevelFile.json',
                 }),
                 sideEffects: (resp) => {
-                    expect(JSON.parse(resp).summary).toBe(
-                        'a file at the top level',
-                    )
+                    // The path 'string' is for backward comp.: the branch 'feature/files-allow-range-bytes' fix it.
+                    // It was a problem of 'content-type' not properly forwarded
+                    const json =
+                        typeof resp == 'string' ? JSON.parse(resp) : resp
+                    expect(json.summary).toBe('a file at the top level')
                 },
             }),
             getFile({
@@ -398,13 +400,16 @@ test('asset with raw-data', (done) => {
                     path: './innerFolder/innerFile.json',
                 }),
                 sideEffects: (resp) => {
-                    expect(JSON.parse(resp).summary).toBe('A file in a folder.')
+                    // The path 'string' is for backward comp.: the branch 'feature/files-allow-range-bytes' fix it.
+                    // It was a problem of 'content-type' not properly forwarded
+                    const json =
+                        typeof resp == 'string' ? JSON.parse(resp) : resp
+                    expect(json.summary).toBe('A file in a folder.')
                 },
             }),
-            zipAllFiles({
+            getZipFiles({
                 inputs: (shell) => ({
                     assetId: shell.context.assetId,
-                    path: './innerFolder/innerFile.json',
                 }),
                 sideEffects: (resp) => {
                     expect(resp).toBeTruthy()
