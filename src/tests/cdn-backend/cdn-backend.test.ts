@@ -20,7 +20,7 @@ import { onHTTPErrors, LocalYouwol } from '@youwol/http-primitives'
 import { GetAssetResponse } from '../../lib/assets-backend'
 import { GetLibraryInfoResponse } from '../../lib/cdn-backend'
 
-beforeAll(async (done) => {
+beforeAll((done) => {
     LocalYouwol.setup$({
         localOnly: true,
         authId: 'int_tests_yw-users@test-user',

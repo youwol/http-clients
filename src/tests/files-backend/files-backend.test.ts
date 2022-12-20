@@ -16,7 +16,7 @@ import { NewAssetResponse } from '../../lib/assets-gateway'
 import { purgeDrive, trashItem } from '../treedb-backend'
 import { getAsset } from '../assets-backend'
 
-beforeAll(async (done) => {
+beforeAll((done) => {
     LocalYouwol.setup$({
         localOnly: true,
         authId: 'int_tests_yw-users@test-user',

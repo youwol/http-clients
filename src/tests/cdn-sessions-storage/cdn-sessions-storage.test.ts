@@ -8,7 +8,7 @@ import { getPyYouwolBasePath } from '../common'
 
 RootRouter.HostName = getPyYouwolBasePath()
 
-beforeAll(async (done) => {
+beforeAll((done) => {
     LocalYouwol.setup$({
         localOnly: true,
         authId: 'int_tests_yw-users@test-user',

@@ -28,7 +28,7 @@ import { getInfo } from '../cdn-backend'
 
 import { UploadResponse as CdnUploadResponse } from '../../lib/cdn-backend'
 
-beforeAll(async (done) => {
+beforeAll((done) => {
     LocalYouwol.setup$({
         localOnly: true,
         authId: 'int_tests_yw-users@test-user',

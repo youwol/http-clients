@@ -7,7 +7,7 @@ import { shell$ } from '../common'
 import { healthz } from './shell'
 import { LocalYouwol } from '@youwol/http-primitives'
 
-beforeAll(async (done) => {
+beforeAll((done) => {
     LocalYouwol.setup$({
         localOnly: true,
         authId: 'int_tests_yw-users@test-user',

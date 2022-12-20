@@ -46,7 +46,7 @@ import {
 } from '../assets-backend'
 import { LocalYouwol } from '@youwol/http-primitives'
 
-beforeEach(async (done) => {
+beforeEach((done) => {
     LocalYouwol.setup$({
         localOnly: true,
         authId: 'int_tests_yw-users@test-user',
