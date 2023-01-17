@@ -37,7 +37,6 @@ import {
     BorrowResponse,
     GetDefaultDriveResponse,
 } from './interfaces'
-import { AssetsGtwPurgeResponse } from '../assets-gateway'
 
 export class ExplorerClient extends RootRouter {
     constructor({
@@ -572,7 +571,7 @@ export class ExplorerClient extends RootRouter {
     }: {
         driveId: string
         callerOptions?: CallerRequestOptions
-    }): HTTPResponse$<PurgeDriveResponse | AssetsGtwPurgeResponse> {
+    }): HTTPResponse$<PurgeDriveResponse> {
         return this.send$({
             command: 'delete',
             path: `/drives/${driveId}/purge`,
