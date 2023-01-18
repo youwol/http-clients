@@ -38,7 +38,7 @@ import {
     PurgeDriveResponse,
     BorrowResponse,
 } from '../../lib/explorer-backend'
-import { AssetsGtwPurgeResponse } from '../../lib/assets-gateway'
+
 export function expectDrive(drive: unknown) {
     expectAttributes(drive, ['driveId', 'groupId', 'name', 'metadata'])
 }
@@ -627,12 +627,9 @@ export function purgeDrive<TContext>({
     }
     authorizedErrors?: (resp: HTTPError) => boolean
     sideEffects?: (resp, shell: Shell<TContext>) => void
-    newContext?: (
-        shell: Shell<TContext>,
-        resp: PurgeDriveResponse | AssetsGtwPurgeResponse,
-    ) => TContext
+    newContext?: (shell: Shell<TContext>, resp: PurgeDriveResponse) => TContext
 }) {
-    return wrap<Shell<TContext>, PurgeDriveResponse | AssetsGtwPurgeResponse>({
+    return wrap<Shell<TContext>, PurgeDriveResponse>({
         observable: (shell: Shell<TContext>) =>
             shell.assetsGtw.explorer.purgeDrive$(inputs(shell)),
         authorizedErrors,

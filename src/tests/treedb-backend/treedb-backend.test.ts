@@ -440,17 +440,16 @@ test('happy path items', (done) => {
             ),
             purgeDrive<Context>({
                 inputs: (shell) => ({ driveId: shell.defaultDriveId }),
-                sideEffects: (resp, shell) => {
-                    expect(resp.foldersCount).toBe(0)
-                    expect(resp.itemsCount).toBe(1)
-                    expect(resp.errorsAssetDeletion).toHaveLength(1)
-                    expect(resp.errorsAssetDeletion[0]).toBe(
-                        shell.context.item.assetId,
-                    )
-                    expect(resp.errorsRawDeletion).toHaveLength(1)
-                    expect(resp.errorsRawDeletion[0]).toBe(
-                        shell.context.item.rawId,
-                    )
+                authorizedErrors: (err) => {
+                    // The scenario here - having an item with no associated asset - is actually not supported.
+                    // When trying to delete, an error occurs (asset is not found) => we escape it here and assert some parts
+                    // of the error.
+                    const detail = err.body['detail']
+                    expect(detail.treedbResp.foldersCount).toBe(0)
+                    expect(detail.treedbResp.itemsCount).toBe(1)
+                    expect(detail.errorsAssetDeletion).toHaveLength(1)
+                    expect(detail.errorsRawDeletion).toHaveLength(1)
+                    return err.status == 500
                 },
             }),
         )

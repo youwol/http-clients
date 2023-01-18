@@ -1,5 +1,4 @@
 import { GetAssetResponse } from '../assets-backend'
-import { PurgeDriveResponse } from '../explorer-backend'
 
 export type Json = Record<string, never>
 export type RawId = string
@@ -29,9 +28,4 @@ export type QueryGroupsResponse = GroupsResponse
 export interface NewAssetResponse<T> extends GetAssetResponse {
     readonly itemId: string
     readonly rawResponse: T
-}
-
-export interface AssetsGtwPurgeResponse extends PurgeDriveResponse {
-    errorsRawDeletion: string[]
-    errorsAssetDeletion: string[]
 }
