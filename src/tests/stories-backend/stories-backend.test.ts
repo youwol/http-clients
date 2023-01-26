@@ -557,7 +557,6 @@ test('delete-document', (done) => {
                     return shell.context
                 },
             }),
-            //getDocument(),  => 404
             queryDocuments(
                 (shell) => ({
                     storyId: shell.context.storyId,
