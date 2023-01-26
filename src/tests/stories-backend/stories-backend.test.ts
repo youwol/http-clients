@@ -110,16 +110,16 @@ test('create story, play with content', (done) => {
                     return new TestData({ ...shell.context, ...resp })
                 },
             }),
-            getContent(
-                (shell) => ({
+            getContent({
+                inputs: (shell) => ({
                     documentId: shell.context.rootDocumentId,
                     storyId: shell.context.storyId,
                 }),
-                (shell, resp) => {
+                newContext: (shell, resp) => {
                     expect(resp).toEqual(initialContent)
                     return shell.context
                 },
-            ),
+            }),
             updateContent(
                 (shell) => ({
                     documentId: shell.context.rootDocumentId,
@@ -135,16 +135,16 @@ test('create story, play with content', (done) => {
                     return shell.context
                 },
             ),
-            getContent(
-                (shell) => ({
+            getContent({
+                inputs: (shell) => ({
                     documentId: shell.context.rootDocumentId,
                     storyId: shell.context.storyId,
                 }),
-                (shell, resp) => {
+                newContext: (shell, resp) => {
                     expect(resp.html).toBe('<div> Hello world </div>')
                     return shell.context
                 },
-            ),
+            }),
         )
         .subscribe(() => {
             done()

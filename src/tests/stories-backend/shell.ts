@@ -156,32 +156,30 @@ export function updateGlobalContents<T>(
     }
 }
 
-export function getContent<T>(
-    input: (shell: Shell<T>) => {
+export function getContent<TContext>({
+    inputs,
+    authorizedErrors,
+    newContext,
+    sideEffects,
+}: {
+    inputs: (shell: Shell<TContext>) => {
         storyId: string
         documentId: string
-    },
-    cb: (shell: Shell<T>, resp: DocumentContentBody) => T,
-) {
-    return (source$: Observable<Shell<T>>) => {
-        return source$.pipe(
-            mergeMap((shell) => {
-                const args = input(shell)
-                return shell.assetsGtw.stories.getContent$(args).pipe(
-                    raiseHTTPErrors(),
-                    tap((resp) => {
-                        expectAttributes(resp, [
-                            'html',
-                            'css',
-                            'components',
-                            'styles',
-                        ])
-                    }),
-                    mapToShell(shell, cb),
-                )
-            }),
-        )
     }
+    authorizedErrors?: (resp: HTTPError) => boolean
+    sideEffects?: (resp, shell: Shell<TContext>) => void
+    newContext?: (shell: Shell<TContext>, resp: GetContentResponse) => TContext
+}) {
+    return wrap<Shell<TContext>, GetContentResponse>({
+        observable: (shell: Shell<TContext>) =>
+            shell.assetsGtw.stories.getContent$(inputs(shell)),
+        authorizedErrors,
+        sideEffects: (resp, shell) => {
+            expectAttributes(resp, ['html', 'css', 'components', 'styles'])
+            sideEffects && sideEffects(resp, shell)
+        },
+        newShell: (shell, resp) => newShellFromContext(shell, resp, newContext),
+    })
 }
 
 export function updateContent<T>(
