@@ -20,6 +20,7 @@ import {
     createStory,
     getStory,
     upgradePlugins,
+    getDocument,
 } from './shell'
 import {
     expectAssetAttributes,
@@ -30,6 +31,7 @@ import {
 import {
     CreateStoryResponse,
     GetDocumentResponse,
+    StoryResponse,
 } from '../../lib/stories-backend'
 
 import { readFileSync } from 'fs'
@@ -52,12 +54,14 @@ beforeAll((done) => {
 class TestData {
     public readonly storyId?: string
     public readonly rootDocumentId?: string
+    public readonly newDocId?: string
     public readonly pages: { [k: string]: GetDocumentResponse }
     public readonly downloadedZip: Blob
     constructor(params: {
         storyId?: string
         rootDocumentId?: string
         downloadedZip?: Blob
+        newDocId?: string
     }) {
         Object.assign(this, params)
     }
@@ -474,6 +478,116 @@ test('move-document', (done) => {
                     return shell.context
                 },
             ),
+        )
+        .subscribe(() => {
+            done()
+        })
+})
+
+test('delete-document', (done) => {
+    const title = 'test story: delete-document'
+    const storyId = 'test-story-delete-document'
+
+    shell$<TestData>()
+        .pipe(
+            createStory({
+                inputs: (shell) => ({
+                    body: {
+                        storyId,
+                        title,
+                    },
+                    queryParameters: { folderId: shell.homeFolderId },
+                }),
+                newContext: (shell, resp: NewAssetResponse<StoryResponse>) => {
+                    return {
+                        ...shell.context,
+                        storyId: resp.rawResponse.storyId,
+                        rootDocumentId: resp.rawResponse.rootDocumentId,
+                    }
+                },
+            }),
+            addDocuments(
+                (shell: Shell<TestData>) => ({
+                    storyId: shell.context.storyId,
+                    parentDocumentId: shell.context.rootDocumentId,
+                    titles: ['page1'],
+                }),
+                (shell, _resp) => {
+                    return {
+                        ...shell.context,
+                        newDocId: _resp[0].documentId,
+                    }
+                },
+            ),
+            getDocument({
+                inputs: (shell: Shell<TestData>) => ({
+                    storyId: shell.context.storyId,
+                    documentId: shell.context.newDocId,
+                }),
+                newContext: (shell, _resp) => {
+                    return shell.context
+                },
+            }),
+            deleteDocument(
+                (shell: Shell<TestData>) => ({
+                    storyId: shell.context.storyId,
+                    documentId: shell.context.newDocId,
+                }),
+                (shell, _resp) => {
+                    return shell.context
+                },
+            ),
+            getDocument({
+                inputs: (shell: Shell<TestData>) => ({
+                    storyId: shell.context.storyId,
+                    documentId: shell.context.newDocId,
+                }),
+                authorizedErrors: (resp) => resp.status == 404,
+                newContext: (shell, _resp) => {
+                    return shell.context
+                },
+            }),
+            getContent({
+                inputs: (shell: Shell<TestData>) => ({
+                    storyId: shell.context.storyId,
+                    documentId: shell.context.newDocId,
+                }),
+                authorizedErrors: (resp) => resp.status == 404,
+                newContext: (shell, _resp) => {
+                    return shell.context
+                },
+            }),
+            //getDocument(),  => 404
+            queryDocuments(
+                (shell) => ({
+                    storyId: shell.context.storyId,
+                    parentDocumentId: shell.context.rootDocumentId,
+                    fromIndex: 0,
+                    count: 100,
+                }),
+                (shell, resp) => {
+                    expect(resp.documents).toHaveLength(0)
+                    return shell.context
+                },
+            ),
+            getDocument({
+                inputs: (shell: Shell<TestData>) => ({
+                    storyId: shell.context.storyId,
+                    documentId: shell.context.rootDocumentId,
+                }),
+                newContext: (shell, _resp) => {
+                    return shell.context
+                },
+            }),
+            getContent({
+                inputs: (shell: Shell<TestData>) => ({
+                    storyId: shell.context.storyId,
+                    documentId: shell.context.rootDocumentId,
+                }),
+                newContext: (shell, _resp) => {
+                    return shell.context
+                },
+            }),
         )
         .subscribe(() => {
             done()
