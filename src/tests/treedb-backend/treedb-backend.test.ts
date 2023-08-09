@@ -34,6 +34,7 @@ import {
     BorrowResponse,
     CreateDriveResponse,
     FolderBase,
+    GetDefaultDriveResponse,
     GetDriveResponse,
     ItemBase,
 } from '../../lib/explorer-backend'
@@ -45,6 +46,7 @@ import {
     upsertAccessPolicy,
 } from '../assets-backend'
 import { LocalYouwol } from '@youwol/http-primitives'
+import { NewAssetResponse } from '../../lib/assets-gateway'
 
 beforeEach((done) => {
     LocalYouwol.setup$({
@@ -559,6 +561,106 @@ test('happy path move', (done) => {
                 sideEffects: (resp) => {
                     expect(resp.folders).toHaveLength(0)
                     expect(resp.items).toHaveLength(1)
+                },
+            }),
+        )
+        .subscribe(() => {
+            done()
+        })
+})
+
+test('happy path move item in different group', (done) => {
+    class Context {
+        public readonly assetCreated: NewAssetResponse<unknown>
+        public readonly itemCreated: ItemBase
+
+        public readonly bodyNewAsset = {
+            assetId: 'test-asset-id',
+            rawId: 'test-related-id',
+            kind: 'test-kind',
+            name: 'test asset',
+            description: '',
+        }
+        public readonly ywUserGroupId = window.btoa('/youwol-users')
+
+        public readonly ywUserDefaultDrive: GetDefaultDriveResponse
+
+        constructor(
+            params: {
+                ywUserDefaultDrive?: GetDefaultDriveResponse
+                assetCreated?: NewAssetResponse<unknown>
+                itemCreated?: ItemBase
+            } = {},
+        ) {
+            Object.assign(this, params)
+        }
+    }
+    shell$<Context>(new Context())
+        .pipe(
+            createAsset({
+                inputs: (shell) => ({
+                    body: shell.context.bodyNewAsset,
+                    queryParameters: { folderId: shell.homeFolderId },
+                }),
+                newContext: (shell, resp) => {
+                    return new Context({ ...shell.context, assetCreated: resp })
+                },
+            }),
+            queryChildren({
+                inputs: (shell) => ({
+                    parentId: shell.homeFolderId,
+                }),
+                sideEffects: (resp) => {
+                    expect(resp.items).toHaveLength(1)
+                },
+                newContext: (shell, resp) => {
+                    return new Context({
+                        ...shell.context,
+                        itemCreated: resp.items[0],
+                    })
+                },
+            }),
+            // This test is to cut/paste in other group => get a different drive
+            getDefaultDrive(
+                (shell) => ({
+                    groupId: shell.context.ywUserGroupId,
+                }),
+                (shell, resp) => {
+                    return new Context({
+                        ...shell.context,
+                        ywUserDefaultDrive: resp,
+                    })
+                },
+            ),
+            move(
+                (shell) => {
+                    return {
+                        body: {
+                            targetId: shell.context.itemCreated.itemId,
+                            destinationFolderId:
+                                shell.context.ywUserDefaultDrive.homeFolderId,
+                        },
+                    }
+                },
+                (shell, resp) => {
+                    expect(resp.foldersCount).toBe(0)
+                    expect(resp.items).toHaveLength(1)
+                    expect(resp.items[0].groupId).toBe(
+                        shell.context.ywUserDefaultDrive.groupId,
+                    )
+                    return new Context({
+                        ...shell.context,
+                    })
+                },
+            ),
+            getAsset<Context>({
+                inputs: (shell) => ({
+                    assetId: shell.context.assetCreated.assetId,
+                }),
+                sideEffects: (resp, shell) => {
+                    expect(resp.groupId).toBe(
+                        shell.context.ywUserDefaultDrive.groupId,
+                    )
                 },
             }),
         )
