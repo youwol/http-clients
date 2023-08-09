@@ -56,7 +56,7 @@ export const setup = {
         assetId:'QHlvdXdvbC9odHRwLWNsaWVudHM=',
     version:'2.0.5',
     shortDescription:"The library exposes some of YouWol backend services.",
-    developerDocumentation:'https://platform.youwol.com/applications/@youwol/cdn-explorer/latest?package=@youwol/http-clients',
+    developerDocumentation:'https://platform.youwol.com/applications/@youwol/cdn-explorer/latest?package=@youwol/http-clients&tab=doc',
     npmPackage:'https://www.npmjs.com/package/@youwol/http-clients',
     sourceGithub:'https://github.com/youwol/http-clients',
     userGuide:'https://l.youwol.com/doc/@youwol/http-clients',
@@ -71,7 +71,7 @@ export const setup = {
     },
 
     installMainModule: ({cdnClient, installParameters}:{
-        cdnClient:{install:(unknown) => Promise<Window>},
+        cdnClient:{install:(unknown) => Promise<WindowOrWorkerGlobalScope>},
         installParameters?
     }) => {
         const parameters = installParameters || {}
@@ -90,7 +90,7 @@ export const setup = {
     },
     installAuxiliaryModule: ({name, cdnClient, installParameters}:{
         name: string,
-        cdnClient:{install:(unknown) => Promise<Window>},
+        cdnClient:{install:(unknown) => Promise<WindowOrWorkerGlobalScope>},
         installParameters?
     }) => {
         const entry = secondaryEntries[name]
