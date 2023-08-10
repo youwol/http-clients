@@ -37,6 +37,7 @@ import {
     TrashItemResponse,
     PurgeDriveResponse,
     BorrowResponse,
+    GetDefaultDriveResponse,
 } from '../../lib/explorer-backend'
 
 export function expectDrive(drive: unknown) {
@@ -176,7 +177,7 @@ export function getDefaultDrive<T>(
     input: (shell: Shell<T>) => {
         groupId: string
     },
-    cb?: (shell: Shell<T>, resp: QueryDrivesResponse) => T,
+    cb?: (shell: Shell<T>, resp: GetDefaultDriveResponse) => T,
 ) {
     return (source$: Observable<Shell<T>>) => {
         return source$.pipe(
