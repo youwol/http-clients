@@ -39,7 +39,7 @@ describe('session', () => {
                     (session) =>
                         ({
                             groups: session.userInfo.groups,
-                        } as QueryGroupsResponse),
+                        }) as QueryGroupsResponse,
                 ),
         ).resolves.toMatchObject<QueryGroupsResponse>({
             groups: [
