@@ -54,7 +54,7 @@ const entries = {
 export const setup = {
     name:'@youwol/http-clients',
         assetId:'QHlvdXdvbC9odHRwLWNsaWVudHM=',
-    version:'2.0.6',
+    version:'2.0.7-wip',
     shortDescription:"The library exposes some of YouWol backend services.",
     developerDocumentation:'https://platform.youwol.com/applications/@youwol/cdn-explorer/latest?package=@youwol/http-clients&tab=doc',
     npmPackage:'https://www.npmjs.com/package/@youwol/http-clients',
@@ -100,7 +100,7 @@ export const setup = {
         const parameters = installParameters || {}
         const scripts = [
             ...(parameters.scripts || []),
-            `@youwol/http-clients#2.0.6~dist/@youwol/http-clients/${entry.name}.js`
+            `@youwol/http-clients#2.0.7-wip~dist/@youwol/http-clients/${entry.name}.js`
         ]
         const modules = [
             ...(parameters.modules || []),
