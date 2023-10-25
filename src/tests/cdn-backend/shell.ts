@@ -114,6 +114,8 @@ export function getVersionInfo<T>(
                             'namespace',
                             'type',
                             'fingerprint',
+                            'aliases',
+                            'apiKey',
                         ])
                     }),
                     mapToShell(shell, cb),

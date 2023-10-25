@@ -42,10 +42,13 @@ export interface UploadResponse {
 
 export interface GetVersionInfoResponse {
     name: string
-    versions: string[]
-    namespace: string
+    version: string
     id: string
-    release: Release[]
+    namespace: string
+    type: string
+    fingerprint: string
+    aliases: string[]
+    apiKey: string
 }
 
 export interface GetLibraryInfoResponse {
@@ -53,7 +56,7 @@ export interface GetLibraryInfoResponse {
     versions: string[]
     namespace: string
     id: string
-    release: Release[]
+    releases: Release[]
 }
 
 export interface DeleteLibraryResponse {
