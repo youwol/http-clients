@@ -219,10 +219,9 @@ export class CdnClient extends RootRouter {
         queryParameters?: { folderId?: string }
         callerOptions?: CallerRequestOptions
     }): HTTPResponse$<NewAssetResponse<UploadResponse> | UploadResponse> {
-        const suffix =
-            queryParameters && queryParameters.folderId
-                ? `?folder-id=${queryParameters.folderId}`
-                : ''
+        const suffix = queryParameters?.folderId
+            ? `?folder-id=${queryParameters.folderId}`
+            : ''
         return uploadBlob(
             `${this.basePath}/publish-library${suffix}`,
             body.fileName,
