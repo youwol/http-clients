@@ -13,6 +13,7 @@ import {
     deleteLibrary,
     getVersionInfo,
     getEntryPoint,
+    uploadPackages,
 } from './shell'
 import { tap } from 'rxjs/operators'
 import { readFileSync } from 'fs'
@@ -108,6 +109,144 @@ test('get info', (done) => {
                 (shell, resp) => {
                     expect(resp.version).toBe('0.0.1-wip')
                     return shell.context
+                },
+            ),
+        )
+        .subscribe(() => {
+            done()
+        })
+})
+
+test('get info with semver query and max-count', (done) => {
+    const name = '@youwol/todo-app-js-test'
+    const versions = [
+        '0.0.1',
+        '0.0.1-wip',
+        '0.0.2',
+        '0.1.0',
+        '0.1.2',
+        '0.2.0-wip',
+        '1.1.1',
+    ]
+    const files = versions.map((version) => {
+        return path.resolve(
+            __dirname,
+            `./test-packages/todo-app-js-test#${version}.zip`,
+        )
+    })
+    const expectReleases = (
+        resp: GetLibraryInfoResponse,
+        versions: string[],
+    ) => {
+        expect(resp.releases).toHaveLength(versions.length)
+        versions.forEach((version) => {
+            expect(
+                resp.releases.find((r) => r.version === version),
+            ).toBeTruthy()
+        })
+    }
+    shell$<TestData>()
+        .pipe(
+            uploadPackages(files),
+            getInfo(
+                (_shell) => {
+                    return { libraryId: window.btoa(name) }
+                },
+                (shell, resp) => {
+                    const targets = [
+                        '1.1.1',
+                        '0.2.0-wip',
+                        '0.1.2',
+                        '0.1.0',
+                        '0.0.2',
+                        '0.0.1',
+                        '0.0.1-wip',
+                    ]
+                    expect(resp.versions).toEqual(targets)
+                    expectReleases(resp, targets)
+                    return new TestData({ ...shell.context, metadata: resp })
+                },
+            ),
+            getInfo(
+                (_shell) => {
+                    return {
+                        libraryId: window.btoa(name),
+                        queryParameters: { maxCount: 3 },
+                    }
+                },
+                (shell, resp) => {
+                    const targets = ['1.1.1', '0.2.0-wip', '0.1.2']
+                    expect(resp.versions).toEqual(targets)
+                    expectReleases(resp, targets)
+                    return new TestData({ ...shell.context, metadata: resp })
+                },
+            ),
+            getInfo(
+                (_shell) => {
+                    return {
+                        libraryId: window.btoa(name),
+                        queryParameters: { semver: '^0.1.0' },
+                    }
+                },
+                (shell, resp) => {
+                    const targets = ['0.1.2', '0.1.0']
+                    expect(resp.versions).toEqual(targets)
+                    expectReleases(resp, targets)
+                    return new TestData({ ...shell.context, metadata: resp })
+                },
+            ),
+            getInfo(
+                (_shell) => {
+                    return {
+                        libraryId: window.btoa(name),
+                        queryParameters: { semver: '^0.1.0', maxCount: 1 },
+                    }
+                },
+                (shell, resp) => {
+                    const targets = ['0.1.2']
+                    expect(resp.versions).toEqual(targets)
+                    expectReleases(resp, targets)
+                    return new TestData({ ...shell.context, metadata: resp })
+                },
+            ),
+            getInfo(
+                (_shell) => {
+                    return {
+                        libraryId: window.btoa(name),
+                        queryParameters: { semver: '^1.0.1' },
+                    }
+                },
+                (shell, resp) => {
+                    const targets = ['1.1.1']
+                    expect(resp.versions).toEqual(targets)
+                    expectReleases(resp, targets)
+                    return new TestData({ ...shell.context, metadata: resp })
+                },
+            ),
+            getInfo(
+                (_shell) => {
+                    return {
+                        libraryId: window.btoa(name),
+                        queryParameters: { semver: '^0.2.0' },
+                    }
+                },
+                (shell, resp) => {
+                    expect(resp.versions).toEqual([])
+                    expect(resp.releases).toHaveLength(0)
+                    return new TestData({ ...shell.context, metadata: resp })
+                },
+            ),
+            getInfo(
+                (_shell) => {
+                    return {
+                        libraryId: window.btoa(name),
+                        queryParameters: { semver: '^0.3.0' },
+                    }
+                },
+                (shell, resp) => {
+                    expect(resp.versions).toEqual([])
+                    expect(resp.releases).toHaveLength(0)
+                    return new TestData({ ...shell.context, metadata: resp })
                 },
             ),
         )

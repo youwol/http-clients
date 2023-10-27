@@ -1,7 +1,7 @@
 import '../mock-requests'
 import { HTTPError, raiseHTTPErrors } from '@youwol/http-primitives'
-import { map, mergeMap, tap } from 'rxjs/operators'
-import { Observable, OperatorFunction } from 'rxjs'
+import { map, mergeMap, take, tap } from 'rxjs/operators'
+import { forkJoin, Observable, OperatorFunction } from 'rxjs'
 import { readFileSync } from 'fs'
 import {
     expectAssetAttributes,
@@ -43,6 +43,36 @@ export function uploadPackage<T>(
     }
 }
 
+export function uploadPackages<T>(filePaths: string[]) {
+    return (source$: Observable<Shell<T>>) => {
+        return source$.pipe(
+            mergeMap((shell) => {
+                const obs$ = filePaths.map((filePath) => {
+                    const buffer = readFileSync(filePath)
+                    const filename = filePath.split('/').slice(-1)[0]
+                    const arraybuffer = Uint8Array.from(buffer).buffer
+                    return shell.assetsGtw.cdn
+                        .upload$({
+                            body: {
+                                fileName: filename,
+                                blob: new Blob([arraybuffer]),
+                            },
+                            queryParameters: { folderId: shell.homeFolderId },
+                        })
+                        .pipe(
+                            raiseHTTPErrors(),
+                            tap((resp) => {
+                                expectAssetAttributes(resp)
+                            }),
+                            take(1),
+                        )
+                })
+                return forkJoin(obs$).pipe(map(() => shell))
+            }),
+        )
+    }
+}
+
 export function downloadPackage<T>(
     input: (shell: Shell<T>) => { libraryId: string; version: string },
     cb: (shell: Shell<T>, resp) => T,
@@ -63,7 +93,10 @@ export function downloadPackage<T>(
 }
 
 export function getInfo<T>(
-    input: (shell: Shell<T>) => { libraryId: string },
+    input: (shell: Shell<T>) => {
+        libraryId: string
+        queryParameters?: { semver?: string; maxCount?: number }
+    },
     cb: (shell: Shell<T>, resp) => T,
     onError: OperatorFunction<
         GetLibraryInfoResponse | HTTPError,
@@ -114,6 +147,8 @@ export function getVersionInfo<T>(
                             'namespace',
                             'type',
                             'fingerprint',
+                            'aliases',
+                            'apiKey',
                         ])
                     }),
                     mapToShell(shell, cb),

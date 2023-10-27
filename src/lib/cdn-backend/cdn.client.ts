@@ -54,21 +54,31 @@ export class CdnClient extends RootRouter {
     }
 
     /**
-     * Retrieve package's info
+     * Retrieve package's info, including available versions.
      *
      * @param libraryId
+     * @param queryParameters optional semver query and max count of items returned
      * @param callerOptions
      */
     getLibraryInfo$({
         libraryId,
+        queryParameters,
         callerOptions,
     }: {
         libraryId: string
+        queryParameters?: { semver?: string; maxCount?: number }
         callerOptions?: CallerRequestOptions
     }): HTTPResponse$<GetLibraryInfoResponse> {
+        const toKey = { semver: 'semver', maxCount: 'max-count' }
+        const suffix = queryParameters
+            ? Object.entries(queryParameters).reduce(
+                  (acc, [k, v]) => `${acc}${toKey[k]}=${v}&`,
+                  '?',
+              )
+            : ''
         return this.send$({
             command: 'query',
-            path: `/libraries/${libraryId}`,
+            path: `/libraries/${libraryId}${suffix}`,
             callerOptions,
         })
     }
@@ -209,10 +219,9 @@ export class CdnClient extends RootRouter {
         queryParameters?: { folderId?: string }
         callerOptions?: CallerRequestOptions
     }): HTTPResponse$<NewAssetResponse<UploadResponse> | UploadResponse> {
-        const suffix =
-            queryParameters && queryParameters.folderId
-                ? `?folder-id=${queryParameters.folderId}`
-                : ''
+        const suffix = queryParameters?.folderId
+            ? `?folder-id=${queryParameters.folderId}`
+            : ''
         return uploadBlob(
             `${this.basePath}/publish-library${suffix}`,
             body.fileName,

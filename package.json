@@ -1,7 +1,7 @@
 {
     "name": "@youwol/http-clients",
     "description": "The library exposes some of YouWol backend services.",
-    "version": "2.0.6",
+    "version": "2.0.7-wip",
     "author": "greinisch@youwol.com",
     "homepage": "https://github.com/youwol/http-clients#README.md",
     "main": "dist/@youwol/http-clients.js",
