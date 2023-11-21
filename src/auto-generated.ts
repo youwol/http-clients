@@ -1,8 +1,8 @@
 
 const runTimeDependencies = {
     "externals": {
-        "rxjs": "^6.5.5",
-        "@youwol/http-primitives": "^0.1.2"
+        "rxjs": "^7.5.6",
+        "@youwol/http-primitives": "^0.2.0"
     },
     "includedInBundle": {}
 }
@@ -10,29 +10,29 @@ const externals = {
     "rxjs": {
         "commonjs": "rxjs",
         "commonjs2": "rxjs",
-        "root": "rxjs_APIv6"
+        "root": "rxjs_APIv7"
     },
     "@youwol/http-primitives": {
         "commonjs": "@youwol/http-primitives",
         "commonjs2": "@youwol/http-primitives",
-        "root": "@youwol/http-primitives_APIv01"
+        "root": "@youwol/http-primitives_APIv02"
     },
     "rxjs/operators": {
         "commonjs": "rxjs/operators",
         "commonjs2": "rxjs/operators",
         "root": [
-            "rxjs_APIv6",
+            "rxjs_APIv7",
             "operators"
         ]
     }
 }
 const exportedSymbols = {
     "rxjs": {
-        "apiKey": "6",
+        "apiKey": "7",
         "exportedSymbol": "rxjs"
     },
     "@youwol/http-primitives": {
-        "apiKey": "01",
+        "apiKey": "02",
         "exportedSymbol": "@youwol/http-primitives"
     }
 }
@@ -54,13 +54,13 @@ const entries = {
 export const setup = {
     name:'@youwol/http-clients',
         assetId:'QHlvdXdvbC9odHRwLWNsaWVudHM=',
-    version:'2.0.7-wip',
+    version:'3.0.1-wip',
     shortDescription:"The library exposes some of YouWol backend services.",
     developerDocumentation:'https://platform.youwol.com/applications/@youwol/cdn-explorer/latest?package=@youwol/http-clients&tab=doc',
     npmPackage:'https://www.npmjs.com/package/@youwol/http-clients',
     sourceGithub:'https://github.com/youwol/http-clients',
     userGuide:'https://l.youwol.com/doc/@youwol/http-clients',
-    apiVersion:'2',
+    apiVersion:'3',
     runTimeDependencies,
     externals,
     exportedSymbols,
@@ -85,7 +85,7 @@ export const setup = {
             modules,
             scripts,
         }).then(() => {
-            return window[`@youwol/http-clients_APIv2`]
+            return window[`@youwol/http-clients_APIv3`]
         })
     },
     installAuxiliaryModule: ({name, cdnClient, installParameters}:{
@@ -100,7 +100,7 @@ export const setup = {
         const parameters = installParameters || {}
         const scripts = [
             ...(parameters.scripts || []),
-            `@youwol/http-clients#2.0.7-wip~dist/@youwol/http-clients/${entry.name}.js`
+            `@youwol/http-clients#3.0.1-wip~dist/@youwol/http-clients/${entry.name}.js`
         ]
         const modules = [
             ...(parameters.modules || []),
@@ -111,7 +111,7 @@ export const setup = {
             modules,
             scripts,
         }).then(() => {
-            return window[`@youwol/http-clients/${entry.name}_APIv2`]
+            return window[`@youwol/http-clients/${entry.name}_APIv3`]
         })
     },
     getCdnDependencies(name?: string){

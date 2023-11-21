@@ -1,7 +1,7 @@
 {
     "name": "@youwol/http-clients",
     "description": "The library exposes some of YouWol backend services.",
-    "version": "2.0.7-wip",
+    "version": "3.0.1-wip",
     "author": "greinisch@youwol.com",
     "homepage": "https://github.com/youwol/http-clients#README.md",
     "main": "dist/@youwol/http-clients.js",
@@ -28,8 +28,8 @@
         ]
     },
     "dependencies": {
-        "rxjs": "^6.5.5",
-        "@youwol/http-primitives": "^0.1.2"
+        "rxjs": "^7.5.6",
+        "@youwol/http-primitives": "^0.2.0"
     },
     "devDependencies": {
         "adm-zip": "^0.5.9",
@@ -42,18 +42,18 @@
         "@youwol/tsconfig": "1.0.0",
         "del-cli": "^5.1.0",
         "isomorphic-fetch": "^3.0.0",
-        "ts-loader": "^9.5.0",
-        "ts-node": "^10.9.1",
+        "ts-loader": "9.5.0",
+        "ts-node": "10.9.1",
         "typedoc": "^0.25.2",
-        "typescript": "^5.2.2",
+        "typescript": "5.2.2",
         "webpack": "^5.89.0",
         "webpack-bundle-analyzer": "^4.9.1",
         "webpack-cli": "5.1.4"
     },
     "webpm": {
         "dependencies": {
-            "rxjs": "^6.5.5",
-            "@youwol/http-primitives": "^0.1.2"
+            "rxjs": "^7.5.6",
+            "@youwol/http-primitives": "^0.2.0"
         },
         "aliases": []
     },
