@@ -9,6 +9,7 @@ export interface LoadingGraph {
         type: string
         apiKey: string
         exportedSymbol: string
+        aliases: string[]
     }[]
     definition: [string, Url][][]
 }
@@ -61,9 +62,7 @@ export type PublishStoryResponse = StoryResponse
 
 export type GetStoryResponse = StoryResponse
 
-export interface DeleteStoryResponse {
-    pass
-}
+export type DeleteStoryResponse = Record<string, never>
 
 /**
  * Content of a document
