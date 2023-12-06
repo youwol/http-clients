@@ -1,28 +1,22 @@
-// eslint-disable-next-line eslint-comments/disable-enable-pair -- to not have problem
-/* eslint-disable jest/no-done-callback -- eslint-comment It is required because */
-
 import '../mock-requests'
 import { shell$ } from '../common'
 
 import { healthz } from './shell'
 import { LocalYouwol } from '@youwol/http-primitives'
+import { firstValueFrom } from 'rxjs'
 
-beforeAll((done) => {
-    LocalYouwol.setup$({
-        localOnly: true,
-        authId: 'int_tests_yw-users@test-user',
-    }).subscribe(() => {
-        done()
-    })
+beforeAll(async () => {
+    await firstValueFrom(
+        LocalYouwol.setup$({
+            localOnly: true,
+            authId: 'int_tests_yw-users@test-user',
+        }),
+    )
 })
 
-test('healthz', (done) => {
+test('healthz', async () => {
     class Context {}
 
-    shell$<Context>()
-        .pipe(healthz())
-        .subscribe((resp) => {
-            expect(resp).toBeTruthy()
-            done()
-        })
+    const resp = await firstValueFrom(shell$<Context>().pipe(healthz()))
+    expect(resp).toBeTruthy()
 })

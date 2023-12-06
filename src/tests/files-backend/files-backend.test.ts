@@ -1,13 +1,10 @@
-// eslint-disable-next-line eslint-comments/disable-enable-pair -- to not have problem
-/* eslint-disable jest/no-done-callback -- eslint-comment It is required because */
-
 import path from 'path'
 
 import { getPyYouwolBasePath, shell$ } from '../common'
 import '../mock-requests'
 import { get, getInfo, remove, updateMetadata, upload } from './shell'
 import { readFileSync } from 'fs'
-import { from } from 'rxjs'
+import { firstValueFrom, from } from 'rxjs'
 import { mapTo, mergeMap, reduce, take, tap } from 'rxjs/operators'
 import { GetInfoResponse, UploadResponse } from '../../lib/files-backend'
 import { GetAssetResponse } from '../../lib/assets-backend'
@@ -16,13 +13,13 @@ import { NewAssetResponse } from '../../lib/assets-gateway'
 import { purgeDrive, trashItem } from '../treedb-backend'
 import { getAsset } from '../assets-backend'
 
-beforeAll((done) => {
-    LocalYouwol.setup$({
-        localOnly: true,
-        authId: 'int_tests_yw-users@test-user',
-    }).subscribe(() => {
-        done()
-    })
+beforeAll(async () => {
+    await firstValueFrom(
+        LocalYouwol.setup$({
+            localOnly: true,
+            authId: 'int_tests_yw-users@test-user',
+        }),
+    )
 })
 
 class TestData {
@@ -43,7 +40,7 @@ class TestData {
     }
 }
 
-test('upload files, get stats & get content', (done) => {
+test('upload files, get stats & get content', async () => {
     const testDataDir = __dirname + '/test-data'
 
     const expectedContentTypes = {
@@ -64,236 +61,220 @@ test('upload files, get stats & get content', (done) => {
         'text.txt',
         'text.txt.br',
     ]
-    from(inputs)
-        .pipe(
-            mergeMap((file) => {
-                return shell$<TestData>({ fileName: file })
-            }),
-            upload<TestData>({
-                inputs: (shell) => ({
-                    body: {
-                        fileName: shell.context.fileName,
-                        fileId: shell.context.fileName,
-                        path: path.resolve(testDataDir, shell.context.fileName),
-                    },
-                    queryParameters: { folderId: shell.homeFolderId },
-                }),
-                sideEffects: (resp, shell) => {
-                    expect(resp.name).toBe(shell.context.fileName)
-                    expect(resp.rawResponse.fileName).toBe(
-                        shell.context.fileName,
-                    )
-                    expect(resp.rawResponse.contentType).toBe(
-                        expectedContentTypes[resp.name],
-                    )
-                    expect(resp.rawResponse.contentEncoding).toBe(
-                        expectedContentEncodings[resp.name],
-                    )
+    const test$ = from(inputs).pipe(
+        mergeMap((file) => {
+            return shell$<TestData>({ fileName: file })
+        }),
+        upload<TestData>({
+            inputs: (shell) => ({
+                body: {
+                    fileName: shell.context.fileName,
+                    fileId: shell.context.fileName,
+                    path: path.resolve(testDataDir, shell.context.fileName),
                 },
-                newContext: (shell, resp: NewAssetResponse<UploadResponse>) => {
-                    return new TestData({
-                        ...shell.context,
-                        asset: resp,
-                        thumbnailUrl: resp.images[0],
-                    })
-                },
+                queryParameters: { folderId: shell.homeFolderId },
             }),
-            getInfo({
-                inputs: (shell) => ({ fileId: shell.context.asset.rawId }),
-                sideEffects: (resp, shell) => {
-                    expect(resp.metadata.contentType).toBe(
-                        expectedContentTypes[shell.context.fileName],
-                    )
-                    expect(resp.metadata.contentEncoding).toBe(
-                        expectedContentEncodings[shell.context.fileName],
-                    )
-                },
-            }),
-            get({
-                inputs: (shell) => {
-                    return { fileId: shell.context.asset.rawId }
-                },
-                newContext: (shell, resp) =>
-                    new TestData({ ...shell.context, downloaded: resp }),
-            }),
-            mergeMap((shell) => {
-                const promise = new Promise((resolve) => {
-                    const fileReader = new FileReader()
-                    fileReader.onload = function (event) {
-                        const original = readFileSync(
-                            path.resolve(testDataDir, shell.context.fileName),
-                        )
-                        const downloaded = new Uint8Array(
-                            event.target.result as ArrayBuffer,
-                        )
-                        if (!shell.context.fileName.endsWith('.br')) {
-                            // there is auto brotli decompression activated in unit tests
-                            // eslint-disable-next-line jest/no-conditional-expect -- seems appropriated here
-                            expect(original).toHaveLength(downloaded.length)
-                        }
-                        resolve(shell)
-                    }
-                    fileReader.readAsArrayBuffer(shell.context.downloaded)
+            sideEffects: (resp, shell) => {
+                expect(resp.name).toBe(shell.context.fileName)
+                expect(resp.rawResponse.fileName).toBe(shell.context.fileName)
+                expect(resp.rawResponse.contentType).toBe(
+                    expectedContentTypes[resp.name],
+                )
+                expect(resp.rawResponse.contentEncoding).toBe(
+                    expectedContentEncodings[resp.name],
+                )
+            },
+            newContext: (shell, resp: NewAssetResponse<UploadResponse>) => {
+                return new TestData({
+                    ...shell.context,
+                    asset: resp,
+                    thumbnailUrl: resp.images[0],
                 })
-                return from(promise)
-            }),
-            take(inputs.length),
-            reduce((acc, e) => [...acc, e], []),
-        )
-        .subscribe(() => {
-            done()
-        })
-})
-
-test('upload image file, check thumbnails & delete', (done) => {
-    const testDataDir = __dirname + '/test-data'
-
-    shell$<TestData>({ fileName: 'logo_YouWol_2020.png' })
-        .pipe(
-            upload<TestData>({
-                inputs: (shell) => ({
-                    body: {
-                        fileName: shell.context.fileName,
-                        fileId: shell.context.fileName,
-                        path: path.resolve(testDataDir, shell.context.fileName),
-                    },
-                    queryParameters: { folderId: shell.homeFolderId },
-                }),
-                sideEffects: (resp) => {
-                    expect(resp.images).toHaveLength(1)
-                },
-                newContext: (shell, resp: NewAssetResponse<UploadResponse>) => {
-                    return new TestData({
-                        ...shell.context,
-                        asset: resp,
-                        thumbnailUrl: resp.images[0],
-                    })
-                },
-            }),
-            mergeMap((shell) => {
-                const request = new Request(
-                    `${getPyYouwolBasePath()}${shell.context.thumbnailUrl}`,
+            },
+        }),
+        getInfo({
+            inputs: (shell) => ({ fileId: shell.context.asset.rawId }),
+            sideEffects: (resp, shell) => {
+                expect(resp.metadata.contentType).toBe(
+                    expectedContentTypes[shell.context.fileName],
                 )
-                return from(fetch(request)).pipe(
-                    mergeMap((data) => {
-                        return from(data.blob())
-                    }),
-                    tap((blob) => {
-                        expect(blob.type).toBe('image/png')
-                        expect(blob.size).toBe(2303)
-                    }),
-                    mapTo(shell),
+                expect(resp.metadata.contentEncoding).toBe(
+                    expectedContentEncodings[shell.context.fileName],
                 )
-            }),
-            remove(
-                (shell) => ({
-                    fileId: shell.context.asset.rawId,
-                }),
-                (shell) => {
-                    return shell.context
-                },
-            ),
-            getInfo({
-                inputs: (shell) => ({ fileId: shell.context.asset.rawId }),
-                authorizedErrors: (resp) => resp.status == 404,
-            }),
-        )
-        .subscribe(() => {
-            done()
-        })
-})
-
-test('upload file, update metadata', (done) => {
-    const testDataDir = __dirname + '/test-data'
-
-    shell$<TestData>({ fileName: 'package.json' })
-        .pipe(
-            upload<TestData>({
-                inputs: (shell) => ({
-                    body: {
-                        fileName: shell.context.fileName,
-                        fileId: shell.context.fileName,
-                        path: path.resolve(testDataDir, shell.context.fileName),
-                    },
-                    queryParameters: { folderId: shell.homeFolderId },
-                }),
-                newContext: (shell, resp: NewAssetResponse<UploadResponse>) => {
-                    return new TestData({
-                        ...shell.context,
-                        asset: resp,
-                    })
-                },
-            }),
-            updateMetadata(
-                (shell) => ({
-                    fileId: shell.context.asset.rawId,
-                    metadata: {
-                        contentType: 'tutu',
-                        contentEncoding: 'tata',
-                    },
-                }),
-                (shell) => {
-                    return shell.context
-                },
-            ),
-            getInfo({
-                inputs: (shell) => ({ fileId: shell.context.asset.rawId }),
-                sideEffects: (resp, shell) => {
-                    expect(resp.metadata.fileName).toBe(
-                        shell.context.asset.name,
+            },
+        }),
+        get({
+            inputs: (shell) => {
+                return { fileId: shell.context.asset.rawId }
+            },
+            newContext: (shell, resp) =>
+                new TestData({ ...shell.context, downloaded: resp }),
+        }),
+        mergeMap((shell) => {
+            const promise = new Promise((resolve) => {
+                const fileReader = new FileReader()
+                fileReader.onload = function (event) {
+                    const original = readFileSync(
+                        path.resolve(testDataDir, shell.context.fileName),
                     )
-                    expect(resp.metadata.contentType).toBe('tutu')
-                    expect(resp.metadata.contentEncoding).toBe('tata')
-                },
-            }),
-        )
-        .subscribe(() => {
-            done()
-        })
+                    const downloaded = new Uint8Array(
+                        event.target.result as ArrayBuffer,
+                    )
+                    if (!shell.context.fileName.endsWith('.br')) {
+                        // there is auto brotli decompression activated in unit tests
+                        // eslint-disable-next-line jest/no-conditional-expect -- seems appropriated here
+                        expect(original).toHaveLength(downloaded.length)
+                    }
+                    resolve(shell)
+                }
+                fileReader.readAsArrayBuffer(shell.context.downloaded)
+            })
+            return from(promise)
+        }),
+        take(inputs.length),
+        reduce((acc, e) => [...acc, e], []),
+    )
+    await firstValueFrom(test$)
 })
 
-test('upload data, delete from explorer (purge)', (done) => {
+test('upload image file, check thumbnails & delete', async () => {
     const testDataDir = __dirname + '/test-data'
 
-    shell$<TestData>({ fileName: 'package.json' })
-        .pipe(
-            upload<TestData>({
-                inputs: (shell) => ({
-                    body: {
-                        fileName: shell.context.fileName,
-                        fileId: shell.context.fileName,
-                        path: path.resolve(testDataDir, shell.context.fileName),
-                    },
-                    queryParameters: { folderId: shell.homeFolderId },
+    const test$ = shell$<TestData>({ fileName: 'logo_YouWol_2020.png' }).pipe(
+        upload<TestData>({
+            inputs: (shell) => ({
+                body: {
+                    fileName: shell.context.fileName,
+                    fileId: shell.context.fileName,
+                    path: path.resolve(testDataDir, shell.context.fileName),
+                },
+                queryParameters: { folderId: shell.homeFolderId },
+            }),
+            sideEffects: (resp) => {
+                expect(resp.images).toHaveLength(1)
+            },
+            newContext: (shell, resp: NewAssetResponse<UploadResponse>) => {
+                return new TestData({
+                    ...shell.context,
+                    asset: resp,
+                    thumbnailUrl: resp.images[0],
+                })
+            },
+        }),
+        mergeMap((shell) => {
+            const request = new Request(
+                `${getPyYouwolBasePath()}${shell.context.thumbnailUrl}`,
+            )
+            return from(fetch(request)).pipe(
+                mergeMap((data) => {
+                    return from(data.blob())
                 }),
-                newContext: (shell, resp: NewAssetResponse<UploadResponse>) => {
-                    return new TestData({
-                        ...shell.context,
-                        asset: resp,
-                    })
+                tap((blob) => {
+                    expect(blob.type).toBe('image/png')
+                    expect(blob.size).toBe(2303)
+                }),
+                mapTo(shell),
+            )
+        }),
+        remove(
+            (shell) => ({
+                fileId: shell.context.asset.rawId,
+            }),
+            (shell) => {
+                return shell.context
+            },
+        ),
+        getInfo({
+            inputs: (shell) => ({ fileId: shell.context.asset.rawId }),
+            authorizedErrors: (resp) => resp.status == 404,
+        }),
+    )
+    await firstValueFrom(test$)
+})
+
+test('upload file, update metadata', async () => {
+    const testDataDir = __dirname + '/test-data'
+
+    const test$ = shell$<TestData>({ fileName: 'package.json' }).pipe(
+        upload<TestData>({
+            inputs: (shell) => ({
+                body: {
+                    fileName: shell.context.fileName,
+                    fileId: shell.context.fileName,
+                    path: path.resolve(testDataDir, shell.context.fileName),
+                },
+                queryParameters: { folderId: shell.homeFolderId },
+            }),
+            newContext: (shell, resp: NewAssetResponse<UploadResponse>) => {
+                return new TestData({
+                    ...shell.context,
+                    asset: resp,
+                })
+            },
+        }),
+        updateMetadata(
+            (shell) => ({
+                fileId: shell.context.asset.rawId,
+                metadata: {
+                    contentType: 'tutu',
+                    contentEncoding: 'tata',
                 },
             }),
-            trashItem({
-                inputs: (shell) => ({ itemId: shell.context.asset.itemId }),
-            }),
-            purgeDrive({
-                inputs: (shell) => ({ driveId: shell.defaultDriveId }),
-            }),
-            get({
-                inputs: (shell) => {
-                    return { fileId: shell.context.asset.rawId }
+            (shell) => {
+                return shell.context
+            },
+        ),
+        getInfo({
+            inputs: (shell) => ({ fileId: shell.context.asset.rawId }),
+            sideEffects: (resp, shell) => {
+                expect(resp.metadata.fileName).toBe(shell.context.asset.name)
+                expect(resp.metadata.contentType).toBe('tutu')
+                expect(resp.metadata.contentEncoding).toBe('tata')
+            },
+        }),
+    )
+    await firstValueFrom(test$)
+})
+
+test('upload data, delete from explorer (purge)', async () => {
+    const testDataDir = __dirname + '/test-data'
+
+    const test$ = shell$<TestData>({ fileName: 'package.json' }).pipe(
+        upload<TestData>({
+            inputs: (shell) => ({
+                body: {
+                    fileName: shell.context.fileName,
+                    fileId: shell.context.fileName,
+                    path: path.resolve(testDataDir, shell.context.fileName),
                 },
-                authorizedErrors: (resp) => resp.status == 404,
+                queryParameters: { folderId: shell.homeFolderId },
             }),
-            getAsset({
-                inputs: (shell) => ({ assetId: shell.context.asset.assetId }),
-                authorizedErrors: (resp) => {
-                    expect(resp.status).toBe(404)
-                    return true
-                },
-            }),
-        )
-        .subscribe(() => {
-            done()
-        })
+            newContext: (shell, resp: NewAssetResponse<UploadResponse>) => {
+                return new TestData({
+                    ...shell.context,
+                    asset: resp,
+                })
+            },
+        }),
+        trashItem({
+            inputs: (shell) => ({ itemId: shell.context.asset.itemId }),
+        }),
+        purgeDrive({
+            inputs: (shell) => ({ driveId: shell.defaultDriveId }),
+        }),
+        get({
+            inputs: (shell) => {
+                return { fileId: shell.context.asset.rawId }
+            },
+            authorizedErrors: (resp) => resp.status == 404,
+        }),
+        getAsset({
+            inputs: (shell) => ({ assetId: shell.context.asset.assetId }),
+            authorizedErrors: (resp) => {
+                expect(resp.status).toBe(404)
+                return true
+            },
+        }),
+    )
+    await firstValueFrom(test$)
 })

@@ -6,17 +6,16 @@ import {
 } from '../../lib/assets-gateway'
 import '../common'
 import '../mock-requests'
+import { firstValueFrom } from 'rxjs'
 
 const subject = new AccountsClient()
 
 describe('session', () => {
     test('backward compatible with assets-gateway/user-info', () => {
         return expect(
-            subject
-                .getSessionDetails$()
-                .pipe(raiseHTTPErrors())
-                .toPromise()
-                .then((session) => session.userInfo as GetUserInfoResponse),
+            firstValueFrom(
+                subject.getSessionDetails$().pipe(raiseHTTPErrors()),
+            ).then((session) => session.userInfo as GetUserInfoResponse),
         ).resolves.toMatchObject<GetUserInfoResponse>({
             name: 'John Doe',
             groups: [
@@ -31,16 +30,14 @@ describe('session', () => {
 
     test('backward compatible with assets-gateway/groups', () => {
         return expect(
-            subject
-                .getSessionDetails$()
-                .pipe(raiseHTTPErrors())
-                .toPromise()
-                .then(
-                    (session) =>
-                        ({
-                            groups: session.userInfo.groups,
-                        }) as QueryGroupsResponse,
-                ),
+            firstValueFrom(
+                subject.getSessionDetails$().pipe(raiseHTTPErrors()),
+            ).then(
+                (session) =>
+                    ({
+                        groups: session.userInfo.groups,
+                    }) as QueryGroupsResponse,
+            ),
         ).resolves.toMatchObject<QueryGroupsResponse>({
             groups: [
                 {
@@ -54,11 +51,9 @@ describe('session', () => {
 
     test('not temporary', () => {
         return expect(
-            subject
-                .getSessionDetails$()
-                .pipe(raiseHTTPErrors())
-                .toPromise()
-                .then((session) => session.userInfo.temp),
+            firstValueFrom(
+                subject.getSessionDetails$().pipe(raiseHTTPErrors()),
+            ).then((session) => session.userInfo.temp),
         ).resolves.toBeFalsy()
     })
 })
