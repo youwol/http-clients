@@ -9,7 +9,6 @@ import {
     DeleteAssetResponse,
     GetAccessPolicyResponse,
     GetAssetResponse,
-    GetHealthzResponse,
     GetPermissionsResponse,
     UpdateAssetResponse,
     UpdateAssetBody,
@@ -39,24 +38,6 @@ export class AssetsClient extends RootRouter {
             basePath: basePath || '/api/assets-backend',
             headers,
             hostName,
-        })
-    }
-
-    /**
-     * Healthz of the service
-     *
-     * @param callerOptions
-     * @returns response
-     */
-    getHealthz$({
-        callerOptions,
-    }: {
-        callerOptions?: CallerRequestOptions
-    } = {}): HTTPResponse$<GetHealthzResponse> {
-        return this.send$({
-            command: 'query',
-            path: `/healthz`,
-            callerOptions,
         })
     }
 

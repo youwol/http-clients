@@ -89,22 +89,6 @@ export function expectItem(item: unknown) {
     ])
 }
 
-export function healthz<T>() {
-    return (source$: Observable<Shell<T>>) => {
-        return source$.pipe(
-            mergeMap((shell) => {
-                return shell.assetsGtw.explorer.getHealthz$().pipe(
-                    raiseHTTPErrors(),
-                    tap((resp) => {
-                        expect(resp.status).toBe('treedb-backend ok')
-                    }),
-                    mapToShell(shell),
-                )
-            }),
-        )
-    }
-}
-
 export function createDrive<TContext>({
     inputs,
     authorizedErrors,

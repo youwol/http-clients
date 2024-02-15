@@ -6,7 +6,6 @@ import {
     RootRouter,
 } from '@youwol/http-primitives'
 import {
-    GetHealthzResponse,
     QueryExplorerResponse,
     UploadResponse,
     GetLibraryInfoResponse,
@@ -32,24 +31,6 @@ export class CdnClient extends RootRouter {
             basePath: basePath || '/api/cdn-backend',
             headers,
             hostName,
-        })
-    }
-
-    /**
-     * Healthz of the service
-     *
-     * @param callerOptions
-     * @returns response
-     */
-    getHealthz$({
-        callerOptions,
-    }: {
-        callerOptions?: CallerRequestOptions
-    }): HTTPResponse$<GetHealthzResponse> {
-        return this.send$({
-            command: 'query',
-            path: `/healthz`,
-            callerOptions,
         })
     }
 

@@ -18,10 +18,6 @@ export interface AuthorResponse {
     authorId: string
 }
 
-export interface GetHealthzResponse {
-    status: 'stories-backend serving'
-}
-
 export interface UpdateDocumentBody {
     title: string
 }
