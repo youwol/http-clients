@@ -8,7 +8,6 @@ import {
 } from '@youwol/http-primitives'
 import {
     GetGlobalContentResponse,
-    GetHealthzResponse,
     MoveDocumentBody,
     MoveDocumentResponse,
     UpdateGlobalContentBody,
@@ -51,24 +50,6 @@ export class StoriesClient extends RootRouter {
             basePath: basePath || '/api/stories-backend',
             headers,
             hostName,
-        })
-    }
-
-    /**
-     * Healthz of the service
-     *
-     * @param callerOptions
-     * @returns response
-     */
-    getHealthz$({
-        callerOptions,
-    }: {
-        callerOptions?: CallerRequestOptions
-    } = {}): HTTPResponse$<GetHealthzResponse> {
-        return this.send$({
-            command: 'query',
-            path: `/healthz`,
-            callerOptions,
         })
     }
 

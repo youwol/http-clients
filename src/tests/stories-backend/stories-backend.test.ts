@@ -1,6 +1,5 @@
 import '../mock-requests'
 import {
-    healthz,
     addDocuments,
     addPlugin,
     deleteDocument,
@@ -64,13 +63,6 @@ class TestData {
         Object.assign(this, params)
     }
 }
-
-test('healthz', async () => {
-    class Context {}
-
-    const resp = await firstValueFrom(shell$<Context>().pipe(healthz()))
-    expect(resp).toBeTruthy()
-})
 
 test('create story, play with content', async () => {
     const title = 'test story: play with content'

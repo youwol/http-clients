@@ -12,11 +12,7 @@ import {
     RootRouter,
     HTTPError,
 } from '@youwol/http-primitives'
-import {
-    GetHealthzResponse,
-    GetUserInfoResponse,
-    QueryGroupsResponse,
-} from './interfaces'
+import { GetUserInfoResponse, QueryGroupsResponse } from './interfaces'
 import { MiscRouter } from './routers'
 
 export class AssetsGatewayClient extends RootRouter {
@@ -75,22 +71,6 @@ export class AssetsGatewayClient extends RootRouter {
         this.accounts = new AccountsClient({
             headers,
             hostName,
-        })
-    }
-
-    /**
-     * Healthz of the service
-     *
-     * @param callerOptions
-     * @returns response
-     */
-    getHealthz$(
-        callerOptions: CallerRequestOptions = {},
-    ): HTTPResponse$<GetHealthzResponse> {
-        return this.send$({
-            command: 'query',
-            path: `/healthz`,
-            callerOptions,
         })
     }
 

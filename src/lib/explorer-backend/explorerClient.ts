@@ -4,7 +4,6 @@ import {
     RootRouter,
 } from '@youwol/http-primitives'
 import {
-    GetHealthzResponse,
     CreateDriveBody,
     UpdateDriveBody,
     CreateFolderBody,
@@ -52,24 +51,6 @@ export class ExplorerClient extends RootRouter {
             basePath: basePath || '/api/treedb-backend',
             headers,
             hostName,
-        })
-    }
-
-    /**
-     * Healthz of the service
-     *
-     * @param callerOptions
-     * @returns response
-     */
-    getHealthz$({
-        callerOptions,
-    }: {
-        callerOptions?: CallerRequestOptions
-    } = {}): HTTPResponse$<GetHealthzResponse> {
-        return this.send$({
-            command: 'query',
-            path: `/healthz`,
-            callerOptions,
         })
     }
 

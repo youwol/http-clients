@@ -14,7 +14,6 @@ import {
     getFile,
     getMedia,
     getPermissions,
-    healthz,
     removeImage,
     updateAsset,
     upsertAccessPolicy,
@@ -34,13 +33,6 @@ beforeEach(async () => {
             authId: 'int_tests_yw-users@test-user',
         }),
     )
-})
-
-test('healthz', async () => {
-    class Context {}
-
-    const resp = await firstValueFrom(shell$<Context>().pipe(healthz()))
-    expect(resp).toBeTruthy()
 })
 
 test('happy path', async () => {

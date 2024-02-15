@@ -1,5 +1,5 @@
 import '../mock-requests'
-import { getData, postData, shell$, healthz } from './shell'
+import { getData, postData, shell$ } from './shell'
 import { RootRouter, LocalYouwol } from '@youwol/http-primitives'
 import { getPyYouwolBasePath } from '../common'
 import { firstValueFrom } from 'rxjs'
@@ -18,13 +18,6 @@ beforeAll(async () => {
 const testData = {
     content: 'some content',
 }
-
-test('healthz', async () => {
-    class Context {}
-
-    const resp = await firstValueFrom(shell$<Context>().pipe(healthz()))
-    expect(resp).toBeTruthy()
-})
 
 test('get data from empty db', async () => {
     const test$ = shell$().pipe(

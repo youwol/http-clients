@@ -4,10 +4,6 @@ export interface Release {
     fingerprint: string
 }
 
-export interface GetHealthzResponse {
-    status: 'cdn-backend ok'
-}
-
 export interface FolderResponse {
     name: string
     path: string

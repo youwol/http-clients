@@ -1,5 +1,4 @@
 export * as AssetsBackend from './assets-backend'
-export * as AssetsGateway from './assets-gtw'
 export * as CdnBackend from './cdn-backend'
 export * as CdnSessionStorage from './cdn-sessions-storage'
 export * as FilesBackend from './files-backend'

@@ -32,22 +32,6 @@ import {
 } from '../../lib/stories-backend'
 import { NewAssetResponse } from '../../lib/assets-gateway'
 
-export function healthz<T>() {
-    return (source$: Observable<Shell<T>>) => {
-        return source$.pipe(
-            mergeMap((shell) => {
-                return shell.assetsGtw.stories.getHealthz$().pipe(
-                    raiseHTTPErrors(),
-                    tap((resp) => {
-                        expect(resp.status).toBe('stories-backend serving')
-                    }),
-                    mapToShell(shell),
-                )
-            }),
-        )
-    }
-}
-
 export function createStory<TContext>({
     inputs,
     authorizedErrors,

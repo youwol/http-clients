@@ -1,7 +1,3 @@
-export interface GetHealthzResponse {
-    status: 'assets-backend ok'
-}
-
 export type ReadPolicy =
     | 'forbidden'
     | 'authorized'

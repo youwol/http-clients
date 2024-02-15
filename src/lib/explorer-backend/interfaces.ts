@@ -1,7 +1,3 @@
-export interface GetHealthzResponse {
-    status: 'treedb-backend ok'
-}
-
 export interface CreateDriveBody {
     name: string
     driveId?: string

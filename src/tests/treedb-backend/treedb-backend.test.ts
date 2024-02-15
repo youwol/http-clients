@@ -14,7 +14,6 @@ import {
     getFolderPath,
     getItem,
     getPath,
-    healthz,
     move,
     purgeDrive,
     queryChildren,
@@ -53,13 +52,6 @@ beforeEach(async () => {
             authId: 'int_tests_yw-users@test-user',
         }),
     )
-})
-
-test('healthz', async () => {
-    class Context {}
-
-    const resp = await firstValueFrom(shell$<Context>().pipe(healthz()))
-    expect(resp).toBeTruthy()
 })
 
 test('happy path drives', async () => {

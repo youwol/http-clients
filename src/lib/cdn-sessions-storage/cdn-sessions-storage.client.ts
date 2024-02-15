@@ -4,7 +4,6 @@ import {
     Json,
     RootRouter,
 } from '@youwol/http-primitives'
-import { GetHealthzResponse } from './interfaces'
 
 export class CdnSessionsStorageClient extends RootRouter {
     constructor({
@@ -15,24 +14,6 @@ export class CdnSessionsStorageClient extends RootRouter {
         super({
             basePath: '/api/cdn-sessions-storage',
             headers,
-        })
-    }
-
-    /**
-     * Healthz of the service
-     *
-     * @param callerOptions
-     * @returns response
-     */
-    getHealthz$({
-        callerOptions,
-    }: {
-        callerOptions?: CallerRequestOptions
-    } = {}): HTTPResponse$<GetHealthzResponse> {
-        return this.send$<GetHealthzResponse>({
-            command: 'query',
-            path: `/healthz`,
-            callerOptions,
         })
     }
 

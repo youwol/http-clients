@@ -9,7 +9,6 @@ import {
     DeleteFilesResponse,
     GetAccessPolicyResponse,
     GetAssetResponse,
-    GetHealthzResponse,
     GetPermissionsResponse,
     QueryAccessInfoResponse,
     RemoveImageResponse,
@@ -44,27 +43,6 @@ function expectAsset(resp: unknown) {
         'description',
         'groupId',
     ])
-}
-
-export function healthz<TContext>({
-    newContext,
-    authorizedErrors,
-    sideEffects,
-}: {
-    authorizedErrors?: (resp: HTTPError) => boolean
-    sideEffects?: (resp, shell: Shell<TContext>) => void
-    newContext?: (shell: Shell<TContext>, resp: GetHealthzResponse) => TContext
-} = {}) {
-    return wrap<Shell<TContext>, GetHealthzResponse>({
-        observable: (shell: Shell<TContext>) =>
-            shell.assetsGtw.assets.getHealthz$(),
-        authorizedErrors,
-        sideEffects: (resp, shell) => {
-            expect(resp.status).toBe('assets-backend ok')
-            sideEffects && sideEffects(resp, shell)
-        },
-        newShell: (shell, resp) => newShellFromContext(shell, resp, newContext),
-    })
 }
 
 export function createAsset<TContext>({
